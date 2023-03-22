@@ -1,0 +1,59 @@
+[data-wysi],
+.wysi-field {
+  display: block;
+}
+
+.wysi-wrapper {
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  box-shadow: 0 0 1px #999;
+}
+
+.wysi-wrapper + textarea {
+  display: none;
+}
+
+.wysi-toolbar {
+  display: flex;
+  padding: 5px;
+  background-color: #eee;
+}
+
+.wysi-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: 0 5px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #444;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.wysi-toolbar button:hover,
+.wysi-toolbar button.wysi-active {
+  background-color: #fff;
+}
+
+.wysi-toolbar svg {
+  width: 1.5em;
+  height: 1.5em;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+.wysi-editor {
+  min-height: 200px;
+  margin: 1em;
+  outline: none;
+  overflow: auto;
+}

@@ -57,3 +57,7 @@
   outline: none;
   overflow: auto;
 }
+
+.wysi-editor > :first-child {
+  margin-top: 0;
+}

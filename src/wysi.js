@@ -111,14 +111,18 @@
 
     // Generate toolbar buttons
     tools.forEach(toolName => {
-      const tool = toolset[toolName];
-      const label = translations[toolName] || globalTranslations[toolName] || tool.label;
+      if (toolName === 'separator') {
+        buttons.push('<div class="wysi-separator"></div>');
+      } else {
+        const tool = toolset[toolName];
+        const label = translations[toolName] || globalTranslations[toolName] || tool.label;
 
-      buttons.push(
-        `<button type="button" aria-label="${label}" title="${label}" data-action="${toolName}">`+
-          `<svg><use href="#wysi-${toolName}"></use></svg>`+
-        '</button>'
-      );
+        buttons.push(
+          `<button type="button" aria-label="${label}" title="${label}" data-action="${toolName}">`+
+            `<svg><use href="#wysi-${toolName}"></use></svg>`+
+          '</button>'
+        );
+      }
     });
 
     // Append an editable region

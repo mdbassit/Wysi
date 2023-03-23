@@ -52,6 +52,13 @@
   pointer-events: none;
 }
 
+.wysi-separator {
+  width: 5px;
+  height: 30px;
+  margin-right: 10px;
+  border-right: 1px solid #ccc;
+}
+
 .wysi-editor {
   min-height: 200px;
   margin: 1em;

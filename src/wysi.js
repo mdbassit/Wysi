@@ -117,7 +117,11 @@
       const tool = supportedTools[action];
       
       if (tool) {
+        // Execute the button's action
         tool.action();
+
+        // Focus the editable region
+        button.parentNode.nextElementSibling.focus();
       }
     });
 

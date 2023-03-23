@@ -6,8 +6,11 @@
 
 ((window, document, undefined) => {
   // Shortcuts
+  const appendChild = (parent, child) => parent.appendChild(child);
   const createElement = tag => document.createElement(tag);
+  const dispatchEvent = (element, event) => element.dispatchEvent(new Event(event, { bubbles: true }));
   const execCommand = (command, value = null) => document.execCommand(command, false, value);
+  const hasClass = (element, classes) => element.classList.contains(classes);
   const querySelectorAll = selector => document.querySelectorAll(selector);
 
   // Default settings
@@ -58,7 +61,7 @@
     querySelectorAll(selector).forEach(field => {
       const sibling = field.previousElementSibling;
 
-      if (!sibling || !sibling.classList.contains('wysi-wrapper')) {
+      if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
         const parentNode = field.parentNode;
         const wrapper = createElement('div');
         const toolbar = createElement('div');
@@ -77,8 +80,8 @@
         editor.contentEditable = true;
 
         // Insert the editable region in the document
-        wrapper.appendChild(toolbar);
-        wrapper.appendChild(editor);
+        appendChild(wrapper, toolbar);
+        appendChild(wrapper, editor);
         parentNode.insertBefore(wrapper, field);
       }
     });
@@ -91,7 +94,7 @@
     querySelectorAll(selector).forEach(field => {
       const sibling = field.previousElementSibling;
 
-      if (sibling && sibling.classList.contains('wysi-wrapper')) {
+      if (sibling && hasClass(sibling, 'wysi-wrapper')) {
         sibling.remove();
       }
     });
@@ -124,7 +127,7 @@
       const textarea = editor.parentNode.nextElementSibling;
 
       textarea.value = editor.innerHTML;
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      dispatchEvent(textarea, 'input');
     });
   }
 

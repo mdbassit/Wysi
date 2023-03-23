@@ -20,7 +20,19 @@
   };
 
   // Supported tools
-  const supportedTools = {
+  const toolset = {
+    paragraph: {
+      label: 'Paragraph',
+      action: () => execCommand('formatBlock', '<p>')
+    },
+    quote: {
+      label: 'Quote',
+      action: () => execCommand('formatBlock', '<blockquote>')
+    },
+    heading: {
+      label: 'Heading',
+      action: (level) => execCommand('formatBlock', `<h${level}>`)
+    },
     bold: {
       label: 'Bold',
       action: () => execCommand('bold')
@@ -32,6 +44,58 @@
     underline: {
       label: 'Underline',
       action: () => execCommand('underline')
+    },
+    strikeThrough: {
+      label: 'Strike-through',
+      action: () => execCommand('strikeThrough')
+    },
+    alignLeft: {
+      label: 'Align left',
+      action: () => execCommand('justifyLeft')
+    },
+    alignCenter: {
+      label: 'Align center',
+      action: () => execCommand('justifyCenter')
+    },
+    alignRight: {
+      label: 'Align right',
+      action: () => execCommand('alignRight')
+    },
+    justify: {
+      label: 'Justify',
+      action: () => execCommand('alignFull')
+    },
+    ul: {
+      label: 'Bulleted list',
+      action: () => execCommand('insertUnorderedList')
+    },
+    ol: {
+      label: 'Numbered list',
+      action: () => execCommand('insertOrderedList')
+    },
+    indent: {
+      label: 'Increase indent',
+      action: () => execCommand('indent')
+    },
+    outdent: {
+      label: 'Decrease indent',
+      action: () => execCommand('outdent')
+    },
+    link: {
+      label: 'Link',
+      action: (url) => execCommand('createLink', url)
+    },
+    image: {
+      label: 'Image',
+      action: (url, text = '') => execCommand('insertHTML', `<img src="${url}" alt="${text}">`)
+    },
+    hr: {
+      label: 'Horizontal line',
+      action: () => execCommand('insertHorizontalRule')
+    },
+    removeFormat: {
+      label: 'Remove format',
+      action: () => execCommand('removeFormat')
     }
   };
 
@@ -47,7 +111,7 @@
 
     // Generate toolbar buttons
     tools.forEach(toolName => {
-      const tool = supportedTools[toolName];
+      const tool = toolset[toolName];
       const label = translations[toolName] || globalTranslations[toolName] || tool.label;
 
       buttons.push(
@@ -114,7 +178,7 @@
     addListener(document, 'click', '.wysi-toolbar button', event => {
       const button = event.target;
       const action = button.getAttribute('data-action');
-      const tool = supportedTools[action];
+      const tool = toolset[action];
       
       if (tool) {
         // Execute the button's action

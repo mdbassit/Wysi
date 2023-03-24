@@ -8,6 +8,7 @@
   flex-direction: column;
   border-radius: 5px;
   box-shadow: 0 0 1px #999;
+  overflow: hidden;
 }
 
 .wysi-wrapper + textarea {
@@ -16,7 +17,7 @@
 
 .wysi-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 5px;
   background-color: #eee;
 }

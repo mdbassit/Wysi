@@ -101,12 +101,52 @@
 
   /**
    * Init a WYSIWYG editor instance.
+   * @param {object} options Configuration options.
    */
   function init(options) {
-    const globalTranslations = window.wysiGlobalTranslations || {};
-    const translations = options.translations || {};
     const tools = options.tools || settings.tools;
     const selector = options.el || settings.el;
+    const buttons = renderToolbar(tools, options);
+
+    // Append an editable region
+    querySelectorAll(selector).forEach(field => {
+      const sibling = field.previousElementSibling;
+
+      if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
+        const parentNode = field.parentNode;
+        const wrapper = createElement('div');
+        const toolbar = createElement('div');
+        const editor = createElement('div');
+
+        // Set CSS classes
+        wrapper.className = 'wysi-wrapper';
+        toolbar.className = 'wysi-toolbar';
+        editor.className = 'wysi-editor';
+
+        // Set the toolbar buttons
+        toolbar.innerHTML = buttons;
+
+        // Set the editable region
+        editor.innerHTML = field.value; // TODO: wrap text in paragraphs
+        editor.contentEditable = true;
+
+        // Insert the editable region in the document
+        appendChild(wrapper, toolbar);
+        appendChild(wrapper, editor);
+        parentNode.insertBefore(wrapper, field);
+      }
+    });
+  }
+
+  /**
+   * Render the toolbar.
+   * @param {array} tools The list of tools in the toolbar.
+   * @param {object} options Configuration options.
+   * @return {string} The toolbars HTML string.
+   */
+  function renderToolbar(tools, options) {
+    const globalTranslations = window.wysiGlobalTranslations || {};
+    const translations = options.translations || {};
     const buttons = [];
 
     // Generate toolbar buttons
@@ -125,38 +165,12 @@
       }
     });
 
-    // Append an editable region
-    querySelectorAll(selector).forEach(field => {
-      const sibling = field.previousElementSibling;
-
-      if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
-        const parentNode = field.parentNode;
-        const wrapper = createElement('div');
-        const toolbar = createElement('div');
-        const editor = createElement('div');
-
-        // Set CSS classes
-        wrapper.className = 'wysi-wrapper';
-        toolbar.className = 'wysi-toolbar';
-        editor.className = 'wysi-editor';
-
-        // Set the toolbar buttons
-        toolbar.innerHTML = buttons.join('');
-
-        // Set the editable region
-        editor.innerHTML = field.value;
-        editor.contentEditable = true;
-
-        // Insert the editable region in the document
-        appendChild(wrapper, toolbar);
-        appendChild(wrapper, editor);
-        parentNode.insertBefore(wrapper, field);
-      }
-    });
+    return buttons.join('');
   }
 
   /**
    * Destroy a WYSIWYG editor instance.
+   * @param {string} selector One or more selectors pointing to textarea fields.
    */
   function destroy(selector) {
     querySelectorAll(selector).forEach(field => {

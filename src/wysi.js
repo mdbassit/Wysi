@@ -96,6 +96,9 @@
     removeFormat: {
       label: 'Remove format',
       action: () => execCommand('removeFormat')
+    },
+    formatting: {
+      label: 'Select formatting'
     }
   };
 
@@ -146,22 +149,45 @@
    */
   function renderToolbar(tools, options) {
     const globalTranslations = window.wysiGlobalTranslations || {};
-    const translations = options.translations || {};
+    const translations = options.translations || globalTranslations || {};
     const buttons = [];
 
     // Generate toolbar buttons
     tools.forEach(toolName => {
-      if (toolName === 'separator') {
-        buttons.push('<div class="wysi-separator"></div>');
-      } else {
-        const tool = toolset[toolName];
-        const label = translations[toolName] || globalTranslations[toolName] || tool.label;
+      switch (toolName) {
+        case 'separator':
+          buttons.push('<div class="wysi-separator"></div>');
+          break;
+        case 'formatting':
+          const paragraphLabel = translations['paragraph'] || toolset.paragraph.label;
+          const quoteLabel = translations['quote'] || toolset.quote.label;
+          const headingLabel = translations['heading'] || toolset.heading.label;
+          const formattingLabel = translations['formatting'] || toolset.formatting.label;
 
-        buttons.push(
-          `<button type="button" aria-label="${label}" title="${label}" data-action="${toolName}">`+
-            `<svg><use href="#wysi-${toolName}"></use></svg>`+
-          '</button>'
-        );
+          buttons.push(
+            '<div class="wysi-listbox">'+
+              `<button type="button" aria-haspopup="listbox" aria-expanded="false" title="${formattingLabel}">`+
+                paragraphLabel+
+              '</button>'+
+              `<div role="listbox" tabindex="-1" aria-label="${formattingLabel}">`+
+                `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="paragraph">${paragraphLabel}</button>`+
+                `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="quote">${quoteLabel}</button>`+
+                [1, 2, 3, 4].map(level => 
+                `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="heading" data-level="${level}">${headingLabel} ${level}</button>`
+                ).join('')+
+              '</div>'+
+            '</div>'
+          );
+          break;
+        default:
+          const tool = toolset[toolName];
+          const label = translations[toolName] || tool.label;
+
+          buttons.push(
+            `<button type="button" aria-label="${label}" title="${label}" data-action="${toolName}">`+
+              `<svg><use href="#wysi-${toolName}"></use></svg>`+
+            '</button>'
+          );
       }
     });
 
@@ -183,6 +209,49 @@
   }
 
   /**
+   * Execute an action.
+   * @param {string} action The action to execute.
+   * @param {object} region The editable region.
+   * @param {array} [options] Optional action parameters.
+   */
+  function execAction(action, region, options = []) {
+    const tool = toolset[action];
+    
+    if (tool) {
+      // Focus the editable region
+      region.focus();
+
+      // Execute the button's action
+      tool.action(...options);
+    }
+  }
+
+  /**
+   * Open a list box.
+   * @param {object} button The list box's button.
+   */
+  function openListBox(button) {
+    const isOpen = button.getAttribute('aria-expanded') === 'true';
+    const list = button.nextElementSibling;
+    let selectedItem = list.querySelector('[aria-selected="true"]');
+
+    if (!selectedItem) {
+      selectedItem = list.firstElementChild;
+    }
+
+    button.setAttribute('aria-expanded', !isOpen);
+    selectedItem.focus();
+  }
+
+  /**
+   * Close a list box.
+   * @param {object} button The list box's button.
+   */
+  function closeListBox(button, focusButton) {
+    button.setAttribute('aria-expanded', 'false');
+  }
+
+  /**
    * Bootstrap the WYSIWYG editor.
    */
   function bootstrap() {
@@ -193,18 +262,12 @@
     execCommand('defaultParagraphSeparator', 'p');
 
     // Toolbar button click
-    addListener(document, 'click', '.wysi-toolbar button', event => {
+    addListener(document, 'click', '.wysi-toolbar > button', event => {
       const button = event.target;
       const action = button.getAttribute('data-action');
-      const tool = toolset[action];
+      const region = button.parentNode.nextElementSibling;
       
-      if (tool) {
-        // Execute the button's action
-        tool.action();
-
-        // Focus the editable region
-        button.parentNode.nextElementSibling.focus();
-      }
+      execAction(action, region);
     });
 
     // Update the textarea value when the editor's content changes
@@ -214,6 +277,97 @@
 
       textarea.value = editor.innerHTML;
       dispatchEvent(textarea, 'input');
+    });
+
+    // list box button click
+    addListener(document, 'click', '.wysi-listbox > button', event => {
+      openListBox(event.target);
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    });
+
+    // On key press on the list box button
+    addListener(document, 'keydown', '.wysi-listbox > button', event => {
+      switch (event.key) {
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'Enter':
+        case ' ':
+          openListBox(event.target);
+          event.preventDefault();
+          break;
+      }
+    });
+
+    // When the mouse moves on a list box item, focus it
+    addListener(document.documentElement, 'mousemove', '.wysi-listbox > div > button', event => {
+      event.target.focus();
+    });
+
+    // On click on an list box item
+    addListener(document, 'click', '.wysi-listbox > div > button', event => {
+      const item = event.target;
+      const listbox = item.parentNode;
+      const button = listbox.previousElementSibling;
+      const selectedItem = listbox.querySelector('[aria-selected="true"]');
+      const action = item.getAttribute('data-action');
+      const level = item.getAttribute('data-level');
+      const region = item.parentNode.parentNode.parentNode.nextElementSibling;
+      const options = [];
+
+      if (selectedItem) {
+        selectedItem.setAttribute('aria-selected', 'false');
+      }
+
+      item.setAttribute('aria-selected', 'true');
+
+      button.innerHTML = item.innerHTML;
+
+      if (level) {
+        options.push(level);
+      }
+      
+      execAction(action, region, options);
+    });
+
+    // On key press on an item
+    addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
+      const item = event.target;
+      const list = item.parentNode;
+      let preventDefault = true;
+
+      switch (event.key) {
+        case 'ArrowUp':
+        case 'ArrowLeft':
+          if (item.previousElementSibling) {
+            item.previousElementSibling.focus();
+          }
+          break;
+        case 'ArrowDown':
+        case 'ArrowRight':
+          if (item.nextElementSibling) {
+            item.nextElementSibling.focus();
+          }
+          break;
+        case 'Home':
+          list.firstElementChild.focus();
+          break;
+        case 'End':
+          list.lastElementChild.focus();
+          break;
+        default:
+          preventDefault = false;
+      }
+
+      if (preventDefault) {
+        event.preventDefault();
+      }
+    });
+
+    // Close list boxes on click outside
+    addListener(document, 'click', event => {
+      querySelectorAll('.wysi-listbox [aria-expanded="true"]').forEach(button => closeListBox(button));
     });
   }
 

@@ -1,14 +1,8 @@
-[data-wysi],
-.wysi-field {
-  display: block;
-}
-
 .wysi-wrapper {
   display: flex;
   flex-direction: column;
   border-radius: 5px;
   box-shadow: 0 0 1px #999;
-  overflow: hidden;
 }
 
 .wysi-wrapper + textarea {
@@ -25,32 +19,115 @@
 .wysi-toolbar button {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 30px;
   height: 30px;
   margin: 0 5px 0 0;
   padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
   color: #444;
   background-color: transparent;
   font-family: inherit;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   box-shadow: none;
   cursor: pointer;
 }
 
+.wysi-toolbar > button {
+  justify-content: center;
+  width: 30px;
+  font-size: 16px;
+}
+
 .wysi-toolbar button:hover,
-.wysi-toolbar button.wysi-active {
+.wysi-toolbar button:focus,
+.wysi-listbox button[aria-expanded="true"] {
   background-color: #fff;
+}
+
+.wysi-toolbar button.wysi-active {
+  background-color: #dadada;
+}
+
+.wysi-toolbar button.wysi-active:hover {
+  background-color: #ccc;
+}
+
+.wysi-toolbar button * {
+  pointer-events: none;
 }
 
 .wysi-toolbar svg {
   width: 1.5em;
   height: 1.5em;
   fill: currentColor;
-  pointer-events: none;
+}
+
+.wysi-listbox {
+  position: relative;
+}
+
+.wysi-listbox > button {
+  justify-content: space-between;
+  width: 100px;
+  padding: 0 10px;
+}
+
+.wysi-listbox > button:after {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  transform: rotateZ(45deg);
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  box-sizing: border-box;
+}
+
+.wysi-listbox div {
+  position: absolute;
+  min-width: 160px;
+  margin-top: -1px;
+  padding: 5px;
+  z-index: 1;
+  border-radius: 0 0 3px 3px;
+  background-color: #fff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, .15);
+  overflow: hidden;
+}
+
+.wysi-listbox > button[aria-expanded="false"] + div {
+  display: none;
+}
+
+.wysi-listbox div button {
+  display: flex;
+  width: 100%;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 3px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wysi-listbox div button:focus {
+  background-color: #eee;
+}
+
+.wysi-listbox div button[data-level] {
+  font-weight: bold;
+}
+
+.wysi-listbox div button[data-level="1"] {
+  font-size: 20px;
+}
+
+.wysi-listbox div button[data-level="2"] {
+  font-size: 18px;
+}
+
+.wysi-listbox div button[data-level="3"] {
+  font-size: 16px;
 }
 
 .wysi-separator {

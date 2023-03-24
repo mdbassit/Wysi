@@ -59,11 +59,11 @@
     },
     alignRight: {
       label: 'Align right',
-      action: () => execCommand('alignRight')
+      action: () => execCommand('justifyRight')
     },
     justify: {
       label: 'Justify',
-      action: () => execCommand('alignFull')
+      action: () => execCommand('justifyFull')
     },
     ul: {
       label: 'Bulleted list',

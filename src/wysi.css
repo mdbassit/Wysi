@@ -70,3 +70,12 @@
 .wysi-editor > :first-child {
   margin-top: 0;
 }
+
+.wysi-editor blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+  border-left: 3px solid #ccc;
+  font-style: italic;
+}

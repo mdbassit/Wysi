@@ -11,7 +11,8 @@
   const dispatchEvent = (element, event) => element.dispatchEvent(new Event(event, { bubbles: true }));
   const execCommand = (command, value = null) => document.execCommand(command, false, value);
   const hasClass = (element, classes) => element.classList.contains(classes);
-  const querySelectorAll = selector => document.querySelectorAll(selector);
+  const querySelector = (selector, context = document) => context.querySelector(selector);
+  const querySelectorAll = (selector, context = document) => context.querySelectorAll(selector);
 
   // Default settings
   const settings = {
@@ -232,11 +233,11 @@
    */
   function openListBox(button) {
     const isOpen = button.getAttribute('aria-expanded') === 'true';
-    const list = button.nextElementSibling;
-    let selectedItem = list.querySelector('[aria-selected="true"]');
+    const listBox = button.nextElementSibling;
+    let selectedItem = querySelector('[aria-selected="true"]', listBox);
 
     if (!selectedItem) {
-      selectedItem = list.firstElementChild;
+      selectedItem = listBox.firstElementChild;
     }
 
     button.setAttribute('aria-expanded', !isOpen);
@@ -308,9 +309,9 @@
     // On click on an list box item
     addListener(document, 'click', '.wysi-listbox > div > button', event => {
       const item = event.target;
-      const listbox = item.parentNode;
-      const button = listbox.previousElementSibling;
-      const selectedItem = listbox.querySelector('[aria-selected="true"]');
+      const listBox = item.parentNode;
+      const button = listBox.previousElementSibling;
+      const selectedItem = querySelector('[aria-selected="true"]', listBox);
       const action = item.getAttribute('data-action');
       const level = item.getAttribute('data-level');
       const region = item.parentNode.parentNode.parentNode.nextElementSibling;
@@ -321,7 +322,6 @@
       }
 
       item.setAttribute('aria-selected', 'true');
-
       button.innerHTML = item.innerHTML;
 
       if (level) {
@@ -334,27 +334,25 @@
     // On key press on an item
     addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
       const item = event.target;
-      const list = item.parentNode;
+      const listBox = item.parentNode;
       let preventDefault = true;
 
       switch (event.key) {
         case 'ArrowUp':
-        case 'ArrowLeft':
           if (item.previousElementSibling) {
             item.previousElementSibling.focus();
           }
           break;
         case 'ArrowDown':
-        case 'ArrowRight':
           if (item.nextElementSibling) {
             item.nextElementSibling.focus();
           }
           break;
         case 'Home':
-          list.firstElementChild.focus();
+          listBox.firstElementChild.focus();
           break;
         case 'End':
-          list.lastElementChild.focus();
+          listBox.lastElementChild.focus();
           break;
         default:
           preventDefault = false;

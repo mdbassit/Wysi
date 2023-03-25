@@ -248,7 +248,7 @@
    * Close a list box.
    * @param {object} button The list box's button.
    */
-  function closeListBox(button, focusButton) {
+  function closeListBox(button) {
     button.setAttribute('aria-expanded', 'false');
   }
 
@@ -335,6 +335,7 @@
     addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
       const item = event.target;
       const listBox = item.parentNode;
+      const button = listBox.previousElementSibling;
       let preventDefault = true;
 
       switch (event.key) {
@@ -353,6 +354,12 @@
           break;
         case 'End':
           listBox.lastElementChild.focus();
+          break;
+        case 'Tab':
+          item.click();
+          break;
+        case 'Escape':
+          closeListBox(button);
           break;
         default:
           preventDefault = false;

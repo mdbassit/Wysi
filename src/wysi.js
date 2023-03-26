@@ -229,7 +229,7 @@
    * Update toolbar buttons state.
    */
   function updateToolbarState() {
-    const tags = [];
+    const { region, tags } = findEditableRegion(document.getSelection().anchorNode);
     const tagToAction = {
       'BLOCKQUOTE': 'quote',
       'B': 'bold',
@@ -241,25 +241,6 @@
       'A': 'link',
       'IMG': 'image'
     };
-
-    let currentNode = document.getSelection().anchorNode;
-    let region;
-
-    // Find all HTML tags in the current selection
-    while (currentNode && currentNode.tagName !== 'BODY') {
-      const tag = currentNode.tagName;
-
-      if (tag) {
-        if (hasClass(currentNode, 'wysi-editor')) {
-          region = currentNode;
-          break;
-        } else {
-          tags.push(tag);
-        }
-      }
-
-      currentNode = currentNode.parentNode;
-    }
 
     // Abort if the selection is not within an editable region
     if (!region) {
@@ -297,6 +278,34 @@
         selectListBoxItem(listBoxItem);
       }
     });
+  }
+
+  /**
+   * Find the current editable region.
+   * @param {object} currentNode The possible child node of the editable region.
+   */
+  function findEditableRegion(currentNode) {
+    const tags = [];
+    let region;
+
+    // Find all HTML tags between the current node and the editable region
+    while (currentNode && currentNode.tagName !== 'BODY') {
+      const tag = currentNode.tagName;
+
+      if (tag) {
+        if (hasClass(currentNode, 'wysi-editor')) {
+          // Editable region found
+          region = currentNode;
+          break;
+        } else {
+          tags.push(tag);
+        }
+      }
+
+      currentNode = currentNode.parentNode;
+    }
+
+    return { region, tags };
   }
 
   /**

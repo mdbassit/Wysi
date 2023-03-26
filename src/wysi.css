@@ -45,11 +45,11 @@
   background-color: #fff;
 }
 
-.wysi-toolbar button.wysi-active {
+.wysi-toolbar button[aria-pressed="true"] {
   background-color: #dadada;
 }
 
-.wysi-toolbar button.wysi-active:hover {
+.wysi-toolbar button[aria-pressed="true"]:hover {
   background-color: #ccc;
 }
 
@@ -69,7 +69,7 @@
 
 .wysi-listbox > button {
   justify-content: space-between;
-  width: 100px;
+  width: 120px;
   padding: 0 10px;
 }
 

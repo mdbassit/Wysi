@@ -10,7 +10,7 @@
   const createElement = tag => document.createElement(tag);
   const dispatchEvent = (element, event) => element.dispatchEvent(new Event(event, { bubbles: true }));
   const execCommand = (command, value = null) => document.execCommand(command, false, value);
-  const hasClass = (element, classes) => element.classList.contains(classes);
+  const hasClass = (element, classes) => element.classList && element.classList.contains(classes);
   const querySelector = (selector, context = document) => context.querySelector(selector);
   const querySelectorAll = (selector, context = document) => context.querySelectorAll(selector);
 
@@ -183,7 +183,7 @@
           const label = translations[toolName] || tool.label;
 
           buttons.push(
-            `<button type="button" aria-label="${label}" title="${label}" data-action="${toolName}">`+
+            `<button type="button" aria-label="${label}" aria-pressed="false" title="${label}" data-action="${toolName}">`+
               `<svg><use href="#wysi-${toolName}"></use></svg>`+
             '</button>'
           );
@@ -226,6 +226,80 @@
   }
 
   /**
+   * Update toolbar buttons state.
+   */
+  function updateToolbarState() {
+    const tags = [];
+    const tagToAction = {
+      'BLOCKQUOTE': 'quote',
+      'B': 'bold',
+      'I': 'italic',
+      'U': 'underline',
+      'S': 'strikeThrough',
+      'UL': 'ul',
+      'OL': 'ol',
+      'A': 'link',
+      'IMG': 'image'
+    };
+
+    let currentNode = document.getSelection().anchorNode;
+    let region;
+
+    // Find all HTML tags in the current selection
+    while (currentNode && currentNode.tagName !== 'BODY') {
+      const tag = currentNode.tagName;
+
+      if (tag) {
+        if (hasClass(currentNode, 'wysi-editor')) {
+          region = currentNode;
+          break;
+        } else {
+          tags.push(tag);
+        }
+      }
+
+      currentNode = currentNode.parentNode;
+    }
+
+    // Abort if the selection is not within an editable region
+    if (!region) {
+      return;
+    }
+
+    // Get the current editable regions toolbar
+    const toolbar = region.previousElementSibling;
+
+    // Reset the state of all buttons
+    querySelectorAll('[aria-pressed="true"]', toolbar).forEach(button => button.setAttribute('aria-pressed', 'false'));
+
+    // Update the buttons states
+    tags.forEach(tag => {
+      let listBoxItem = querySelector('[data-action="paragraph"]', toolbar);
+
+      switch (tag) {
+        /*case 'P':
+          listBoxItem = querySelector('[data-action="paragraph"]', toolbar);
+          break;*/
+        case 'H1':
+        case 'H2':
+        case 'H3':
+        case 'H4':
+          listBoxItem = querySelector(`[data-action="heading"][data-level="${tag.replace('H', '')}"]`, toolbar);
+          break;
+        default:
+          const action = tagToAction[tag];
+          if (action) {
+            querySelector(`[data-action="${action}"]`, toolbar).setAttribute('aria-pressed', 'true');
+          }
+      }
+
+      if (listBoxItem) {
+        selectListBoxItem(listBoxItem);
+      }
+    });
+  }
+
+  /**
    * Open a list box.
    * @param {object} button The list box's button.
    */
@@ -248,6 +322,23 @@
    */
   function closeListBox(button) {
     button.setAttribute('aria-expanded', 'false');
+  }
+
+  /**
+   * Select a list box item.
+   * @param {object} item The list box item.
+   */
+  function selectListBoxItem(item) {
+    const listBox = item.parentNode;
+    const button = listBox.previousElementSibling;
+    const selectedItem = querySelector('[aria-selected="true"]', listBox);
+
+    if (selectedItem) {
+      selectedItem.setAttribute('aria-selected', 'false');
+    }
+
+    item.setAttribute('aria-selected', 'true');
+    button.innerHTML = item.innerHTML;
   }
 
   /**
@@ -278,6 +369,9 @@
       dispatchEvent(textarea, 'input');
     });
 
+    // Update the toolbar buttons state
+    addListener(document, 'selectionchange', updateToolbarState);
+
     // list box button click
     addListener(document, 'click', '.wysi-listbox > button', event => {
       openListBox(event.target);
@@ -307,25 +401,16 @@
     // On click on an list box item
     addListener(document, 'click', '.wysi-listbox > div > button', event => {
       const item = event.target;
-      const listBox = item.parentNode;
-      const button = listBox.previousElementSibling;
-      const selectedItem = querySelector('[aria-selected="true"]', listBox);
       const action = item.getAttribute('data-action');
       const level = item.getAttribute('data-level');
       const region = item.parentNode.parentNode.parentNode.nextElementSibling;
       const options = [];
 
-      if (selectedItem) {
-        selectedItem.setAttribute('aria-selected', 'false');
-      }
-
-      item.setAttribute('aria-selected', 'true');
-      button.innerHTML = item.innerHTML;
-
       if (level) {
         options.push(level);
       }
       
+      //selectListBoxItem(item);
       execAction(action, region, options);
     });
 

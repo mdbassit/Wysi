@@ -161,7 +161,6 @@
           break;
         case 'formatting':
           const paragraphLabel = translations['paragraph'] || toolset.paragraph.label;
-          const quoteLabel = translations['quote'] || toolset.quote.label;
           const headingLabel = translations['heading'] || toolset.heading.label;
           const formattingLabel = translations['formatting'] || toolset.formatting.label;
 
@@ -172,7 +171,6 @@
               '</button>'+
               `<div role="listbox" tabindex="-1" aria-label="${formattingLabel}">`+
                 `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="paragraph">${paragraphLabel}</button>`+
-                `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="quote">${quoteLabel}</button>`+
                 [1, 2, 3, 4].map(level => 
                 `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="heading" data-level="${level}">${headingLabel} ${level}</button>`
                 ).join('')+

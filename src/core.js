@@ -23,7 +23,7 @@ import {
 function init(options) {
   const tools = options.tools || settings.tools;
   const selector = options.el || settings.el;
-  const buttons = renderToolbar(tools, options);
+  const toolbar = renderToolbar(tools, options);
 
   // Add custom tags if any to the allowed tags list
   settings.customTags.forEach(custom => {
@@ -42,29 +42,24 @@ function init(options) {
 
     if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
       const parentNode = field.parentNode;
-      const wrapper = createElement('div');
-      const toolbar = createElement('div');
-      const editor = createElement('div');
 
-      // Set CSS classes
-      wrapper.className = 'wysi-wrapper';
-      toolbar.className = 'wysi-toolbar';
-      editor.className = 'wysi-editor';
+      // Wrapper
+      const wrapper = createElement('div', {
+        class: 'wysi-wrapper'
+      });
 
-      // Set the toolbar buttons
-      toolbar.innerHTML = buttons;
-
-      // Set the editable region
-      editor.innerHTML = prepareContent(field.value);
-      editor.contentEditable = true;
-
-      // Add accessibility attributes
-      editor.setAttribute('role', 'textbox');
-      editor.setAttribute('aria-multiline', 'true');
-      editor.setAttribute('aria-label', getTextAreaLabel(field));
+      // Editable region
+      const editor = createElement('div', {
+        class: 'wysi-editor',
+        contenteditable: true,
+        role: 'textbox',
+        'aria-multiline': true,
+        'aria-label': getTextAreaLabel(field),
+        _innerHTML: prepareContent(field.value)
+      });      
 
       // Insert the editable region in the document
-      appendChild(wrapper, toolbar);
+      appendChild(wrapper, toolbar.cloneNode(true));
       appendChild(wrapper, editor);
       parentNode.insertBefore(wrapper, field);
     }

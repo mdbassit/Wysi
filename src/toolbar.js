@@ -10,6 +10,7 @@ import {
   setAttribute,
   addListener,
   buildFragment,
+  createElement,
   DOMReady,
   findEditableRegion
 } from './utils.js';
@@ -23,49 +24,82 @@ import {
 function renderToolbar(tools, options) {
   const globalTranslations = window.wysiGlobalTranslations || {};
   const translations = options.translations || globalTranslations || {};
-  const buttons = [];
+  const toolbar = createElement('div', { class: 'wysi-toolbar' });
 
   // Generate toolbar buttons
   tools.forEach(toolName => {
     switch (toolName) {
       case 'separator':
-        buttons.push('<div class="wysi-separator"></div>');
+        appendChild(toolbar, createElement('div', { class: 'wysi-separator' }));
         break;
       case 'formatting':
         const paragraphLabel = translations['paragraph'] || toolset.paragraph.label;
         const headingLabel = translations['heading'] || toolset.heading.label;
         const formattingLabel = translations['formatting'] || toolset.formatting.label;
 
-        buttons.push(
-          '<div class="wysi-listbox">'+
-            `<button type="button" aria-haspopup="listbox" aria-expanded="false" title="${formattingLabel}">`+
-              paragraphLabel+
-            '</button>'+
-            `<div role="listbox" tabindex="-1" aria-label="${formattingLabel}">`+
-              `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="paragraph">${paragraphLabel}</button>`+
-              [1, 2, 3, 4].map(level => 
-              `<button type="button" role="option" tabindex="-1" aria-selected="false" data-action="heading" data-level="${level}">${headingLabel} ${level}</button>`
-              ).join('')+
-            '</div>'+
-          '</div>'
-        );
+        // List box wrapper
+        const listBoxWrapper = createElement('div', {
+          class: 'wysi-listbox'
+        });
+
+        // List box button
+        const listBoxButton = createElement('button', {
+          type: 'button',
+          title: formattingLabel,
+          'aria-haspopup': 'listbox',
+          'aria-expanded': false,
+          _textContent: paragraphLabel
+        });
+
+        // List box
+        const listBox = createElement('div', {
+          role: 'listbox',
+          tabindex: -1,
+          'aria-label': formattingLabel
+        });
+
+        // List box items
+        [0 /* Paragraph */, 1, 2, 3, 4].forEach(level => {
+          const item = createElement('button', {
+            type: 'button',
+            role: 'option',
+            tabindex: -1,
+            'aria-selected': false,
+            'data-action': (level ? 'heading' : 'paragraph'),
+            _textContent: level ? `${headingLabel} ${level}` : paragraphLabel
+          });
+
+          if (level) {
+            setAttribute(item, 'data-level', level);
+          }
+
+          appendChild(listBox, item);
+        });
+
+        // Tie it all together
+        appendChild(listBoxWrapper, listBoxButton);
+        appendChild(listBoxWrapper, listBox);
+        appendChild(toolbar, listBoxWrapper);
         break;
       default:
         const tool = toolset[toolName];
         const label = translations[toolName] || tool.label;
-
-        buttons.push(
-          `<button type="button" aria-label="${label}" aria-pressed="false" title="${label}" data-action="${toolName}">`+
-            `<svg><use href="#wysi-${toolName}"></use></svg>`+
-          '</button>'
-        );
+        
+        appendChild(toolbar, createElement('button', {
+          type: 'button',
+          title: label,
+          'aria-label': label,
+          'aria-pressed': false,
+          'data-action': toolName,
+          _innerHTML: `<svg><use href="#wysi-${toolName}"></use></svg>`
+        }));
     }
 
     // Add the current tool's tags to the list of allowed tags
     enableTags(toolName);
   });
 
-  return buttons.join('');
+  return toolbar;
 }
 
 

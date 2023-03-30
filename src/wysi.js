@@ -180,12 +180,51 @@
         editor.innerHTML = prepareContent(field.value);
         editor.contentEditable = true;
 
+        // Add accessibility attributes
+        editor.setAttribute('role', 'textbox');
+        editor.setAttribute('aria-multiline', 'true');
+        editor.setAttribute('aria-label', getTextAreaLabel(field));
+
         // Insert the editable region in the document
         appendChild(wrapper, toolbar);
         appendChild(wrapper, editor);
         parentNode.insertBefore(wrapper, field);
       }
     });
+  }
+
+  /**
+   * Try to guess the textarea element's label if any.
+   * @param {object} textarea The textarea element.
+   * @return {string} The textarea element's label or an empty string.
+   */ 
+  function getTextAreaLabel(textarea) {
+    const parent = textarea.parentNode;
+    const id = textarea.id;
+    let labelElement;
+
+    // If the textarea element is inside a label element
+    if (parent.nodeName === 'LABEL') {
+      labelElement = parent;
+
+    // Or if the textarea element has an id, and there is a label element
+    // with an attribute "for" that points to that id
+    } else if (id !== undefined) {
+      labelElement = querySelector(`label[for="${id}"]`);
+    }
+
+    // If a label element is found, return the first non empty child text node
+    if (labelElement) {
+      const textNodes = [].filter.call(labelElement.childNodes, n => n.nodeType === 3);
+      const texts = textNodes.map(n => n.textContent.replace(/\s+/g, ' ').trim());
+      const label = texts.filter(l => l !== '')[0];
+
+      if (label) {
+        return label;
+      }
+    }
+
+    return '';
   }
 
   /**

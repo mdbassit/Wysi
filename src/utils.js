@@ -44,6 +44,18 @@ function addListener(context, type, selector, fn) {
 }
 
 /**
+ * Build an html fragment from a string.
+ * @param {string} html The HTML code.
+ * @return {object} A document fragment.
+ */
+function buildFragment(html) {
+  const template = createElement('template');
+
+  template.innerHTML = html.trim();
+  return template.content;
+}
+
+/**
  * Call a function only when the DOM is ready.
  * @param {function} fn The function to call.
  * @param {array} [args] Arguments to pass to the function.
@@ -134,6 +146,7 @@ export {
   removeChild,
   setAttribute,
   addListener,
+  buildFragment,
   DOMReady,
   findEditableRegion,
   getTextAreaLabel

@@ -1,5 +1,5 @@
 import toolset from './toolset.js';
-import { appendChild, createElement, removeChild, setAttribute } from './utils.js';
+import { appendChild, createElement, removeChild, setAttribute, buildFragment } from './utils.js';
 
 // Default allowed tags
 const allowedTags = {
@@ -176,18 +176,6 @@ function wrapTextNodes(node) {
       }
     }
   });
-}
-
-/**
- * Build an html fragment from a string.
- * @param {string} html The HTML code.
- * @return {object} A document fragment.
- */
-function buildFragment(html) {
-  const template = createElement('template');
-
-  template.innerHTML = html.trim();
-  return template.content;
 }
 
 /**

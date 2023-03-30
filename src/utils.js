@@ -7,7 +7,6 @@ if (NodeList !== undefined && NodeList.prototype && !NodeList.prototype.forEach)
 
 // Shortcuts
 const appendChild = (parent, child) => parent.appendChild(child);
-const createElement = tag => document.createElement(tag);
 const dispatchEvent = (element, event) => element.dispatchEvent(new Event(event, { bubbles: true }));
 const execCommand = (command, value = null) => document.execCommand(command, false, value);
 const hasClass = (element, classes) => element.classList && element.classList.contains(classes);
@@ -53,6 +52,29 @@ function buildFragment(html) {
 
   template.innerHTML = html.trim();
   return template.content;
+}
+
+/**
+ * Create an element and optionally set its attributes.
+ * @param {string} tag The HTML tag of the new element.
+ * @param {object} [attributes] The element's attributes.
+ * @return {object} An HTML element.
+ */
+function createElement(tag, attributes) {
+  const element = document.createElement(tag);
+
+  if (attributes) {
+    for (const attributeName in attributes) {
+      // Attribute names starting with underscore are actually properties
+      if (attributeName[0] === '_') {
+        element[attributeName.substring(1)] = attributes[attributeName];
+      } else {
+        setAttribute(element, attributeName, attributes[attributeName]);
+      }
+    }
+  }
+
+  return element;
 }
 
 /**

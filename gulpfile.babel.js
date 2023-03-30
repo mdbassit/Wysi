@@ -1,15 +1,16 @@
 import fs from 'fs';
-import path from 'path';
 import { src, dest, parallel, series, watch } from 'gulp';
 import { rollup } from 'rollup';
 import { babel } from '@rollup/plugin-babel';
 import terser from '@rollup/plugin-terser';
+import replace from '@rollup/plugin-replace';
 import rename from 'gulp-rename';
 import cleanCSS from 'gulp-clean-css';
 
 const files = {
   js: './src/**/*.js',
   css: './src/css/wysi.css',
+  icons: './assets/icons.svg',
   dist: './dist',
   bundle: {
     input: './src/core.js',
@@ -28,6 +29,12 @@ const rollupInput = {
   input: files.bundle.input,
   external: ['window', 'document'],
   plugins: [
+    replace({
+      preventAssignment: true,
+      values: {
+        _SVGIcons_: fs.readFileSync(files.icons).toString().replace(/>\s+</g,'><').trim()
+      }
+    }),
     babel({
       babelHelpers: 'bundled'
     })

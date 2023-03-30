@@ -2,12 +2,15 @@ import window from 'window';
 import document from 'document';
 import toolset from './toolset.js';
 import { allowedTags, enableTags } from './filter.js';
-import { 
+import {
+  appendChild,
   getAttribute,
   querySelector,
   querySelectorAll,
   setAttribute,
   addListener,
+  buildFragment,
+  DOMReady,
   findEditableRegion
 } from './utils.js';
 
@@ -172,6 +175,17 @@ function selectListBoxItem(item) {
   button.innerHTML = item.innerHTML;
 }
 
+/**
+ * Embed SVG icons in the HTML document.
+ */
+function embedSVGIcons() {
+  // The icons will be included during the build process
+  const icons = '_SVGIcons_';
+  const svgElement = buildFragment(icons);
+
+  appendChild(document.body, svgElement);
+}
+
 // Toolbar button click
 addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
@@ -269,5 +283,8 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
 addListener(document, 'click', event => {
   querySelectorAll('.wysi-listbox [aria-expanded="true"]').forEach(button => closeListBox(button));
 });
+
+// include SVG icons
+DOMReady(embedSVGIcons);
 
 export { renderToolbar };

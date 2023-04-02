@@ -34,7 +34,7 @@ export default {
     label: 'Underline',
     action: () => execCommand('underline')
   },
-  strikeThrough: {
+  strike: {
     tags: ['s'],
     alias: ['del', 'strike'],
     label: 'Strike-through',

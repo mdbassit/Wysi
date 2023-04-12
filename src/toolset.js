@@ -52,13 +52,13 @@ export default {
   },
   ul: {
     tags: ['ul'],
-    subTags: ['li'],
+    extraTags: ['li'],
     label: 'Bulleted list',
     command: 'insertUnorderedList'
   },
   ol: {
     tags: ['ol'],
-    subTags: ['li'],
+    extraTags: ['li'],
     label: 'Numbered list',
     command: 'insertOrderedList'
   },

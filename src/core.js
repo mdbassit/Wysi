@@ -41,8 +41,6 @@ function init(options) {
     const sibling = field.previousElementSibling;
 
     if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
-      const parentNode = field.parentNode;
-
       // Wrapper
       const wrapper = createElement('div', {
         class: 'wysi-wrapper'
@@ -61,7 +59,7 @@ function init(options) {
       // Insert the editable region in the document
       appendChild(wrapper, toolbar.cloneNode(true));
       appendChild(wrapper, editor);
-      parentNode.insertBefore(wrapper, field);
+      field.before(wrapper);
     }
   });
 }
@@ -94,8 +92,6 @@ function cleanPastedContent(event) {
 
     // Manually paste the cleaned content
     execCommand('insertHTML', content);
-
-    console.log(content);
 
     // Prevent the default paste action
     event.preventDefault();

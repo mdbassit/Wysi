@@ -21,16 +21,16 @@ function enableTags(toolName) {
   }
 
   const isEmpty = !!tool.isEmpty;
-  const subTags = tool.subTags || [];
+  const extraTags = tool.extraTags || [];
   const aliasList = tool.alias || [];
   const alias = aliasList.length ? tool.tags[0] : undefined;
-  const tags = [...tool.tags, ...subTags, ...aliasList];
+  const tags = [...tool.tags, ...extraTags, ...aliasList];
   const attributes = tool.attributes ? tool.attributes.slice() : [];
 
   tags.forEach(tag => {
     allowedTags[tag] = { attributes, alias, isEmpty };
     
-    if (!subTags.includes(tag)) {
+    if (!extraTags.includes(tag)) {
       allowedTags[tag].toolName = toolName;
     }
   });

@@ -30,61 +30,17 @@ function renderToolbar(tools, options) {
   // Generate toolbar buttons
   tools.forEach(toolName => {
     switch (toolName) {
+      // Toolbar separator
       case '|':
         appendChild(toolbar, createElement('div', { class: 'wysi-separator' }));
         break;
+
+      // The format tool renders as a list box
       case 'format':
-        const formatLabel = translations['format'] || toolset.format.label;
-        const paragraphLabel = translations['paragraph'] || toolset.format.paragraph;
-        const headingLabel = translations['heading'] || toolset.format.heading;
-        const formats = toolset.format.tags.map(tag => { 
-          const name = tag;
-          const label = tag === 'p' ? paragraphLabel : `${headingLabel} ${tag.substring(1)}`;
-
-          return { name, label };
-        });
-
-        // List box wrapper
-        const listBoxWrapper = createElement('div', {
-          class: 'wysi-listbox'
-        });
-
-        // List box button
-        const listBoxButton = createElement('button', {
-          type: 'button',
-          title: formatLabel,
-          'aria-haspopup': 'listbox',
-          'aria-expanded': false,
-          _textContent: paragraphLabel
-        });
-
-        // List box
-        const listBox = createElement('div', {
-          role: 'listbox',
-          tabindex: -1,
-          'aria-label': formatLabel
-        });
-
-        // List box items
-        formats.forEach(format => {
-          const item = createElement('button', {
-            type: 'button',
-            role: 'option',
-            tabindex: -1,
-            'aria-selected': false,
-            'data-action': 'format',
-            'data-option': format.name,
-            _textContent: format.label
-          });
-
-          appendChild(listBox, item);
-        });
-
-        // Tie it all together
-        appendChild(listBoxWrapper, listBoxButton);
-        appendChild(listBoxWrapper, listBox);
-        appendChild(toolbar, listBoxWrapper);
+        appendChild(toolbar, renderFormatTool(translations));
         break;
+
+      // All the other tools render as buttons
       default:
         const tool = toolset[toolName];
         const label = translations[toolName] || tool.label;
@@ -106,6 +62,65 @@ function renderToolbar(tools, options) {
   return toolbar;
 }
 
+
+/**
+ * Render format tool.
+ * @param {object} translations The labels translation object.
+ * @return {object} A DOM element containing the format tool.
+ */
+function renderFormatTool(translations) {
+  const formatLabel = translations['format'] || toolset.format.label;
+  const paragraphLabel = translations['paragraph'] || toolset.format.paragraph;
+  const headingLabel = translations['heading'] || toolset.format.heading;
+  const formats = toolset.format.tags.map(tag => { 
+    const name = tag;
+    const label = tag === 'p' ? paragraphLabel : `${headingLabel} ${tag.substring(1)}`;
+
+    return { name, label };
+  });
+
+  // List box wrapper
+  const listBoxWrapper = createElement('div', {
+    class: 'wysi-listbox'
+  });
+
+  // List box button
+  const listBoxButton = createElement('button', {
+    type: 'button',
+    title: formatLabel,
+    'aria-haspopup': 'listbox',
+    'aria-expanded': false,
+    _textContent: paragraphLabel
+  });
+
+  // List box
+  const listBox = createElement('div', {
+    role: 'listbox',
+    tabindex: -1,
+    'aria-label': formatLabel
+  });
+
+  // List box items
+  formats.forEach(format => {
+    const item = createElement('button', {
+      type: 'button',
+      role: 'option',
+      tabindex: -1,
+      'aria-selected': false,
+      'data-action': 'format',
+      'data-option': format.name,
+      _textContent: format.label
+    });
+
+    appendChild(listBox, item);
+  });
+
+  // Tie it all together
+  appendChild(listBoxWrapper, listBoxButton);
+  appendChild(listBoxWrapper, listBox);
+
+  return listBoxWrapper;
+}
 
 /**
  * Update toolbar buttons state.
@@ -282,14 +297,20 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
 
   switch (event.key) {
     case 'ArrowUp':
-      if (item.previousElementSibling) {
-        item.previousElementSibling.focus();
+      const prev = item.previousElementSibling;
+
+      if (prev) {
+        prev.focus();
       }
+
       break;
     case 'ArrowDown':
-      if (item.nextElementSibling) {
-        item.nextElementSibling.focus();
+      const next = item.nextElementSibling;
+
+      if (next) {
+        next.focus();
       }
+      
       break;
     case 'Home':
       listBox.firstElementChild.focus();

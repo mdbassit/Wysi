@@ -114,21 +114,22 @@
   background-color: #eee;
 }
 
-.wysi-listbox div button[data-level] {
+.wysi-listbox button[data-option^="h"] {
   font-weight: bold;
 }
 
-.wysi-listbox div button[data-level="1"] {
+.wysi-listbox button[data-option="h1"] {
   font-size: 20px;
 }
 
-.wysi-listbox div button[data-level="2"] {
+.wysi-listbox button[data-option="h2"] {
   font-size: 18px;
 }
 
-.wysi-listbox div button[data-level="3"] {
+.wysi-listbox button[data-option="h3"] {
   font-size: 16px;
 }
+
 
 .wysi-separator {
   width: 5px;

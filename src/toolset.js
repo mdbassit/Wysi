@@ -1,84 +1,76 @@
-import { execCommand } from './utils.js';
+import { execCommand, formatBlock } from './utils.js';
 
 // Supported tools
 export default {
-  paragraph: {
-    tags: ['p'],
-    label: 'Paragraph',
-    action: () => execCommand('formatBlock', '<p>')
+  format: {
+    tags: ['p', 'h1', 'h2', 'h3', 'h4'],
+    label: 'Select block format',
+    paragraph: 'Paragraph',
+    heading: 'Heading',
+    action: (format) => formatBlock(format)
   },
   quote: {
     tags: ['blockquote'],
     label: 'Quote',
-    action: () => execCommand('formatBlock', '<blockquote>')
-  },
-  heading: {
-    tags: ['h1', 'h2', 'h3', 'h4'],
-    label: 'Heading',
-    action: (level) => execCommand('formatBlock', `<h${level}>`)
+    action: () => formatBlock('blockquote')
   },
   bold: {
     tags: ['strong'],
     alias: ['b'],
     label: 'Bold',
-    action: () => execCommand('bold')
   },
   italic: {
     tags: ['em'],
     alias: ['i'],
     label: 'Italic',
-    action: () => execCommand('italic')
   },
   underline: {
     tags: ['u'],
     label: 'Underline',
-    action: () => execCommand('underline')
   },
   strike: {
     tags: ['s'],
     alias: ['del', 'strike'],
     label: 'Strike-through',
-    action: () => execCommand('strikeThrough')
+    command: 'strikeThrough'
   },
   alignLeft: {
     label: 'Align left',
-    action: () => execCommand('justifyLeft')
+    command: 'justifyLeft'
   },
   alignCenter: {
     label: 'Align center',
-    action: () => execCommand('justifyCenter')
+    command: 'justifyCenter'
   },
   alignRight: {
     label: 'Align right',
-    action: () => execCommand('justifyRight')
+    command: 'justifyRight'
   },
   justify: {
     label: 'Justify',
-    action: () => execCommand('justifyFull')
+    command: 'justifyFull'
   },
   ul: {
     tags: ['ul'],
     subTags: ['li'],
     label: 'Bulleted list',
-    action: () => execCommand('insertUnorderedList')
+    command: 'insertUnorderedList'
   },
   ol: {
     tags: ['ol'],
     subTags: ['li'],
     label: 'Numbered list',
-    action: () => execCommand('insertOrderedList')
+    command: 'insertOrderedList'
   },
   indent: {
     label: 'Increase indent',
-    action: () => execCommand('indent')
   },
   outdent: {
     label: 'Decrease indent',
-    action: () => execCommand('outdent')
   },
   link: {
     tags: ['a'],
-    attributes: ['id', 'name', 'href', 'target', 'onclick'],
+    attributes: ['id', 'name', 'href', 'target'/*, 'onclick'*/],
     label: 'Link',
     action: (url) => execCommand('createLink', url)
   },
@@ -93,14 +85,9 @@ export default {
     tags: ['hr'],
     isEmpty: true,
     label: 'Horizontal line',
-    action: () => execCommand('insertHorizontalRule')
+    command: 'insertHorizontalRule'
   },
   removeFormat: {
     label: 'Remove format',
-    action: () => execCommand('removeFormat')
-  },
-  formatting: {
-    tags: ['h1', 'h2', 'h3', 'h4', 'p'],
-    label: 'Select formatting'
   }
 };

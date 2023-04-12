@@ -12,7 +12,7 @@ import {
   querySelectorAll,
   addListener,
   DOMReady,
-  findEditableRegion,
+  findRegion,
   getTextAreaLabel
 } from './utils.js';
 
@@ -85,7 +85,7 @@ function destroy(selector) {
  * @param {object} event The browser's paste event.
  */
 function cleanPastedContent(event) {
-  const { region } = findEditableRegion(event.target);
+  const { region } = findRegion(event.target);
   const clipboardData = event.clipboardData;
 
   if (region && clipboardData.types.includes('text/html')) {

@@ -97,8 +97,9 @@ function DOMReady(fn, args) {
 /**
  * Find the current editable region.
  * @param {object} currentNode The possible child node of the editable region.
+ * @return {object} The editable region and an array of HTML tags that lead to it.
  */
-function findEditableRegion(currentNode) {
+function findRegion(currentNode) {
   const tags = [];
   let region;
 
@@ -120,6 +121,14 @@ function findEditableRegion(currentNode) {
   }
 
   return { region, tags };
+}
+
+/**
+ * Execute a formatBlock command.
+ * @param {string} format The block format to apply.
+ */
+function formatBlock(format) {
+  execCommand('formatBlock', `<${format}>`);
 }
 
 /**
@@ -170,6 +179,7 @@ export {
   addListener,
   buildFragment,
   DOMReady,
-  findEditableRegion,
+  findRegion,
+  formatBlock,
   getTextAreaLabel
 };

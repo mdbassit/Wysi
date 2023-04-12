@@ -4,6 +4,7 @@ import toolset from './toolset.js';
 import { allowedTags, enableTags } from './filter.js';
 import {
   appendChild,
+  execCommand,
   getAttribute,
   querySelector,
   querySelectorAll,
@@ -12,7 +13,7 @@ import {
   buildFragment,
   createElement,
   DOMReady,
-  findEditableRegion
+  findRegion
 } from './utils.js';
 
 /**
@@ -29,13 +30,19 @@ function renderToolbar(tools, options) {
   // Generate toolbar buttons
   tools.forEach(toolName => {
     switch (toolName) {
-      case 'separator':
+      case '|':
         appendChild(toolbar, createElement('div', { class: 'wysi-separator' }));
         break;
-      case 'formatting':
-        const paragraphLabel = translations['paragraph'] || toolset.paragraph.label;
-        const headingLabel = translations['heading'] || toolset.heading.label;
-        const formattingLabel = translations['formatting'] || toolset.formatting.label;
+      case 'format':
+        const formatLabel = translations['format'] || toolset.format.label;
+        const paragraphLabel = translations['paragraph'] || toolset.format.paragraph;
+        const headingLabel = translations['heading'] || toolset.format.heading;
+        const formats = toolset.format.tags.map(tag => { 
+          const name = tag;
+          const label = tag === 'p' ? paragraphLabel : `${headingLabel} ${tag.substring(1)}`;
+
+          return { name, label };
+        });
 
         // List box wrapper
         const listBoxWrapper = createElement('div', {
@@ -45,7 +52,7 @@ function renderToolbar(tools, options) {
         // List box button
         const listBoxButton = createElement('button', {
           type: 'button',
-          title: formattingLabel,
+          title: formatLabel,
           'aria-haspopup': 'listbox',
           'aria-expanded': false,
           _textContent: paragraphLabel
@@ -55,23 +62,20 @@ function renderToolbar(tools, options) {
         const listBox = createElement('div', {
           role: 'listbox',
           tabindex: -1,
-          'aria-label': formattingLabel
+          'aria-label': formatLabel
         });
 
         // List box items
-        [0 /* Paragraph */, 1, 2, 3, 4].forEach(level => {
+        formats.forEach(format => {
           const item = createElement('button', {
             type: 'button',
             role: 'option',
             tabindex: -1,
             'aria-selected': false,
-            'data-action': (level ? 'heading' : 'paragraph'),
-            _textContent: level ? `${headingLabel} ${level}` : paragraphLabel
+            'data-action': 'format',
+            'data-option': format.name,
+            _textContent: format.label
           });
-
-          if (level) {
-            setAttribute(item, 'data-level', level);
-          }
 
           appendChild(listBox, item);
         });
@@ -107,7 +111,7 @@ function renderToolbar(tools, options) {
  * Update toolbar buttons state.
  */
 function updateToolbarState() {
-  const { region, tags } = findEditableRegion(document.getSelection().anchorNode);
+  const { region, tags } = findRegion(document.getSelection().anchorNode);
 
   // Abort if the selection is not within an editable region
   if (!region) {
@@ -126,13 +130,11 @@ function updateToolbarState() {
 
     switch (tag) {
       case 'p':
-        listBoxItem = querySelector('[data-action="paragraph"]', toolbar);
-        break;
       case 'h1':
       case 'h2':
       case 'h3':
       case 'h4':
-        listBoxItem = querySelector(`[data-action="heading"][data-level="${tag.replace('h', '')}"]`, toolbar);
+        listBoxItem = querySelector(`[data-action="format"][data-option="${tag}"]`, toolbar);
         break;
       default:
         const allowedTag = allowedTags[tag];
@@ -159,11 +161,14 @@ function execAction(action, region, options = []) {
   const tool = toolset[action];
   
   if (tool) {
+    const command = tool.command || action;
+    const realAction = tool.action || (() => execCommand(command));
+
     // Focus the editable region
     region.focus();
 
-    // Execute the button's action
-    tool.action(...options);
+    // Execute the tool's action
+    realAction(...options);
   }
 }
 
@@ -262,16 +267,10 @@ addListener(document.documentElement, 'mousemove', '.wysi-listbox > div > button
 addListener(document, 'click', '.wysi-listbox > div > button', event => {
   const item = event.target;
   const action = getAttribute(item, 'data-action');
-  const level = getAttribute(item, 'data-level');
+  const option = getAttribute(item, 'data-option');
   const region = item.parentNode.parentNode.parentNode.nextElementSibling;
-  const options = [];
 
-  if (level) {
-    options.push(level);
-  }
-  
-  //selectListBoxItem(item);
-  execAction(action, region, options);
+  execAction(action, region, [option]);
 });
 
 // On key press on an item

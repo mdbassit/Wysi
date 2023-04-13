@@ -19,12 +19,10 @@ import {
 /**
  * Render the toolbar.
  * @param {array} tools The list of tools in the toolbar.
- * @param {object} options Configuration options.
+ * @param {object} translations The labels translation object.
  * @return {string} The toolbars HTML string.
  */
-function renderToolbar(tools, options) {
-  const globalTranslations = window.wysiGlobalTranslations || {};
-  const translations = options.translations || globalTranslations || {};
+function renderToolbar(tools, translations) {
   const toolbar = createElement('div', { class: 'wysi-toolbar' });
 
   // Generate toolbar buttons
@@ -310,7 +308,7 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
       if (next) {
         next.focus();
       }
-      
+
       break;
     case 'Home':
       listBox.firstElementChild.focus();

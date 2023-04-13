@@ -21,9 +21,11 @@ import {
  * @param {object} options Configuration options.
  */
 function init(options) {
+  const globalTranslations = window.wysiGlobalTranslations || {};
+  const translations = Object.assign({}, globalTranslations, options.translations || {});
   const tools = options.tools || settings.tools;
   const selector = options.el || settings.el;
-  const toolbar = renderToolbar(tools, options);
+  const toolbar = renderToolbar(tools, translations);
 
   // Add custom tags if any to the allowed tags list
   settings.customTags.forEach(custom => {

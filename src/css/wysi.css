@@ -12,6 +12,8 @@
 .wysi-toolbar {
   display: flex;
   flex-wrap: nowrap;
+  position: sticky;
+  top: 0;
   padding: 5px;
   border-radius: 5px 5px 0 0;
   background-color: #eee;

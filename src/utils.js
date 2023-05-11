@@ -24,13 +24,13 @@ const setAttribute = (element, attribute, value) => element.setAttribute(attribu
  * @param {function} [fn] Event handler if delegation is used.
  */
 function addListener(context, type, selector, fn) {
-  const matches = Element.prototype.matches || Element.prototype.msMatchesSelector;
-
   // Delegate event to the target of the selector
   if (typeof selector === 'string') {
     context.addEventListener(type, event => {
-      if (matches.call(event.target, selector)) {
-        fn.call(event.target, event);
+      const target = event.target;
+
+      if (target.matches(selector)) {
+        fn.call(target, event);
       }
     });
 

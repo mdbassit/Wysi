@@ -17,6 +17,13 @@
   padding: 5px;
   border-radius: 5px 5px 0 0;
   background-color: #eee;
+  box-sizing: border-box;
+}
+
+.wysi-toolbar *,
+.wysi-toolbar *:before,
+.wysi-toolbar *:after {
+  box-sizing: inherit;
 }
 
 .wysi-toolbar button {
@@ -68,6 +75,7 @@
 
 .wysi-listbox {
   position: relative;
+  line-height: 0;
 }
 
 .wysi-listbox > button {

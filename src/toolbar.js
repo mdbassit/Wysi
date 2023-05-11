@@ -335,6 +335,15 @@ function embedSVGIcons() {
   appendChild(document.body, svgElement);
 }
 
+// Deselect selected element when clicking outside
+addListener(document, 'click', '.wysi-editor, .wysi-editor *', event => {
+  const selected = querySelector(`.${selectedClass}`);
+
+  if (selected && selected !== event.target) {
+    selected.classList.remove(selectedClass);
+  }
+});
+
 // Select an image when it's clicked
 addListener(document, 'click', '.wysi-editor img', event => {
   const image = event.target;
@@ -346,15 +355,6 @@ addListener(document, 'click', '.wysi-editor img', event => {
   range.selectNode(image);
   selection.removeAllRanges();
   selection.addRange(range);
-});
-
-// Deselect selected element when clicking outside
-addListener(document, 'click', '.wysi-editor, .wysi-editor *', event => {
-  const selected = querySelector(`.${selectedClass}`);
-
-  if (selected && selected !== event.target) {
-    selected.classList.remove(selectedClass);
-  }
 });
 
 // Toolbar button click

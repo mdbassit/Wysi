@@ -15,6 +15,7 @@ const querySelector = (selector, context = document) => context.querySelector(se
 const querySelectorAll = (selector, context = document) => context.querySelectorAll(selector);
 const removeChild = (parent, child) => parent.removeChild(child);
 const setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
+const stopImmediatePropagation = event => event.stopImmediatePropagation();
 
 /**
  * Shortcut for addEventListener to optimize the minified JS.
@@ -97,14 +98,15 @@ function DOMReady(fn, args) {
 /**
  * Find the current editable region.
  * @param {object} currentNode The possible child node of the editable region.
- * @return {object} The editable region and an array of HTML tags that lead to it.
+ * @return {object} The editable region and arrays of nodes and HTML tags that lead to it.
  */
 function findRegion(currentNode) {
+  const nodes = [];
   const tags = [];
   let region;
 
   // Find all HTML tags between the current node and the editable region
-  while (currentNode && currentNode.tagName !== 'BODY') {
+  while (currentNode && currentNode !== document.body) {
     const tag = currentNode.tagName;
 
     if (tag) {
@@ -113,6 +115,7 @@ function findRegion(currentNode) {
         region = currentNode;
         break;
       } else {
+        nodes.push(currentNode);
         tags.push(tag.toLowerCase());
       }
     }
@@ -120,7 +123,7 @@ function findRegion(currentNode) {
     currentNode = currentNode.parentNode;
   }
 
-  return { region, tags };
+  return { region, nodes, tags };
 }
 
 /**
@@ -176,6 +179,7 @@ export {
   querySelectorAll,
   removeChild,
   setAttribute,
+  stopImmediatePropagation,
   addListener,
   buildFragment,
   DOMReady,

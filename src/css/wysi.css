@@ -14,6 +14,7 @@
   flex-wrap: nowrap;
   position: sticky;
   top: 0;
+  z-index: 1;
   padding: 5px;
   border-radius: 5px 5px 0 0;
   background-color: #eee;
@@ -43,6 +44,7 @@
   cursor: pointer;
 }
 
+.wysi-popover > button,
 .wysi-toolbar > button {
   justify-content: center;
   width: 30px;
@@ -141,6 +143,92 @@
   font-size: 16px;
 }
 
+.wysi-popover {
+  position: relative;
+  margin-right: 5px;
+  font-size: .9em;
+  line-height: 0;
+}
+
+.wysi-popover > button {
+  margin: 0;
+}
+
+.wysi-popover > button[aria-expanded="false"] + div {
+  display: none;
+}
+
+.wysi-popover div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  position: absolute;
+  width: 240px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #fff;
+  line-height: 1;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, .2);
+}
+
+.wysi-popover div:before {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 10px;
+  height: 6px;
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  border-style: solid;
+  border-width: 0 5px 6px 5px;
+  border-color: transparent;
+  border-bottom-color: #fff;
+}
+
+.wysi-popover label {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.wysi-popover span {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.wysi-popover input {
+  width: 100%;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 13px;
+}
+
+.wysi-popover div button {
+  height: 26px;
+  margin: 5px 0 0 5px;
+  padding: 0 15px;
+  border: 1px solid #ccc;
+  border-radius: 13px;
+  font-size: .9em;
+}
+
+.wysi-popover div button:hover {
+  background-color: #ddd;
+}
+
+.wysi-popover div button:last-of-type {
+  border: 0;
+  color: #fff;
+  background-color: #777;
+}
+
+.wysi-popover div button:last-of-type:hover {
+  background-color: #555;
+}
 
 .wysi-separator {
   width: 5px;
@@ -167,4 +255,9 @@
   padding-right: 1.5em;
   border-left: 3px solid #ccc;
   font-style: italic;
+}
+
+.wysi-editor img:hover,
+.wysi-editor img.wysi-selected {
+  outline: 3px solid #999
 }

@@ -9,12 +9,16 @@ import {
   querySelector,
   querySelectorAll,
   setAttribute,
+  stopImmediatePropagation,
   addListener,
   buildFragment,
   createElement,
   DOMReady,
   findRegion
 } from './utils.js';
+
+const selectedClass = 'wysi-selected';
+let currentSelection;
 
 /**
  * Render the toolbar.
@@ -42,15 +46,24 @@ function renderToolbar(tools, translations) {
       default:
         const tool = toolset[toolName];
         const label = translations[toolName] || tool.label;
-        
-        appendChild(toolbar, createElement('button', {
+        const button = createElement('button', {
           type: 'button',
           title: label,
           'aria-label': label,
           'aria-pressed': false,
           'data-action': toolName,
           _innerHTML: `<svg><use href="#wysi-${toolName}"></use></svg>`
-        }));
+        });
+
+        // Tools that require parameters (e.g: image, link) need a popover
+        if (tool.hasForm) {
+          const popover = renderPopover(toolName, button, translations);
+          appendChild(toolbar, popover);
+
+        // The other tools only display a button
+        } else {
+          appendChild(toolbar, button);
+        }
     }
 
     // Add the current tool's tags to the list of allowed tags
@@ -59,7 +72,6 @@ function renderToolbar(tools, translations) {
 
   return toolbar;
 }
-
 
 /**
  * Render format tool.
@@ -118,6 +130,77 @@ function renderFormatTool(translations) {
   appendChild(listBoxWrapper, listBox);
 
   return listBoxWrapper;
+}
+
+/**
+ * Render a popover form to set a tool's parameters.
+ * @param {string} toolName The tool name.
+ * @param {object} button The tool's toolbar button.
+ * @param {object} translations The labels translation object.
+ * @return {object} A DOM element containing the button and the popover.
+ */
+function renderPopover(toolName, button, translations) {
+  const fields = {
+    image: [
+      {
+        name: 'url',
+        label: translations.url || 'URL',
+      },
+      {
+        name: 'alt',
+        label: translations.alt || 'Alternative text',
+      }
+    ],
+    link: [
+      {
+        name: 'url',
+        label: translations.url || 'URL',
+      }
+    ]
+  };
+
+  // Popover wrapper
+  const wrapper = createElement('div', {
+    class: 'wysi-popover'
+  });
+
+  // Popover
+  const popover = createElement('div', {
+    tabindex: -1,
+  });
+
+  // Toolbar Button
+  setAttribute(button, 'aria-haspopup', true);
+  setAttribute(button, 'aria-expanded', false);
+
+  appendChild(wrapper, button);
+  appendChild(wrapper, popover);
+
+  fields[toolName].forEach(field => {
+    const label = createElement('label');
+    const span = createElement('span', { _textContent: field.label });
+    const input = createElement('input', { type: 'text' });
+
+    appendChild(label, span);
+    appendChild(label, input);
+    appendChild(popover, label);
+  });
+
+  const cancel = createElement('button', {
+    type: 'button',
+    _textContent: translations.cancel || 'Cancel'
+  });
+
+  const save = createElement('button', {
+    type: 'button',
+    'data-action': toolName,
+    _textContent: translations.save || 'Save'
+  });
+
+  appendChild(popover, cancel);
+  appendChild(popover, save);
+
+  return wrapper;
 }
 
 /**
@@ -180,9 +263,41 @@ function execAction(action, region, options = []) {
     // Focus the editable region
     region.focus();
 
+    // Restore selection if any
+    restoreSelection();
+    currentSelection = undefined;
+
     // Execute the tool's action
     realAction(...options);
   }
+}
+
+/**
+ * Restore a previous selection if any.
+ */
+function restoreSelection() {
+  if (currentSelection) {
+    const selection = document.getSelection();
+
+    selection.removeAllRanges();
+    selection.addRange(currentSelection);
+  }
+}
+
+/**
+ * Set the expanded state of a button.
+ * @param {object} button The button.
+ */
+function toggleButton(button, expanded) {
+  setAttribute(button, 'aria-expanded', expanded);
+}
+
+/**
+ * Close all popups and dropdowns.
+ */
+function closeAllLayers() {
+  const buttons = '.wysi-listbox [aria-expanded="true"], .wysi-popover [aria-expanded="true"]';
+  querySelectorAll(buttons).forEach(button => toggleButton(button, false));
 }
 
 /**
@@ -198,16 +313,8 @@ function openListBox(button) {
     selectedItem = listBox.firstElementChild;
   }
 
-  setAttribute(button, 'aria-expanded', !isOpen);
+  toggleButton(button, !isOpen);
   selectedItem.focus();
-}
-
-/**
- * Close a list box.
- * @param {object} button The list box's button.
- */
-function closeListBox(button) {
-  setAttribute(button, 'aria-expanded', 'false');
 }
 
 /**
@@ -238,6 +345,28 @@ function embedSVGIcons() {
   appendChild(document.body, svgElement);
 }
 
+// Select an image when it's clicked
+addListener(document, 'click', '.wysi-editor img', event => {
+  const image = event.target;
+  const selection = document.getSelection();
+  const range = document.createRange();
+
+  image.classList.add(selectedClass);
+
+  range.selectNode(image);
+  selection.removeAllRanges();
+  selection.addRange(range);
+});
+
+// Deselect selected element when clicking outside
+addListener(document, 'click', '.wysi-editor, .wysi-editor *', event => {
+  const selected = querySelector(`.${selectedClass}`);
+
+  if (selected && selected !== event.target) {
+    selected.classList.remove(selectedClass);
+  }
+});
+
 // Toolbar button click
 addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
@@ -250,12 +379,132 @@ addListener(document, 'click', '.wysi-toolbar > button', event => {
 // Update the toolbar buttons state
 addListener(document, 'selectionchange', updateToolbarState);
 
+// Open a popover
+addListener(document, 'click', '.wysi-popover > button', event => {
+  const button = event.target;
+  const inputs = querySelectorAll('input', button.nextElementSibling);
+  const selection = document.getSelection();
+  const { region, nodes } = findRegion(selection.anchorNode);
+  const values = [];
+
+  if (region) {
+    const action = getAttribute(button, 'data-action');
+    const tool = toolset[action];
+    let target = nodes.filter(node => tool.tags.includes(node.tagName.toLowerCase()))[0];
+    let selectContents = true;
+
+    if (!target) {
+      target = querySelector(`.${selectedClass}`);
+      selectContents = false;
+    }
+
+    if (target) {
+      const range = document.createRange();
+      
+      if (selectContents) {
+        range.selectNodeContents(target);
+      } else {
+        range.selectNode(target);
+      }
+
+      currentSelection = range;
+
+      tool.attributes.forEach(attribute => {
+        values.push(getAttribute(target, attribute));
+      })
+    } else if (selection && selection.rangeCount) {
+      currentSelection = selection.getRangeAt(0);
+    }
+  }
+
+  inputs.forEach((input, i) => {
+    input.value = values[i] || '';
+  });
+
+  closeAllLayers();
+  toggleButton(event.target, true);
+  inputs[0].focus();
+  stopImmediatePropagation(event);
+});
+
+// Execute the popover action
+addListener(document, 'click', '.wysi-popover > div > button[data-action]', event => {
+  const button = event.target;
+  const action = getAttribute(button, 'data-action');
+  const inputs = querySelectorAll('input', button.parentNode);
+  const region = button.parentNode.parentNode.parentNode.nextElementSibling;
+  const options = [];
+
+  inputs.forEach(input => {
+    options.push(input.value);
+  });
+
+  // Workaround for links being removed when updating images
+  if (action === 'image') {
+    const selected = querySelector(`.${selectedClass}`);
+    const parent = selected.parentNode;
+
+    if (selected && parent.tagName === 'A') {
+      options.push(parent.outerHTML);
+    }
+  }
+
+  execAction(action, region, options);
+});
+
+// Cancel the popover
+addListener(document, 'click', '.wysi-popover > div > button:not([data-action])', event => {
+  restoreSelection();
+});
+
+// Prevent clicks on the popover content to propagate (keep popover open)
+addListener(document, 'click', '.wysi-popover *:not(button)', event => {
+  stopImmediatePropagation(event);
+});
+
+// Trap focus inside a popover until it's closed
+addListener(document, 'keydown', '.wysi-popover *', event => {
+  const target = event.target;
+  const parent = target.parentNode;
+  const form = parent.tagName === 'DIV' ? parent : parent.parentNode;
+
+  switch (event.key) {
+    case 'Tab':
+      const firstField = querySelector('input', form);
+
+      if (event.shiftKey) {
+        if (target === firstField) {
+          form.lastElementChild.focus();
+          event.preventDefault();
+        }
+      } else {
+        if (!target.nextElementSibling && !target.parentNode.nextElementSibling) {
+          firstField.focus();
+          event.preventDefault();
+        }
+      }
+      break;
+    case 'Enter':
+      if (target.tagName === 'INPUT') {
+        const actionButton = querySelector('[data-action]', form);
+
+        actionButton.click();
+        event.preventDefault();
+      }
+      break;
+    case 'Escape':
+      closeAllLayers();
+      restoreSelection();
+      break;
+  }
+
+});
+
 // list box button click
 addListener(document, 'click', '.wysi-listbox > button', event => {
+  closeAllLayers();
   openListBox(event.target);
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
+  stopImmediatePropagation(event);
 });
 
 // On key press on the list box button
@@ -320,7 +569,7 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
       item.click();
       break;
     case 'Escape':
-      closeListBox(button);
+      toggleButton(button, false);
       break;
     default:
       preventDefault = false;
@@ -331,9 +580,9 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
   }
 });
 
-// Close list boxes on click outside
+// Close open popups and dropdowns on click outside
 addListener(document, 'click', event => {
-  querySelectorAll('.wysi-listbox [aria-expanded="true"]').forEach(button => closeListBox(button));
+  closeAllLayers();
 });
 
 // include SVG icons

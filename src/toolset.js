@@ -70,16 +70,22 @@ export default {
   },
   link: {
     tags: ['a'],
-    attributes: ['id', 'name', 'href', 'target'/*, 'onclick'*/],
+    attributes: [/*'id', 'name', */'href', 'target'/*, 'onclick'*/],
+    hasForm: true,
     label: 'Link',
     action: (url) => execCommand('createLink', url)
   },
   image: {
     tags: ['img'],
-    attributes: ['src', 'alt', 'title'],
+    attributes: ['src', 'alt'/*, 'title'*/],
     isEmpty: true,
+    hasForm: true,
     label: 'Image',
-    action: (url, text = '') => execCommand('insertHTML', `<img src="${url}" alt="${text}">`)
+    action: (url, text = '', original) => {
+      const image = `<img src="${url}" alt="${text}" class="wysi-selected">`;
+      const html = original ? original.replace(/<img[^>]+>/i, image) : image;
+      execCommand('insertHTML', html);
+    }
   },
   hr: {
     tags: ['hr'],

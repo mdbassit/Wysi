@@ -140,24 +140,14 @@ function renderFormatTool(translations) {
  * @return {object} A DOM element containing the button and the popover.
  */
 function renderPopover(toolName, button, translations) {
-  const fields = {
-    image: [
-      {
-        name: 'url',
-        label: translations.url || 'URL',
-      },
-      {
-        name: 'alt',
-        label: translations.alt || 'Alternative text',
-      }
-    ],
-    link: [
-      {
-        name: 'url',
-        label: translations.url || 'URL',
-      }
-    ]
-  };
+  const tool = toolset[toolName];
+  const labels = tool.attributeLabels;
+  const fields = tool.attributes.map((attribute, i) => {
+    return {
+      name: attribute,
+      label: translations[attribute] || labels[i],
+    }
+  });
 
   // Popover wrapper
   const wrapper = createElement('div', {
@@ -176,7 +166,7 @@ function renderPopover(toolName, button, translations) {
   appendChild(wrapper, button);
   appendChild(wrapper, popover);
 
-  fields[toolName].forEach(field => {
+  fields.forEach(field => {
     const label = createElement('label');
     const span = createElement('span', { _textContent: field.label });
     const input = createElement('input', { type: 'text' });

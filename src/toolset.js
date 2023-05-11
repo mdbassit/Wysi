@@ -70,7 +70,8 @@ export default {
   },
   link: {
     tags: ['a'],
-    attributes: [/*'id', 'name', */'href', 'target'/*, 'onclick'*/],
+    attributes: [/*'id', 'name', */'href', /*'target', 'onclick'*/],
+    attributeLabels: ['URL'],
     hasForm: true,
     label: 'Link',
     action: (url) => execCommand('createLink', url)
@@ -78,6 +79,7 @@ export default {
   image: {
     tags: ['img'],
     attributes: ['src', 'alt'/*, 'title'*/],
+    attributeLabels: ['URL', 'Alternative text'],
     isEmpty: true,
     hasForm: true,
     label: 'Image',

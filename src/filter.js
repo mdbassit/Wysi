@@ -114,15 +114,25 @@ function filterContent(node) {
           replaceNode(childNode, allowedTag.alias, true);
         }
       } else {
-        // Unwrap node
-        childNode.replaceWith(...childNode.childNodes);
+        // Remove style nodes
+        if (tag === 'style') {
+          removeChild(node, childNode);
+
+        // And unwrap the other nodes
+        } else {
+          childNode.replaceWith(...childNode.childNodes);
+        }
       }
+
+    // Remove comment nodes
+    } else if (childNode.nodeType === 8) {
+      removeChild(node, childNode);
     }
   });
 }
 
 /**
- * Remove empty and comment nodes.
+ * Remove empty nodes.
  * @param {object} node The parent element to filter recursively.
  */
 function cleanContent(node) {
@@ -145,10 +155,6 @@ function cleanContent(node) {
       if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
         removeChild(node, childNode);
       }
-
-    // Remove comment nodes
-    } else if (childNode.nodeType === 8) {
-      removeChild(node, childNode);
     }
   });
 }

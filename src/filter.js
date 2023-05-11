@@ -170,17 +170,32 @@ function wrapTextNodes(node) {
     return;
   }
 
-  children.forEach(childNode => {
-    if (childNode.nodeType === 3) {
-      // Remove empty text node
-      if (trimText(childNode.textContent) === '') {
-        removeChild(node, childNode);
+  const exclude = ['BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'HR', 'IMG', 'P', 'OL', 'UL'];
+  let appendToPrev = false;
 
-      // Wrap text node in a paragraph
+  children.forEach(childNode => {
+    if (childNode.nodeType !== 3 && exclude.includes(childNode.tagName)) {
+      appendToPrev = false;
+      return;
+    }
+
+    // Remove empty text node
+    /*if (trimText(childNode.textContent) === '') {
+      removeChild(node, childNode);
+
+    // Wrap text node in a paragraph
+    } else {*/
+      if (appendToPrev) {
+        const prev = childNode.previousElementSibling;
+
+        if (prev) {
+          prev.appendChild(childNode);
+        }
       } else {
         replaceNode(childNode, 'p');
+        appendToPrev = true;
       }
-    }
+    /*}*/
   });
 }
 

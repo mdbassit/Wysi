@@ -65,7 +65,7 @@ function replaceNode(node, tag, copyAttributes) {
   const attributes = node.attributes;
 
   // Copy the original element's content
-  newElement.innerHTML = node.innerHTML || node.textContent;
+  newElement.innerHTML = node.innerHTML || node.textContent || node.outerHTML;
 
   // Copy the original element's attributes
   if (copyAttributes && attributes) {
@@ -170,7 +170,7 @@ function wrapTextNodes(node) {
     return;
   }
 
-  const exclude = ['BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'HR', 'IMG', 'P', 'OL', 'UL'];
+  const exclude = ['BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'HR', 'P', 'OL', 'UL'];
   let appendToPrev = false;
 
   children.forEach(childNode => {

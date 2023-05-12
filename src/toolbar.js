@@ -373,8 +373,10 @@ addListener(document, 'selectionchange', updateToolbarState);
 addListener(document, 'click', '.wysi-popover > button', event => {
   const button = event.target;
   const inputs = querySelectorAll('input', button.nextElementSibling);
+  const region = button.parentNode.parentNode.nextElementSibling;
   const selection = document.getSelection();
-  const { region, nodes } = findRegion(selection.anchorNode);
+  const anchorNode = selection.anchorNode;
+  const { nodes } = findRegion(anchorNode);
   const values = [];
 
   if (region) {
@@ -384,7 +386,7 @@ addListener(document, 'click', '.wysi-popover > button', event => {
     let selectContents = true;
 
     if (!target) {
-      target = querySelector(`.${selectedClass}`);
+      target = querySelector(`.${selectedClass}`, region);
       selectContents = false;
     }
 
@@ -402,7 +404,7 @@ addListener(document, 'click', '.wysi-popover > button', event => {
       tool.attributes.forEach(attribute => {
         values.push(getAttribute(target, attribute));
       })
-    } else if (selection && selection.rangeCount) {
+    } else if (selection && region.contains(anchorNode) && selection.rangeCount) {
       currentSelection = selection.getRangeAt(0);
     }
   }
@@ -431,8 +433,8 @@ addListener(document, 'click', '.wysi-popover > div > button[data-action]', even
 
   // Workaround for links being removed when updating images
   if (action === 'image') {
-    const selected = querySelector(`.${selectedClass}`);
-    const parent = selected.parentNode;
+    const selected = querySelector(`.${selectedClass}`, region);
+    const parent = selected ? selected.parentNode : {};
 
     if (selected && parent.tagName === 'A') {
       options.push(parent.outerHTML);

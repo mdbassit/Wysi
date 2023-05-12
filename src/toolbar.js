@@ -286,7 +286,7 @@ function toggleButton(button, expanded) {
  * Close all popups and dropdowns.
  */
 function closeAllLayers() {
-  const buttons = '.wysi-listbox [aria-expanded="true"], .wysi-popover [aria-expanded="true"]';
+  const buttons = '.wysi-listbox [aria-expanded="true"], body:not(.wysi-dragging) .wysi-popover [aria-expanded="true"]';
   querySelectorAll(buttons).forEach(button => toggleButton(button, false));
 }
 
@@ -442,11 +442,13 @@ addListener(document, 'click', '.wysi-popover > div > button[data-action]', even
   }
 
   execAction(action, region, options);
+  closeAllLayers();
 });
 
 // Cancel the popover
 addListener(document, 'click', '.wysi-popover > div > button:not([data-action])', event => {
   restoreSelection();
+  closeAllLayers();
 });
 
 // Prevent clicks on the popover content to propagate (keep popover open)
@@ -573,8 +575,19 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
 });
 
 // Close open popups and dropdowns on click outside
-addListener(document, 'click', event => {
+addListener(document, 'mouseup', event => {
   closeAllLayers();
+});
+
+// Add a special class to the body when text is being selected inside a popover
+// This will prevent the popover from closing when the end of the text selection is outside it
+addListener(document, 'mousedown', '.wysi-popover, .wysi-popover *', event => {
+  document.body.classList.add('wysi-dragging');
+});
+
+// Remove the special class (above) and allow closing popovers when clicking outside
+addListener(document, 'mouseup', event => {
+  document.body.classList.remove('wysi-dragging');
 });
 
 // include SVG icons

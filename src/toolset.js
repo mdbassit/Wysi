@@ -96,6 +96,9 @@ export default {
     command: 'insertHorizontalRule'
   },
   removeFormat: {
-    label: 'Remove format',
+    label: 'Remove format'
+  },
+  unlink: {
+    label: 'Remove link'
   }
 };

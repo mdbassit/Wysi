@@ -230,6 +230,11 @@
   background-color: #555;
 }
 
+.wysi-popover div button[data-action="unlink"] {
+  margin: 5px auto 0 0;
+  padding: 0 4px;
+}
+
 .wysi-separator {
   width: 5px;
   height: 30px;

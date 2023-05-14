@@ -187,6 +187,20 @@ function renderPopover(toolName, button, translations) {
     _textContent: translations.save || 'Save'
   });
 
+  // The link popover needs an extra "Remove link" button
+  if (toolName === 'link') {
+    const extraTool = 'unlink';
+    const label = translations[extraTool] || toolset[extraTool].label;
+
+    appendChild(popover, createElement('button', {
+      type: 'button',
+      title: label,
+      'aria-label': label,
+      'data-action': extraTool,
+      _innerHTML: `<svg><use href="#wysi-delete"></use></svg>`
+    }));
+  }
+
   appendChild(popover, cancel);
   appendChild(popover, save);
 
@@ -480,7 +494,7 @@ addListener(document, 'keydown', '.wysi-popover *', event => {
       break;
     case 'Enter':
       if (target.tagName === 'INPUT') {
-        const actionButton = querySelector('[data-action]', form);
+        const actionButton = querySelector('[data-action]:last-of-type', form);
 
         actionButton.click();
         event.preventDefault();

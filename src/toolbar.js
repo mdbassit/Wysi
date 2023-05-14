@@ -18,6 +18,7 @@ import {
 } from './utils.js';
 
 const selectedClass = 'wysi-selected';
+let isSelectionInProgress = false;
 let currentSelection;
 
 /**
@@ -392,9 +393,6 @@ addListener(document, 'selectionchange', updateToolbarState);
 
 // Open a popover
 addListener(document, 'click', '.wysi-popover > button', event => {
-  // This fixes an issue where the form is cleared when clicking the button multiple times
-  restoreSelection();
-
   const button = event.target;
   const inputs = querySelectorAll('input', button.nextElementSibling);
   const region = button.parentNode.parentNode.nextElementSibling;
@@ -597,19 +595,21 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
 });
 
 // Close open popups and dropdowns on click outside
-addListener(document, 'mouseup', event => {
-  closeAllLayers(true);
+addListener(document, 'click', event => {
+  if (!isSelectionInProgress) {
+    closeAllLayers(true);
+  }
 });
 
-// Add a special class to the body when text is being selected inside a popover
-// This will prevent the popover from closing when the end of the text selection is outside it
+// Text selection within a popover is in progress
+// This helps avoid closing a popover when the end of a text selection is outside it
 addListener(document, 'mousedown', '.wysi-popover, .wysi-popover *', event => {
-  document.body.classList.add('wysi-dragging');
+  isSelectionInProgress = true;
 });
 
-// Remove the special class (above) and allow closing popovers when clicking outside
+// The text selection ended
 addListener(document, 'mouseup', event => {
-  document.body.classList.remove('wysi-dragging');
+  setTimeout(() => { isSelectionInProgress = false; });
 });
 
 // include SVG icons

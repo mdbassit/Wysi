@@ -1,8 +1,18 @@
+:root {
+  --wysi-primary: #357beb;
+  --wysi-hover: #2b62bd;
+  --wysi-highlight: #d7e4fb ;
+}
+
 .wysi-wrapper {
   display: flex;
   flex-direction: column;
   border-radius: 5px;
-  box-shadow: 0 0 1px #999;
+  outline: 1px solid #ddd;
+}
+
+.wysi-wrapper:focus-within {
+  outline-color: var(--wysi-primary);
 }
 
 .wysi-wrapper + textarea {
@@ -58,11 +68,12 @@
 }
 
 .wysi-toolbar button[aria-pressed="true"] {
-  background-color: #dadada;
+  color: var(--wysi-primary);
+  background-color: var(--wysi-highlight);
 }
 
 .wysi-toolbar button[aria-pressed="true"]:hover {
-  background-color: #ccc;
+  mix-blend-mode: multiply;
 }
 
 .wysi-toolbar button * {
@@ -223,11 +234,11 @@
 .wysi-popover div button:last-of-type {
   border: 0;
   color: #fff;
-  background-color: #777;
+  background-color: var(--wysi-primary);
 }
 
 .wysi-popover div button:last-of-type:hover {
-  background-color: #555;
+  background-color: var(--wysi-hover);
 }
 
 .wysi-popover div button[data-action="unlink"] {
@@ -264,5 +275,13 @@
 
 .wysi-editor img:hover,
 .wysi-editor img.wysi-selected {
-  outline: 3px solid #999
+  outline: 3px solid #ddd;
+}
+
+.wysi-editor img:hover {
+  outline-color: #bbb;
+}
+
+.wysi-wrapper:focus-within img.wysi-selected {
+  outline-color: var(--wysi-primary);
 }

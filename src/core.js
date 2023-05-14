@@ -48,6 +48,9 @@ function init(options) {
         class: 'wysi-wrapper'
       });
 
+      // Set dark mode
+      wrapper.classList.toggle('wysi-dark', !!options.darkMode);
+
       // Editable region
       const editor = createElement('div', {
         class: 'wysi-editor',
@@ -62,6 +65,11 @@ function init(options) {
       appendChild(wrapper, toolbar.cloneNode(true));
       appendChild(wrapper, editor);
       field.before(wrapper);
+
+    // Reconfigure instance
+    } else {
+      // Set dark mode
+      sibling.classList.toggle('wysi-dark', !!options.darkMode);
     }
   });
 }

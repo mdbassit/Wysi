@@ -73,6 +73,7 @@
 }
 
 .wysi-toolbar button[aria-pressed="true"]:hover {
+  background-color: var(--wysi-highlight);
   mix-blend-mode: multiply;
 }
 
@@ -284,4 +285,49 @@
 
 .wysi-wrapper:focus-within img.wysi-selected {
   outline-color: var(--wysi-primary);
+}
+
+/** Dark mode **/
+
+.wysi-dark .wysi-toolbar {
+  color: #fff;
+  background-color: #222;
+}
+
+.wysi-dark .wysi-toolbar button:not([aria-pressed=true]) {
+  color: #ddd;
+}
+
+.wysi-dark .wysi-listbox button[aria-expanded=true],
+.wysi-dark .wysi-toolbar > button:focus,
+.wysi-dark .wysi-toolbar > button:hover,
+.wysi-dark .wysi-toolbar > div > button:focus,
+.wysi-dark .wysi-toolbar > div > button:hover {
+  background-color: #444;
+}
+
+.wysi-dark .wysi-toolbar button[aria-pressed=true]:hover {
+  background-color: var(--wysi-highlight);
+  mix-blend-mode: difference;
+}
+
+.wysi-dark .wysi-listbox div,
+.wysi-dark .wysi-popover div {
+  background-color: #444;
+}
+
+.wysi-dark .wysi-listbox div button:focus {
+  background-color: #222;
+}
+
+.wysi-dark .wysi-popover div:before {
+  border-bottom-color: #444;
+}
+
+.wysi-dark .wysi-popover div button:not(:last-of-type):hover {
+  color: #444;
+}
+
+.wysi-dark .wysi-separator {
+  border-color: #444;
 }

@@ -269,7 +269,6 @@ function execAction(action, region, options = []) {
 
     // Restore selection if any
     restoreSelection();
-    currentSelection = undefined;
 
     // Execute the tool's action
     realAction(...options);
@@ -285,6 +284,7 @@ function restoreSelection() {
 
     selection.removeAllRanges();
     selection.addRange(currentSelection);
+    currentSelection = undefined;
   }
 }
 
@@ -385,6 +385,9 @@ addListener(document, 'selectionchange', updateToolbarState);
 
 // Open a popover
 addListener(document, 'click', '.wysi-popover > button', event => {
+  // This fixes an issue where the form is cleared when clicking the button multiple times
+  restoreSelection();
+
   const button = event.target;
   const inputs = querySelectorAll('input', button.nextElementSibling);
   const region = button.parentNode.parentNode.nextElementSibling;

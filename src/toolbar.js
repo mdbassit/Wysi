@@ -291,17 +291,24 @@ function restoreSelection() {
 /**
  * Set the expanded state of a button.
  * @param {object} button The button.
+ * @param {boolean} expanded The expanded state.
  */
 function toggleButton(button, expanded) {
   setAttribute(button, 'aria-expanded', expanded);
 }
 
 /**
- * Close all popups and dropdowns.
+ * Close all popovers and dropdowns.
+ * @param {boolean} restore If true, restore the previous selection.
  */
-function closeAllLayers() {
+function closeAllLayers(restore) {
   const buttons = '.wysi-listbox [aria-expanded="true"], body:not(.wysi-dragging) .wysi-popover [aria-expanded="true"]';
+
   querySelectorAll(buttons).forEach(button => toggleButton(button, false));
+
+  if (restore) {
+    restoreSelection();
+  }
 }
 
 /**
@@ -464,8 +471,7 @@ addListener(document, 'click', '.wysi-popover > div > button[data-action]', even
 
 // Cancel the popover
 addListener(document, 'click', '.wysi-popover > div > button:not([data-action])', event => {
-  restoreSelection();
-  closeAllLayers();
+  closeAllLayers(true);
 });
 
 // Prevent clicks on the popover content to propagate (keep popover open)
@@ -504,8 +510,7 @@ addListener(document, 'keydown', '.wysi-popover *', event => {
       }
       break;
     case 'Escape':
-      closeAllLayers();
-      restoreSelection();
+      closeAllLayers(true);
       break;
   }
 
@@ -593,7 +598,7 @@ addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
 
 // Close open popups and dropdowns on click outside
 addListener(document, 'mouseup', event => {
-  closeAllLayers();
+  closeAllLayers(true);
 });
 
 // Add a special class to the body when text is being selected inside a popover

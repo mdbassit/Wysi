@@ -10,6 +10,7 @@ import {
   querySelectorAll,
   setAttribute,
   stopImmediatePropagation,
+  toLowerCase,
   addListener,
   buildFragment,
   createElement,
@@ -404,7 +405,7 @@ addListener(document, 'click', '.wysi-popover > button', event => {
   if (region) {
     const action = getAttribute(button, 'data-action');
     const tool = toolset[action];
-    let target = nodes.filter(node => tool.tags.includes(node.tagName.toLowerCase()))[0];
+    let target = nodes.filter(node => tool.tags.includes(toLowerCase(node.tagName)))[0];
     let selectContents = true;
 
     if (!target) {

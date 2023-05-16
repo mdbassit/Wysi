@@ -16,6 +16,7 @@ const querySelectorAll = (selector, context = document) => context.querySelector
 const removeChild = (parent, child) => parent.removeChild(child);
 const setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
 const stopImmediatePropagation = event => event.stopImmediatePropagation();
+const toLowerCase = str => str.toLowerCase();
 
 /**
  * Shortcut for addEventListener to optimize the minified JS.
@@ -116,7 +117,7 @@ function findRegion(currentNode) {
         break;
       } else {
         nodes.push(currentNode);
-        tags.push(tag.toLowerCase());
+        tags.push(toLowerCase(tag));
       }
     }
 
@@ -180,6 +181,7 @@ export {
   removeChild,
   setAttribute,
   stopImmediatePropagation,
+  toLowerCase,
   addListener,
   buildFragment,
   DOMReady,

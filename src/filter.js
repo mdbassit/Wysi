@@ -1,5 +1,5 @@
 import toolset from './toolset.js';
-import { appendChild, createElement, removeChild, setAttribute, buildFragment } from './utils.js';
+import { appendChild, createElement, removeChild, setAttribute, toLowerCase, buildFragment } from './utils.js';
 
 // Default allowed tags
 const allowedTags = {
@@ -96,7 +96,7 @@ function filterContent(node) {
       filterContent(childNode);
 
       // Check if the current element is allowed
-      const tag = childNode.tagName.toLowerCase();
+      const tag = toLowerCase(childNode.tagName);
       const allowedTag = allowedTags[tag];
       const attributes = Array.from(childNode.attributes);
 
@@ -149,7 +149,7 @@ function cleanContent(node) {
       cleanContent(childNode);
 
       // Check if the element can be empty
-      const tag = childNode.tagName.toLowerCase();
+      const tag = toLowerCase(childNode.tagName);
       const allowedTag = allowedTags[tag];
 
       if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {

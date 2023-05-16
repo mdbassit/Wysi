@@ -7,6 +7,7 @@
 .wysi-wrapper {
   display: flex;
   flex-direction: column;
+  position: relative;
   border-radius: 5px;
   outline: 1px solid rgba(160, 160, 160, .45);
 }
@@ -21,7 +22,7 @@
 
 .wysi-toolbar {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -29,6 +30,22 @@
   border-radius: 5px 5px 0 0;
   background-color: #eee;
   box-sizing: border-box;
+}
+
+.wysi-autohide .wysi-toolbar {
+  display: none;
+}
+
+.wysi-autohide:focus-within .wysi-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  position: absolute;
+  min-width: 100%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  margin-top: -5px;
+  border-radius: 5px;
+  outline: 1px solid rgba(160, 160, 160, .45);
 }
 
 .wysi-toolbar *,
@@ -330,4 +347,8 @@
 
 .wysi-dark .wysi-separator {
   border-color: #444;
+}
+
+.wysi-autohide.wysi-dark:focus-within .wysi-toolbar {
+  outline-color: #111;
 }

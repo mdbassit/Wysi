@@ -51,6 +51,9 @@ function init(options) {
       // Set dark mode
       wrapper.classList.toggle('wysi-dark', !!options.darkMode);
 
+      // Set auto hide option
+      wrapper.classList.toggle('wysi-autohide', !!options.autoHide);
+
       // Editable region
       const editor = createElement('div', {
         class: 'wysi-editor',
@@ -70,6 +73,9 @@ function init(options) {
     } else {
       // Set dark mode
       sibling.classList.toggle('wysi-dark', !!options.darkMode);
+
+      // Set auto hide option
+      sibling.classList.toggle('wysi-autohide', !!options.autoHide);
     }
   });
 }

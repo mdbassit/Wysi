@@ -10,6 +10,7 @@ import {
   execCommand,
   hasClass,
   querySelectorAll,
+  toLowerCase,
   addListener,
   DOMReady,
   findRegion,
@@ -48,12 +49,6 @@ function init(options) {
         class: 'wysi-wrapper'
       });
 
-      // Set dark mode
-      wrapper.classList.toggle('wysi-dark', !!options.darkMode);
-
-      // Set auto hide option
-      wrapper.classList.toggle('wysi-autohide', !!options.autoHide);
-
       // Editable region
       const editor = createElement('div', {
         class: 'wysi-editor',
@@ -69,15 +64,45 @@ function init(options) {
       appendChild(wrapper, editor);
       field.before(wrapper);
 
+      // Apply configuration
+      configure(wrapper, options);
+
     // Reconfigure instance
     } else {
-      // Set dark mode
-      sibling.classList.toggle('wysi-dark', !!options.darkMode);
-
-      // Set auto hide option
-      sibling.classList.toggle('wysi-autohide', !!options.autoHide);
+      configure(sibling, options);
     }
   });
+}
+
+/**
+ * Configure a WYSIWYG editor instance.
+ * @param {object} instance The editor instance to configure.
+ * @param {object} options The configuration options.
+ */
+function configure(instance, options) {
+  if (typeof options !== 'object') {
+    return;
+  }
+
+  for (const key in options) {
+    switch (key) {
+      case 'darkMode':
+      case 'autoGrow':
+      case 'autoHide':
+        instance.classList.toggle(`wysi-${toLowerCase(key)}`, !!options[key]);
+        break;
+      case 'height':
+        const height = options.height;
+
+        if (!isNaN(height)) {
+          const region = instance.lastElementChild;
+
+          region.style.minHeight = `${height}px`;
+          region.style.maxHeight = `${height}px`;
+        }
+        break;
+    }
+  }
 }
 
 /**

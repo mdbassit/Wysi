@@ -273,9 +273,14 @@
 
 .wysi-editor {
   min-height: 200px;
+  max-height: 200px;
   padding: 1em;
   outline: none;
   overflow: auto;
+}
+
+.wysi-autogrow .wysi-editor {
+  max-height: none !important;
 }
 
 .wysi-editor > :first-child {
@@ -306,49 +311,49 @@
 
 /** Dark mode **/
 
-.wysi-dark .wysi-toolbar {
+.wysi-darkmode .wysi-toolbar {
   color: #fff;
   background-color: #222;
 }
 
-.wysi-dark .wysi-toolbar button:not([aria-pressed=true]) {
+.wysi-darkmode .wysi-toolbar button:not([aria-pressed=true]) {
   color: #ddd;
 }
 
-.wysi-dark .wysi-listbox button[aria-expanded=true],
-.wysi-dark .wysi-toolbar > button:focus,
-.wysi-dark .wysi-toolbar > button:hover,
-.wysi-dark .wysi-toolbar > div > button:focus,
-.wysi-dark .wysi-toolbar > div > button:hover {
+.wysi-darkmode .wysi-listbox button[aria-expanded=true],
+.wysi-darkmode .wysi-toolbar > button:focus,
+.wysi-darkmode .wysi-toolbar > button:hover,
+.wysi-darkmode .wysi-toolbar > div > button:focus,
+.wysi-darkmode .wysi-toolbar > div > button:hover {
   background-color: #444;
 }
 
-.wysi-dark .wysi-toolbar button[aria-pressed=true]:hover {
+.wysi-darkmode .wysi-toolbar button[aria-pressed=true]:hover {
   background-color: var(--wysi-highlight);
   mix-blend-mode: difference;
 }
 
-.wysi-dark .wysi-listbox div,
-.wysi-dark .wysi-popover div {
+.wysi-darkmode .wysi-listbox div,
+.wysi-darkmode .wysi-popover div {
   background-color: #444;
 }
 
-.wysi-dark .wysi-listbox div button:focus {
+.wysi-darkmode .wysi-listbox div button:focus {
   background-color: #222;
 }
 
-.wysi-dark .wysi-popover div:before {
+.wysi-darkmode .wysi-popover div:before {
   border-bottom-color: #444;
 }
 
-.wysi-dark .wysi-popover div button:not(:last-of-type):hover {
+.wysi-darkmode .wysi-popover div button:not(:last-of-type):hover {
   color: #444;
 }
 
-.wysi-dark .wysi-separator {
+.wysi-darkmode .wysi-separator {
   border-color: #444;
 }
 
-.wysi-autohide.wysi-dark:focus-within .wysi-toolbar {
+.wysi-autohide.wysi-darkmode:focus-within .wysi-toolbar {
   outline-color: #111;
 }

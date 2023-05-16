@@ -10,7 +10,19 @@ export default {
     'ul', 'ol', '|', 'indent', 'outdent', '|', 'link', 'image'
   ],
 
-  //Custom tags to allow when filtering inserted content
+  // Enable dark mode (toolbar only)
+  darkMode: false,
+
+  // Height of the editable region
+  height: 200,
+
+  // Grow the editable region's height to fit its content
+  autoGrow: false,
+
+  // Hide the toolbar when the editable region is out of focus
+  autoHide: false,
+
+  // Custom tags to allow when filtering inserted content
   customTags: [
     /* Example:
 

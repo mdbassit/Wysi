@@ -1,5 +1,16 @@
 import toolset from './toolset.js';
-import { appendChild, createElement, removeChild, setAttribute, toLowerCase, buildFragment } from './utils.js';
+import {
+  appendChild,
+  createElement,
+  getAttribute,
+  removeChild,
+  removeAttribute,
+  setAttribute,
+  toLowerCase,
+  buildFragment
+} from './utils.js';
+
+const STYLE_ATTRIBUTE = 'style';
 
 // Default allowed tags
 const allowedTags = {
@@ -26,9 +37,10 @@ function enableTags(toolName) {
   const alias = aliasList.length ? tool.tags[0] : undefined;
   const tags = [...tool.tags, ...extraTags, ...aliasList];
   const attributes = tool.attributes ? tool.attributes.slice() : [];
+  const styles = tool.styles ? tool.styles.slice() : [];
 
   tags.forEach(tag => {
-    allowedTags[tag] = { attributes, alias, isEmpty };
+    allowedTags[tag] = { attributes, styles, alias, isEmpty };
     
     if (!extraTags.includes(tag)) {
       allowedTags[tag].toolName = toolName;
@@ -79,6 +91,38 @@ function replaceNode(node, tag, copyAttributes) {
 }
 
 /**
+ * Remove unsupported CSS styles from a node.
+ * @param {object} node The element to filter.
+ * @param {array} allowedStyles An array of supported styles.
+ */
+function filterStyles(node, allowedStyles) {
+  const styleAttribute = getAttribute(node, STYLE_ATTRIBUTE);
+
+  if (styleAttribute) {
+    // Parse the styles
+    const styles = styleAttribute.split(';').map(style => {
+      const prop = style.split(':');
+      
+      return {
+        name: prop[0].trim(),
+        value: prop[1]
+      };
+    })
+    // Filter the styles
+    .filter(style => allowedStyles.includes(style.name))
+
+    // Convert back to a style string
+    .map(({ name, value }) => `${name}: ${value.trim()};`).join('');
+
+    if (styles !== '') {
+      setAttribute(node, STYLE_ATTRIBUTE, styles);
+    } else {
+      removeAttribute(node, STYLE_ATTRIBUTE);
+    }
+  }
+}
+
+/**
  * Remove unsupported HTML tags and attributes.
  * @param {object} node The parent element to filter recursively.
  */
@@ -101,10 +145,19 @@ function filterContent(node) {
       const attributes = Array.from(childNode.attributes);
 
       if (allowedTag) {
+        const allowedAttributes = allowedTag.attributes;
+        const allowedStyles = allowedTag.styles;
+
         // Remove attributes that are not allowed
         for (let i = 0; i < attributes.length; i++) {
-          if (!allowedTag.attributes.includes(attributes[i].name)) {
-            childNode.removeAttribute(attributes[i].name);
+          const attributeName = attributes[i].name;
+
+          if (!allowedAttributes.includes(attributes[i].name)) {
+            if (attributeName === STYLE_ATTRIBUTE && allowedStyles.length) {
+              filterStyles(childNode, allowedStyles);
+            } else {
+              removeAttribute(childNode, attributes[i].name);
+            }
           }
         }
 

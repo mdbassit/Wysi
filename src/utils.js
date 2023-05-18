@@ -14,6 +14,7 @@ const getAttribute = (element, attribute) => element.getAttribute(attribute);
 const querySelector = (selector, context = document) => context.querySelector(selector);
 const querySelectorAll = (selector, context = document) => context.querySelectorAll(selector);
 const removeChild = (parent, child) => parent.removeChild(child);
+const removeAttribute = (element, attribute) => element.removeAttribute(attribute);
 const setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
 const stopImmediatePropagation = event => event.stopImmediatePropagation();
 const toLowerCase = str => str.toLowerCase();
@@ -179,6 +180,7 @@ export {
   querySelector,
   querySelectorAll,
   removeChild,
+  removeAttribute,
   setAttribute,
   stopImmediatePropagation,
   toLowerCase,

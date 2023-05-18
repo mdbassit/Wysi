@@ -4,6 +4,7 @@ import { execCommand, formatBlock } from './utils.js';
 export default {
   format: {
     tags: ['p', 'h1', 'h2', 'h3', 'h4'],
+    styles: ['text-align'],
     label: 'Select block format',
     paragraph: 'Paragraph',
     heading: 'Heading',
@@ -53,12 +54,14 @@ export default {
   ul: {
     tags: ['ul'],
     extraTags: ['li'],
+    styles: ['text-align'],
     label: 'Bulleted list',
     command: 'insertUnorderedList'
   },
   ol: {
     tags: ['ol'],
     extraTags: ['li'],
+    styles: ['text-align'],
     label: 'Numbered list',
     command: 'insertOrderedList'
   },

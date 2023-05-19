@@ -37,7 +37,9 @@ export default {
 
     {
       tags: ['table', 'thead', 'tbody', 'tr', 'td', 'th'], // Tags to allow
-      attributes: ['id', 'class'] // These attributes will be permitted for all the tags above
+      attributes: ['id', 'class'], // These attributes will be permitted for all the tags above
+      styles: ['width'],
+      isEmpty: false
     }
 
     */

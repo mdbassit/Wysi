@@ -34,6 +34,20 @@ function init(options) {
   const selector = options.el || settings.el;
   const toolbar = renderToolbar(tools, translations);
   const allowedTags = enableTags(tools);
+  const customTags = options.customTags || [];
+
+  // Add custom tags if any to the allowed tags list
+  customTags.forEach(custom => {
+    if (custom.tags) {
+      const attributes = custom.attributes || [];
+      const styles = custom.styles || [];
+      const isEmpty = !!custom.isEmpty;
+
+      custom.tags.forEach(tag => {
+        allowedTags[tag] = { attributes, styles, isEmpty };
+      });
+    }
+  });
 
   // Append an editable region
   querySelectorAll(selector).forEach(field => {

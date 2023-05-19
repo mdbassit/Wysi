@@ -1,21 +1,27 @@
 import window from 'window';
 import document from 'document';
 import settings from './settings.js';
+import { instances } from './common.js';
 import { renderToolbar } from './toolbar.js';
-import { allowedTags, prepareContent } from './filter.js';
+import { enableTags, prepareContent } from './filter.js';
 import {
   appendChild,
   createElement,
   dispatchEvent,
   execCommand,
+  getAttribute,
   hasClass,
   querySelectorAll,
   toLowerCase,
   addListener,
+  cloneObject,
   DOMReady,
   findRegion,
   getTextAreaLabel
 } from './utils.js';
+
+// Next available instance id
+let nextId = 0;
 
 /**
  * Init a WYSIWYG editor instance.
@@ -27,23 +33,21 @@ function init(options) {
   const tools = options.tools || settings.tools;
   const selector = options.el || settings.el;
   const toolbar = renderToolbar(tools, translations);
-
-  // Add custom tags if any to the allowed tags list
-  settings.customTags.forEach(custom => {
-    const attributes = custom.attributes ? custom.attributes.slice() : [];
-
-    if (custom.tags) {
-      custom.tags.forEach(tag => {
-        allowedTags[tag] = { attributes };
-      });
-    }
-  });
+  const allowedTags = enableTags(tools);
 
   // Append an editable region
   querySelectorAll(selector).forEach(field => {
     const sibling = field.previousElementSibling;
 
     if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
+      const instanceId = nextId++;
+
+      // Store the instance's options 
+      instances[instanceId] = options;
+
+      // Cache the list of allowed tags in the instance
+      instances[instanceId].allowedTags = cloneObject(allowedTags);
+
       // Wrapper
       const wrapper = createElement('div', {
         class: 'wysi-wrapper'
@@ -56,7 +60,8 @@ function init(options) {
         role: 'textbox',
         'aria-multiline': true,
         'aria-label': getTextAreaLabel(field),
-        _innerHTML: prepareContent(field.value)
+        'data-wid': instanceId,
+        _innerHTML: prepareContent(field.value, allowedTags)
       });      
 
       // Insert the editable region in the document
@@ -95,7 +100,7 @@ function configure(instance, options) {
         const height = options.height;
 
         if (!isNaN(height)) {
-          const region = instance.lastElementChild;
+          const region = instance.lastChild;
 
           region.style.minHeight = `${height}px`;
           region.style.maxHeight = `${height}px`;
@@ -114,6 +119,9 @@ function destroy(selector) {
     const sibling = field.previousElementSibling;
 
     if (sibling && hasClass(sibling, 'wysi-wrapper')) {
+      const instanceId = getAttribute(sibling.lastChild, 'data-wid');
+
+      delete instances[instanceId];
       sibling.remove();
     }
   });
@@ -129,7 +137,9 @@ function cleanPastedContent(event) {
 
   if (region && clipboardData.types.includes('text/html')) {
     const pasted = clipboardData.getData('text/html');
-    const content = prepareContent(pasted);
+    const instanceId = getAttribute(region, 'data-wid');
+    const allowedTags = instances[instanceId].allowedTags;
+    const content = prepareContent(pasted, allowedTags);
 
     // Manually paste the cleaned content
     execCommand('insertHTML', content);

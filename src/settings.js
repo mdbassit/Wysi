@@ -22,6 +22,15 @@ export default {
   // Hide the toolbar when the editable region is out of focus
   autoHide: false,
 
+  // Default list of allowed tags
+  // These tags are always allowed regardless of the instance options
+  allowedTags: {
+    br: {
+      attributes: [],
+      isEmpty: true
+    }
+  },
+
   // Custom tags to allow when filtering inserted content
   customTags: [
     /* Example:

@@ -1,3 +1,4 @@
+import settings from './settings.js';
 import toolset from './toolset.js';
 import {
   appendChild,
@@ -7,59 +8,60 @@ import {
   removeAttribute,
   setAttribute,
   toLowerCase,
-  buildFragment
+  buildFragment,
+  cloneObject
 } from './utils.js';
 
 const STYLE_ATTRIBUTE = 'style';
 
-// Default allowed tags
-const allowedTags = {
-  br: {
-    attributes: [],
-    isEmpty: true
-  }
-};
-
 /**
- * Enable HTML tags belonging to a tool.
- * @param {object} tool The tool object.
+ * Enable HTML tags belonging to a set of tools.
+ * @param {array} tools A array of tool objects.
+ * @return {object} The list of allowed tags.
  */
-function enableTags(toolName) {
-  const tool = toolset[toolName];
+function enableTags(tools) {
+  const allowedTags = cloneObject(settings.allowedTags);
 
-  if (!tool || !tool.tags) {
-    return;
-  }
+  tools.forEach(toolName => {
+    const tool = toolset[toolName];
 
-  const isEmpty = !!tool.isEmpty;
-  const extraTags = tool.extraTags || [];
-  const aliasList = tool.alias || [];
-  const alias = aliasList.length ? tool.tags[0] : undefined;
-  const tags = [...tool.tags, ...extraTags, ...aliasList];
-  const attributes = tool.attributes ? tool.attributes.slice() : [];
-  const styles = tool.styles ? tool.styles.slice() : [];
-
-  tags.forEach(tag => {
-    allowedTags[tag] = { attributes, styles, alias, isEmpty };
-    
-    if (!extraTags.includes(tag)) {
-      allowedTags[tag].toolName = toolName;
+    if (!tool || !tool.tags) {
+      return;
     }
+
+    const isEmpty = !!tool.isEmpty;
+    const extraTags = tool.extraTags || [];
+    const aliasList = tool.alias || [];
+    const alias = aliasList.length ? tool.tags[0] : undefined;
+    const tags = [...tool.tags, ...extraTags, ...aliasList];
+    const attributes = tool.attributes ? tool.attributes.slice() : [];
+    const styles = tool.styles ? tool.styles.slice() : [];
+
+    tags.forEach(tag => {
+      allowedTags[tag] = { attributes, styles, alias, isEmpty };
+      
+      if (!extraTags.includes(tag)) {
+        allowedTags[tag].toolName = toolName;
+      }
+    });
   });
+
+  return allowedTags;
 }
 
 /**
  * Prepare raw content for editing.
  * @param {string} content The editable region's raw content.
+ * @param {array} allowedTags The list of allowed tags.
  * @return {string} The filter HTML content.
  */
-function prepareContent(content) {
+function prepareContent(content, allowedTags) {
   const container = createElement('div');
   const fragment = buildFragment(content);
 
-  filterContent(fragment);
+  filterContent(fragment, allowedTags);
   wrapTextNodes(fragment);
-  cleanContent(fragment);
+  cleanContent(fragment, allowedTags);
   appendChild(container, fragment);
 
   return container.innerHTML;
@@ -125,8 +127,9 @@ function filterStyles(node, allowedStyles) {
 /**
  * Remove unsupported HTML tags and attributes.
  * @param {object} node The parent element to filter recursively.
+ * @param {array} allowedTags The list of allowed tags.
  */
-function filterContent(node) {
+function filterContent(node, allowedTags) {
   const children = Array.from(node.childNodes);
 
   if (!children || !children.length) {
@@ -137,7 +140,7 @@ function filterContent(node) {
     // Element nodes
     if (childNode.nodeType === 1) {
       // Filter recursively (deeper nodes firest)
-      filterContent(childNode);
+      filterContent(childNode, allowedTags);
 
       // Check if the current element is allowed
       const tag = toLowerCase(childNode.tagName);
@@ -187,8 +190,9 @@ function filterContent(node) {
 /**
  * Remove empty nodes.
  * @param {object} node The parent element to filter recursively.
+ * @param {array} allowedTags The list of allowed tags.
  */
-function cleanContent(node) {
+function cleanContent(node, allowedTags) {
   const children = Array.from(node.childNodes);
 
   if (!children || !children.length) {
@@ -199,7 +203,7 @@ function cleanContent(node) {
     // Remove empty element nodes
     if (childNode.nodeType === 1) {
       // Filter recursively (deeper nodes firest)
-      cleanContent(childNode);
+      cleanContent(childNode, allowedTags);
 
       // Check if the element can be empty
       const tag = toLowerCase(childNode.tagName);
@@ -262,7 +266,6 @@ function trimText(text) {
 }
 
 export {
-  allowedTags,
   enableTags,
   prepareContent
 };

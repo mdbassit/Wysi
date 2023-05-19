@@ -58,6 +58,15 @@ function buildFragment(html) {
 }
 
 /**
+ * Deep clone an object.
+ * @param {object} obj The object to clone.
+ * @return {object} The clone object.
+ */
+function cloneObject(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/**
  * Create an element and optionally set its attributes.
  * @param {string} tag The HTML tag of the new element.
  * @param {object} [attributes] The element's attributes.
@@ -186,6 +195,7 @@ export {
   toLowerCase,
   addListener,
   buildFragment,
+  cloneObject,
   DOMReady,
   findRegion,
   formatBlock,

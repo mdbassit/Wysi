@@ -1,7 +1,7 @@
 import window from 'window';
 import document from 'document';
 import toolset from './toolset.js';
-import { allowedTags, enableTags } from './filter.js';
+import { instances } from './common.js';
 import {
   appendChild,
   execCommand,
@@ -67,9 +67,6 @@ function renderToolbar(tools, translations) {
           appendChild(toolbar, button);
         }
     }
-
-    // Add the current tool's tags to the list of allowed tags
-    enableTags(toolName);
   });
 
   return toolbar;
@@ -219,6 +216,10 @@ function updateToolbarState() {
   if (!region) {
     return;
   }
+
+  // Get the list of allowed tags in the current editable region
+  const instanceId = getAttribute(region, 'data-wid');
+  const allowedTags = instances[instanceId].allowedTags;
 
   // Get the current editable regions toolbar
   const toolbar = region.previousElementSibling;

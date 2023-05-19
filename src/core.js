@@ -4,21 +4,24 @@ import settings from './settings.js';
 import { instances } from './common.js';
 import { renderToolbar } from './toolbar.js';
 import { enableTags, prepareContent } from './filter.js';
+import { 
+  addListener,
+  cloneObject,
+  createElement,
+  DOMReady,
+  findRegion,
+  getTextAreaLabel
+} from './utils.js';
 import {
   appendChild,
-  createElement,
   dispatchEvent,
   execCommand,
   getAttribute,
   hasClass,
   querySelectorAll,
-  toLowerCase,
-  addListener,
-  cloneObject,
-  DOMReady,
-  findRegion,
-  getTextAreaLabel
-} from './utils.js';
+  toLowerCase
+} from './shortcuts.js';
+
 
 // Next available instance id
 let nextId = 0;

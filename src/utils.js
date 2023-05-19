@@ -1,23 +1,16 @@
 import document from 'document';
+import {
+  execCommand,
+  hasClass,
+  querySelector,
+  setAttribute,
+  toLowerCase
+} from './shortcuts.js';
 
 // Polyfill for Nodelist.forEach
 if (NodeList !== undefined && NodeList.prototype && !NodeList.prototype.forEach) {
     NodeList.prototype.forEach = Array.prototype.forEach;
 }
-
-// Shortcuts
-const appendChild = (parent, child) => parent.appendChild(child);
-const dispatchEvent = (element, event) => element.dispatchEvent(new Event(event, { bubbles: true }));
-const execCommand = (command, value = null) => document.execCommand(command, false, value);
-const hasClass = (element, classes) => element.classList && element.classList.contains(classes);
-const getAttribute = (element, attribute) => element.getAttribute(attribute);
-const querySelector = (selector, context = document) => context.querySelector(selector);
-const querySelectorAll = (selector, context = document) => context.querySelectorAll(selector);
-const removeChild = (parent, child) => parent.removeChild(child);
-const removeAttribute = (element, attribute) => element.removeAttribute(attribute);
-const setAttribute = (element, attribute, value) => element.setAttribute(attribute, value);
-const stopImmediatePropagation = event => event.stopImmediatePropagation();
-const toLowerCase = str => str.toLowerCase();
 
 /**
  * Shortcut for addEventListener to optimize the minified JS.
@@ -180,22 +173,10 @@ function getTextAreaLabel(textarea) {
 }
 
 export {
-  appendChild,
-  createElement,
-  dispatchEvent,
-  execCommand,
-  getAttribute,
-  hasClass,
-  querySelector,
-  querySelectorAll,
-  removeChild,
-  removeAttribute,
-  setAttribute,
-  stopImmediatePropagation,
-  toLowerCase,
   addListener,
   buildFragment,
   cloneObject,
+  createElement,
   DOMReady,
   findRegion,
   formatBlock,

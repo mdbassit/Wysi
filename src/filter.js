@@ -1,16 +1,15 @@
 import settings from './settings.js';
 import toolset from './toolset.js';
+import { buildFragment, cloneObject, createElement } from './utils.js';
 import {
   appendChild,
-  createElement,
   getAttribute,
   removeChild,
   removeAttribute,
   setAttribute,
   toLowerCase,
-  buildFragment,
-  cloneObject
-} from './utils.js';
+} from './shortcuts.js';
+
 
 const STYLE_ATTRIBUTE = 'style';
 

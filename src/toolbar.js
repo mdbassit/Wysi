@@ -2,6 +2,7 @@ import window from 'window';
 import document from 'document';
 import toolset from './toolset.js';
 import { instances } from './common.js';
+import { addListener, buildFragment, createElement, DOMReady, findRegion } from './utils.js';
 import {
   appendChild,
   execCommand,
@@ -10,13 +11,9 @@ import {
   querySelectorAll,
   setAttribute,
   stopImmediatePropagation,
-  toLowerCase,
-  addListener,
-  buildFragment,
-  createElement,
-  DOMReady,
-  findRegion
-} from './utils.js';
+  toLowerCase
+} from './shortcuts.js';
+
 
 const selectedClass = 'wysi-selected';
 let isSelectionInProgress = false;

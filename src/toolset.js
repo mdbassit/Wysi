@@ -1,4 +1,5 @@
-import { execCommand, formatBlock } from './utils.js';
+import { execCommand } from './shortcuts.js';
+import { formatBlock } from './utils.js';
 
 // Supported tools
 export default {

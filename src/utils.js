@@ -63,7 +63,7 @@ function buildFragment(html) {
  * @return {object} The clone object.
  */
 function cloneObject(obj) {
-  return JSON.parse(JSON.stringify(obj));
+  return obj ? JSON.parse(JSON.stringify(obj)) : obj;
 }
 
 /**

@@ -23,7 +23,7 @@ function enableTags(tools) {
   const allowedTags = cloneObject(settings.allowedTags);
 
   tools.forEach(toolName => {
-    const tool = toolset[toolName];
+    const tool = cloneObject(toolset[toolName]);
 
     if (!tool || !tool.tags) {
       return;
@@ -34,8 +34,8 @@ function enableTags(tools) {
     const aliasList = tool.alias || [];
     const alias = aliasList.length ? tool.tags[0] : undefined;
     const tags = [...tool.tags, ...extraTags, ...aliasList];
-    const attributes = tool.attributes ? tool.attributes.slice() : [];
-    const styles = tool.styles ? tool.styles.slice() : [];
+    const attributes = tool.attributes || [];
+    const styles = tool.styles || [];
 
     tags.forEach(tag => {
       allowedTags[tag] = { attributes, styles, alias, isEmpty };

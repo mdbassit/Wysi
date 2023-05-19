@@ -1,5 +1,12 @@
 import { execCommand } from './shortcuts.js';
-import { formatBlock } from './utils.js';
+
+/**
+ * Execute a formatBlock command.
+ * @param {string} format The block format to apply.
+ */
+function formatBlock(format) {
+  execCommand('formatBlock', `<${format}>`);
+}
 
 // Supported tools
 export default {

@@ -1,8 +1,8 @@
 import window from 'window';
 import document from 'document';
 import toolset from './toolset.js';
+import { renderListBox, selectListBoxItem } from './listbox.js';
 import { instances } from './common.js';
-import { addListener, buildFragment, createElement, DOMReady, findRegion } from './utils.js';
 import {
   appendChild,
   execCommand,
@@ -13,11 +13,21 @@ import {
   stopImmediatePropagation,
   toLowerCase
 } from './shortcuts.js';
-
+import {
+  addListener,
+  buildFragment,
+  createElement,
+  DOMReady,
+  execAction,
+  findRegion,
+  restoreSelection,
+  setCurrentSelection,
+  setSelection,
+  toggleButton
+} from './utils.js';
 
 const selectedClass = 'wysi-selected';
 let isSelectionInProgress = false;
-let currentSelection;
 
 /**
  * Render the toolbar.
@@ -75,57 +85,18 @@ function renderToolbar(tools, translations) {
  * @return {object} A DOM element containing the format tool.
  */
 function renderFormatTool(translations) {
-  const formatLabel = translations['format'] || toolset.format.label;
+  const label = translations['format'] || toolset.format.label;
   const paragraphLabel = translations['paragraph'] || toolset.format.paragraph;
   const headingLabel = translations['heading'] || toolset.format.heading;
-  const formats = toolset.format.tags.map(tag => { 
+  const items = toolset.format.tags.map(tag => { 
     const name = tag;
     const label = tag === 'p' ? paragraphLabel : `${headingLabel} ${tag.substring(1)}`;
+    const action = 'format';
 
-    return { name, label };
+    return { name, label, action };
   });
 
-  // List box wrapper
-  const listBoxWrapper = createElement('div', {
-    class: 'wysi-listbox'
-  });
-
-  // List box button
-  const listBoxButton = createElement('button', {
-    type: 'button',
-    title: formatLabel,
-    'aria-haspopup': 'listbox',
-    'aria-expanded': false,
-    _textContent: paragraphLabel
-  });
-
-  // List box
-  const listBox = createElement('div', {
-    role: 'listbox',
-    tabindex: -1,
-    'aria-label': formatLabel
-  });
-
-  // List box items
-  formats.forEach(format => {
-    const item = createElement('button', {
-      type: 'button',
-      role: 'option',
-      tabindex: -1,
-      'aria-selected': false,
-      'data-action': 'format',
-      'data-option': format.name,
-      _textContent: format.label
-    });
-
-    appendChild(listBox, item);
-  });
-
-  // Tie it all together
-  appendChild(listBoxWrapper, listBoxButton);
-  appendChild(listBoxWrapper, listBox);
-
-  return listBoxWrapper;
+  return renderListBox({ label, items });
 }
 
 /**
@@ -252,97 +223,17 @@ function updateToolbarState() {
 }
 
 /**
- * Execute an action.
- * @param {string} action The action to execute.
- * @param {object} region The editable region.
- * @param {array} [options] Optional action parameters.
- */
-function execAction(action, region, options = []) {
-  const tool = toolset[action];
-  
-  if (tool) {
-    const command = tool.command || action;
-    const realAction = tool.action || (() => execCommand(command));
-
-    // Focus the editable region
-    region.focus();
-
-    // Restore selection if any
-    restoreSelection();
-
-    // Execute the tool's action
-    realAction(...options);
-  }
-}
-
-/**
- * Restore a previous selection if any.
- */
-function restoreSelection() {
-  if (currentSelection) {
-    const selection = document.getSelection();
-
-    selection.removeAllRanges();
-    selection.addRange(currentSelection);
-    currentSelection = undefined;
-  }
-}
-
-/**
- * Set the expanded state of a button.
- * @param {object} button The button.
- * @param {boolean} expanded The expanded state.
- */
-function toggleButton(button, expanded) {
-  setAttribute(button, 'aria-expanded', expanded);
-}
-
-/**
  * Close all popovers and dropdowns.
  * @param {boolean} restore If true, restore the previous selection.
  */
 function closeAllLayers(restore) {
-  const buttons = '.wysi-listbox [aria-expanded="true"], body:not(.wysi-dragging) .wysi-popover [aria-expanded="true"]';
+  const buttons = '.wysi-popover [aria-expanded="true"]';
 
   querySelectorAll(buttons).forEach(button => toggleButton(button, false));
 
   if (restore) {
     restoreSelection();
   }
-}
-
-/**
- * Open a list box.
- * @param {object} button The list box's button.
- */
-function openListBox(button) {
-  const isOpen = getAttribute(button, 'aria-expanded') === 'true';
-  const listBox = button.nextElementSibling;
-  let selectedItem = querySelector('[aria-selected="true"]', listBox);
-
-  if (!selectedItem) {
-    selectedItem = listBox.firstElementChild;
-  }
-
-  toggleButton(button, !isOpen);
-  selectedItem.focus();
-}
-
-/**
- * Select a list box item.
- * @param {object} item The list box item.
- */
-function selectListBoxItem(item) {
-  const listBox = item.parentNode;
-  const button = listBox.previousElementSibling;
-  const selectedItem = querySelector('[aria-selected="true"]', listBox);
-
-  if (selectedItem) {
-    setAttribute(selectedItem, 'aria-selected', 'false');
-  }
-
-  setAttribute(item, 'aria-selected', 'true');
-  button.innerHTML = item.innerHTML;
 }
 
 /**
@@ -368,14 +259,12 @@ addListener(document, 'click', '.wysi-editor, .wysi-editor *', event => {
 // Select an image when it's clicked
 addListener(document, 'click', '.wysi-editor img', event => {
   const image = event.target;
-  const selection = document.getSelection();
   const range = document.createRange();
 
   image.classList.add(selectedClass);
 
   range.selectNode(image);
-  selection.removeAllRanges();
-  selection.addRange(range);
+  setSelection(range);
 });
 
 // Toolbar button click
@@ -420,13 +309,13 @@ addListener(document, 'click', '.wysi-popover > button', event => {
         range.selectNode(target);
       }
 
-      currentSelection = range;
+      setCurrentSelection(range);
 
       tool.attributes.forEach(attribute => {
         values.push(getAttribute(target, attribute));
       })
     } else if (selection && region.contains(anchorNode) && selection.rangeCount) {
-      currentSelection = selection.getRangeAt(0);
+      setCurrentSelection(selection.getRangeAt(0));
     }
   }
 
@@ -511,86 +400,6 @@ addListener(document, 'keydown', '.wysi-popover *', event => {
       break;
   }
 
-});
-
-// list box button click
-addListener(document, 'click', '.wysi-listbox > button', event => {
-  closeAllLayers();
-  openListBox(event.target);
-  stopImmediatePropagation(event);
-});
-
-// On key press on the list box button
-addListener(document, 'keydown', '.wysi-listbox > button', event => {
-  switch (event.key) {
-    case 'ArrowUp':
-    case 'ArrowDown':
-    case 'Enter':
-    case ' ':
-      openListBox(event.target);
-      event.preventDefault();
-      break;
-  }
-});
-
-// When the mouse moves on a list box item, focus it
-addListener(document.documentElement, 'mousemove', '.wysi-listbox > div > button', event => {
-  event.target.focus();
-});
-
-// On click on an list box item
-addListener(document, 'click', '.wysi-listbox > div > button', event => {
-  const item = event.target;
-  const action = getAttribute(item, 'data-action');
-  const option = getAttribute(item, 'data-option');
-  const region = item.parentNode.parentNode.parentNode.nextElementSibling;
-
-  execAction(action, region, [option]);
-});
-
-// On key press on an item
-addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
-  const item = event.target;
-  const listBox = item.parentNode;
-  const button = listBox.previousElementSibling;
-  let preventDefault = true;
-
-  switch (event.key) {
-    case 'ArrowUp':
-      const prev = item.previousElementSibling;
-
-      if (prev) {
-        prev.focus();
-      }
-
-      break;
-    case 'ArrowDown':
-      const next = item.nextElementSibling;
-
-      if (next) {
-        next.focus();
-      }
-
-      break;
-    case 'Home':
-      listBox.firstElementChild.focus();
-      break;
-    case 'End':
-      listBox.lastElementChild.focus();
-      break;
-    case 'Tab':
-      item.click();
-      break;
-    case 'Escape':
-      toggleButton(button, false);
-      break;
-    default:
-      preventDefault = false;
-  }
-
-  if (preventDefault) {
-    event.preventDefault();
-  }
 });
 
 // Close open popups and dropdowns on click outside

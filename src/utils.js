@@ -1,4 +1,5 @@
 import document from 'document';
+import toolset from './toolset.js';
 import {
   execCommand,
   hasClass,
@@ -6,6 +7,9 @@ import {
   setAttribute,
   toLowerCase
 } from './shortcuts.js';
+
+// Used to store the current DOM selection for later use
+let currentSelection;
 
 // Polyfill for Nodelist.forEach
 if (NodeList !== undefined && NodeList.prototype && !NodeList.prototype.forEach) {
@@ -100,6 +104,30 @@ function DOMReady(fn, args) {
 }
 
 /**
+ * Execute an action.
+ * @param {string} action The action to execute.
+ * @param {object} region The editable region.
+ * @param {array} [options] Optional action parameters.
+ */
+function execAction(action, region, options = []) {
+  const tool = toolset[action];
+  
+  if (tool) {
+    const command = tool.command || action;
+    const realAction = tool.action || (() => execCommand(command));
+
+    // Focus the editable region
+    region.focus();
+
+    // Restore selection if any
+    restoreSelection();
+
+    // Execute the tool's action
+    realAction(...options);
+  }
+}
+
+/**
  * Find the current editable region.
  * @param {object} currentNode The possible child node of the editable region.
  * @return {object} The editable region and arrays of nodes and HTML tags that lead to it.
@@ -128,14 +156,6 @@ function findRegion(currentNode) {
   }
 
   return { region, nodes, tags };
-}
-
-/**
- * Execute a formatBlock command.
- * @param {string} format The block format to apply.
- */
-function formatBlock(format) {
-  execCommand('formatBlock', `<${format}>`);
 }
 
 /**
@@ -172,13 +192,55 @@ function getTextAreaLabel(textarea) {
   return '';
 }
 
+/**
+ * Restore a previous selection if any.
+ */
+function restoreSelection() {
+  if (currentSelection) {
+    setSelection(currentSelection);
+    currentSelection = undefined;
+  }
+}
+
+/**
+ * Set the value of the current selection.
+ * @param {object} range The range to set.
+ */
+function setCurrentSelection(range) {
+  currentSelection = range;
+}
+
+/**
+ * Set the selection to a range.
+ * @param {object} range The range to select.
+ */
+function setSelection(range) {
+  const selection = document.getSelection();
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+/**
+ * Set the expanded state of a button.
+ * @param {object} button The button.
+ * @param {boolean} expanded The expanded state.
+ */
+function toggleButton(button, expanded) {
+  setAttribute(button, 'aria-expanded', expanded);
+}
+
 export {
   addListener,
   buildFragment,
   cloneObject,
   createElement,
   DOMReady,
+  execAction,
   findRegion,
-  formatBlock,
-  getTextAreaLabel
+  getTextAreaLabel,
+  restoreSelection,
+  setCurrentSelection,
+  setSelection,
+  toggleButton
 };

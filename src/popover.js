@@ -1,4 +1,3 @@
-import window from 'window';
 import document from 'document';
 import toolset from './toolset.js';
 import { renderListBox, selectListBoxItem } from './listbox.js';

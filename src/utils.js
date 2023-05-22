@@ -116,14 +116,14 @@ function execAction(action, region, options = []) {
     const command = tool.command || action;
     const realAction = tool.action || (() => execCommand(command));
 
-    // Focus the editable region
-    region.focus();
-
     // Restore selection if any
     restoreSelection();
 
     // Execute the tool's action
     realAction(...options);
+
+    // Focus the editable region
+    region.focus();
   }
 }
 

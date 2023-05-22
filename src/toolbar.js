@@ -1,4 +1,3 @@
-import window from 'window';
 import document from 'document';
 import toolset from './toolset.js';
 import { renderPopover } from './popover.js';
@@ -175,8 +174,11 @@ addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
   const action = button.getAttribute('data-action');
   const region = button.parentNode.nextElementSibling;
-  
-  execAction(action, region);
+  const selection = document.getSelection();
+
+  if (selection && region.contains(selection.anchorNode)) {
+    execAction(action, region);
+  }
 });
 
 // Update the toolbar buttons state

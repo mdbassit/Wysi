@@ -1,4 +1,3 @@
-import window from 'window';
 import document from 'document';
 import toolset from './toolset.js';
 import { instances } from './common.js';
@@ -141,8 +140,11 @@ addListener(document, 'click', '.wysi-listbox > div > button', event => {
   const action = getAttribute(item, 'data-action');
   const option = getAttribute(item, 'data-option');
   const region = item.parentNode.parentNode.parentNode.nextElementSibling;
+  const selection = document.getSelection();
 
-  execAction(action, region, [option]);
+  if (selection && region.contains(selection.anchorNode)) {
+    execAction(action, region, [option]);
+  }
 });
 
 // On key press on an item

@@ -38,6 +38,11 @@ function renderToolbar(tools, translations) {
         appendChild(toolbar, createElement('div', { class: 'wysi-separator' }));
         break;
 
+      // Toolbar new line
+      case '-':
+        appendChild(toolbar, createElement('div', { class: 'wysi-newline' }));
+        break;
+
       // The format tool renders as a list box
       case 'format':
         appendChild(toolbar, renderFormatTool(translations));

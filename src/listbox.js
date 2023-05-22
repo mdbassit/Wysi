@@ -1,7 +1,13 @@
 import document from 'document';
 import toolset from './toolset.js';
 import { instances } from './common.js';
-import { addListener, createElement, execAction, toggleButton } from './utils.js';
+import {
+  addListener,
+  createElement,
+  execAction,
+  findInstance,
+  toggleButton
+} from './utils.js';
 import {
   appendChild,
   getAttribute,
@@ -139,7 +145,7 @@ addListener(document, 'click', '.wysi-listbox > div > button', event => {
   const item = event.target;
   const action = getAttribute(item, 'data-action');
   const option = getAttribute(item, 'data-option');
-  const region = item.parentNode.parentNode.parentNode.nextElementSibling;
+  const { region } = findInstance(item);
   const selection = document.getSelection();
 
   if (selection && region.contains(selection.anchorNode)) {

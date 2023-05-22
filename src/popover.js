@@ -15,7 +15,7 @@ import {
   addListener,
   createElement,
   execAction,
-  findRegion,
+  findInstance,
   restoreSelection,
   setCurrentSelection,
   toggleButton
@@ -102,10 +102,9 @@ function renderPopover(toolName, button, translations) {
  */
 function openPopover(button) {
   const inputs = querySelectorAll('input', button.nextElementSibling);
-  const region = button.parentNode.parentNode.nextElementSibling;
   const selection = document.getSelection();
   const anchorNode = selection.anchorNode;
-  const { nodes } = findRegion(anchorNode);
+  const { region, nodes } = findInstance(anchorNode);
   const values = [];
 
   if (region) {
@@ -170,7 +169,7 @@ function openPopover(button) {
 function execPopoverAction(button) {
   const action = getAttribute(button, 'data-action');
   const inputs = querySelectorAll('input', button.parentNode);
-  const region = button.parentNode.parentNode.parentNode.nextElementSibling;
+  const { region } = findInstance(button);
   const options = [];
 
   inputs.forEach(input => {

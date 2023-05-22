@@ -8,7 +8,8 @@ import {
   getAttribute,
   querySelector,
   querySelectorAll,
-  setAttribute
+  setAttribute,
+  toLowerCase
 } from './shortcuts.js';
 import {
   addListener,
@@ -16,7 +17,7 @@ import {
   createElement,
   DOMReady,
   execAction,
-  findRegion,
+  findInstance,
   setSelection
 } from './utils.js';
 
@@ -94,7 +95,8 @@ function renderFormatTool(translations) {
  * Update toolbar buttons state.
  */
 function updateToolbarState() {
-  const { region, tags } = findRegion(document.getSelection().anchorNode);
+  const { toolbar, region, nodes } = findInstance(document.getSelection().anchorNode);
+  const tags = nodes.map(node => toLowerCase(node.tagName));
 
   // Abort if the selection is not within an editable region
   if (!region) {
@@ -105,11 +107,8 @@ function updateToolbarState() {
   const instanceId = getAttribute(region, 'data-wid');
   const allowedTags = instances[instanceId].allowedTags;
 
-  // Get the current editable regions toolbar
-  const toolbar = region.previousElementSibling;
-
   // Reset the state of all buttons
-  querySelectorAll('[aria-pressed="true"]', toolbar).forEach(button => button.setAttribute('aria-pressed', 'false'));
+  querySelectorAll('[aria-pressed="true"]', toolbar).forEach(button => setAttribute(button, 'aria-pressed', 'false'));
 
   // Update the buttons states
   tags.forEach(tag => {
@@ -128,7 +127,8 @@ function updateToolbarState() {
         const action = allowedTag ? allowedTag.toolName : undefined;
 
         if (action) {
-          querySelector(`[data-action="${action}"]`, toolbar).setAttribute('aria-pressed', 'true');
+          const button = querySelector(`[data-action="${action}"]`, toolbar);
+          setAttribute(button, 'aria-pressed', 'true');
         }
     }
 
@@ -173,7 +173,7 @@ addListener(document, 'click', '.wysi-editor img', event => {
 addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
   const action = button.getAttribute('data-action');
-  const region = button.parentNode.nextElementSibling;
+  const { region } = findInstance(button);
   const selection = document.getSelection();
 
   if (selection && region.contains(selection.anchorNode)) {

@@ -9,7 +9,7 @@ import {
   cloneObject,
   createElement,
   DOMReady,
-  findRegion,
+  findInstance,
   getTextAreaLabel
 } from './utils.js';
 import {
@@ -149,7 +149,7 @@ function destroy(selector) {
  * @param {object} event The browser's paste event.
  */
 function cleanPastedContent(event) {
-  const { region } = findRegion(event.target);
+  const { region } = findInstance(event.target);
   const clipboardData = event.clipboardData;
 
   if (region && clipboardData.types.includes('text/html')) {

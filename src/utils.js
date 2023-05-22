@@ -128,34 +128,39 @@ function execAction(action, region, options = []) {
 }
 
 /**
- * Find the current editable region.
- * @param {object} currentNode The possible child node of the editable region.
- * @return {object} The editable region and arrays of nodes and HTML tags that lead to it.
+ * Find the current editor instance.
+ * @param {object} currentNode The possible child node of the editor instance.
+ * @return {object} The instance's editable region and toolbar, and an array of nodes that lead to it.
  */
-function findRegion(currentNode) {
+function findInstance(currentNode) {
   const nodes = [];
-  const tags = [];
-  let region;
+  let ancestor, toolbar, region;
 
-  // Find all HTML tags between the current node and the editable region
+  // Find all HTML tags between the current node and the editable ancestor
   while (currentNode && currentNode !== document.body) {
     const tag = currentNode.tagName;
 
     if (tag) {
-      if (hasClass(currentNode, 'wysi-editor')) {
-        // Editable region found
-        region = currentNode;
+      if (hasClass(currentNode, 'wysi-wrapper')) {
+        // Editable ancestor found
+        ancestor = currentNode;
         break;
       } else {
         nodes.push(currentNode);
-        tags.push(toLowerCase(tag));
       }
     }
 
     currentNode = currentNode.parentNode;
   }
 
-  return { region, nodes, tags };
+  if (ancestor) {
+    const children = ancestor.children;
+
+    toolbar = children[0];
+    region = children[1];
+  }
+
+  return { toolbar, region, nodes };
 }
 
 /**
@@ -237,7 +242,7 @@ export {
   createElement,
   DOMReady,
   execAction,
-  findRegion,
+  findInstance,
   getTextAreaLabel,
   restoreSelection,
   setCurrentSelection,

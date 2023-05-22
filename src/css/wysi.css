@@ -99,8 +99,8 @@
 }
 
 .wysi-toolbar svg {
-  width: 1.5em;
-  height: 1.5em;
+  width: 1.5rem;
+  height: 1.5rem;
   fill: currentColor;
 }
 
@@ -111,8 +111,8 @@
 
 .wysi-listbox > button {
   justify-content: space-between;
-  width: 120px;
-  padding: 0 10px;
+  width: 40px;
+  padding: 0 4px 0 2px;
 }
 
 .wysi-listbox > button:after {
@@ -128,9 +128,7 @@
 
 .wysi-listbox div {
   position: absolute;
-  min-width: 160px;
   margin-top: -1px;
-  padding: 5px;
   z-index: 1;
   border-radius: 0 0 3px 3px;
   background-color: #fff;
@@ -156,21 +154,33 @@
   background-color: #eee;
 }
 
-.wysi-listbox button[data-option^="h"] {
+/** Format tool **/
+.wysi-format > button {
+  width: 120px;
+  padding: 0 10px;
+}
+
+.wysi-format div {
+  min-width: 160px;
+  padding: 5px;
+}
+
+.wysi-format button[data-option^="h"] {
   font-weight: bold;
 }
 
-.wysi-listbox button[data-option="h1"] {
+.wysi-format button[data-option="h1"] {
   font-size: 20px;
 }
 
-.wysi-listbox button[data-option="h2"] {
+.wysi-format button[data-option="h2"] {
   font-size: 18px;
 }
 
-.wysi-listbox button[data-option="h3"] {
+.wysi-format button[data-option="h3"] {
   font-size: 16px;
 }
+/** End of Format tool **/
 
 .wysi-popover {
   position: relative;

@@ -26,19 +26,20 @@ import {
 function renderListBox(details) {
   const label = details.label;
   const items = details.items;
+  const firstItem = items[0];
+  const classes = ['wysi-listbox'].concat(details.classes || []);
 
   // List box wrapper
-  const listBox = createElement('div', {
-    class: 'wysi-listbox'
-  });
+  const listBox = createElement('div', { class: classes.join(' ') });
 
   // List box button
   const button = createElement('button', {
     type: 'button',
     title: label,
+    'aria-label': `${label} ${firstItem.label}`,
     'aria-haspopup': 'listbox',
     'aria-expanded': false,
-    _textContent: items[0].label
+    _innerHTML: renderListBoxItem(firstItem)
   });
 
   // List box menu
@@ -54,10 +55,11 @@ function renderListBox(details) {
       type: 'button',
       role: 'option',
       tabindex: -1,
+      'aria-label': item.label,
       'aria-selected': false,
       'data-action': item.action,
-      'data-option': item.name,
-      _textContent: item.label
+      'data-option': item.name || '',
+      _innerHTML: renderListBoxItem(item)
     });
 
     appendChild(menu, option);
@@ -68,6 +70,15 @@ function renderListBox(details) {
   appendChild(listBox, menu);
 
   return listBox;
+}
+
+/**
+ * Render a list box item.
+ * @param {object} item The list box item.
+ * @return {string} The list box item's content.
+ */
+function renderListBoxItem(item) {
+  return item.icon ? `<svg><use href="#wysi-${item.icon}"></use></svg>` : item.label;
 }
 
 /**
@@ -151,6 +162,8 @@ addListener(document, 'click', '.wysi-listbox > div > button', event => {
   if (selection && region.contains(selection.anchorNode)) {
     execAction(action, region, [option]);
   }
+
+  selectListBoxItem(item);
 });
 
 // On key press on an item

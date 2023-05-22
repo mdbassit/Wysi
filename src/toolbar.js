@@ -50,30 +50,68 @@ function renderToolbar(tools, translations) {
 
       // All the other tools render as buttons
       default:
-        const tool = toolset[toolName];
-        const label = translations[toolName] || tool.label;
-        const button = createElement('button', {
-          type: 'button',
-          title: label,
-          'aria-label': label,
-          'aria-pressed': false,
-          'data-action': toolName,
-          _innerHTML: `<svg><use href="#wysi-${toolName}"></use></svg>`
-        });
-
-        // Tools that require parameters (e.g: image, link) need a popover
-        if (tool.hasForm) {
-          const popover = renderPopover(toolName, button, translations);
-          appendChild(toolbar, popover);
-
-        // The other tools only display a button
+        if (typeof toolName === 'object') {
+          if (toolName.items) {
+            appendChild(toolbar, renderToolGroup(toolName, translations));
+          }
         } else {
-          appendChild(toolbar, button);
+          renderTool(toolName, toolbar, translations);
         }
     }
   });
 
   return toolbar;
+}
+
+/**
+ * Render a tool.
+ * @param {string} name The tool's name.
+ * @param {object} toolbar The toolbar to which the tool will be appended.
+ * @param {object} translations The labels translation object.
+ */
+function renderTool(name, toolbar, translations) {
+  const tool = toolset[name];
+  const label = translations[name] || tool.label;
+  const button = createElement('button', {
+    type: 'button',
+    title: label,
+    'aria-label': label,
+    'aria-pressed': false,
+    'data-action': name,
+    _innerHTML: `<svg><use href="#wysi-${name}"></use></svg>`
+  });
+
+  // Tools that require parameters (e.g: image, link) need a popover
+  if (tool.hasForm) {
+    const popover = renderPopover(name, button, translations);
+    appendChild(toolbar, popover);
+
+  // The other tools only display a button
+  } else {
+    appendChild(toolbar, button);
+  }
+}
+
+/**
+ * Render a tool group.
+ * @param {object} details The group's properties.
+ * @param {object} translations The labels translation object.
+ * @return {object} A DOM element containing the tool group.
+ */
+function renderToolGroup(details, translations) {
+  const label = details.label || translations.select || 'Select an item';
+  const options = details.items;
+
+  const items = options.map(option => {
+    const tool = toolset[option];
+    const label = translations[option] || tool.label;
+    const icon = option;
+    const action = option;
+
+    return { label, icon, action };
+  });
+
+  return renderListBox({ label, items });
 }
 
 /**
@@ -85,6 +123,7 @@ function renderFormatTool(translations) {
   const label = translations['format'] || toolset.format.label;
   const paragraphLabel = translations['paragraph'] || toolset.format.paragraph;
   const headingLabel = translations['heading'] || toolset.format.heading;
+  const classes = 'wysi-format';
   const items = toolset.format.tags.map(tag => { 
     const name = tag;
     const label = tag === 'p' ? paragraphLabel : `${headingLabel} ${tag.substring(1)}`;
@@ -93,7 +132,7 @@ function renderFormatTool(translations) {
     return { name, label, action };
   });
 
-  return renderListBox({ label, items });
+  return renderListBox({ label, items, classes });
 }
 
 /**

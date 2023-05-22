@@ -1,7 +1,7 @@
 :root {
-  --wysi-primary: #357beb;
-  --wysi-hover: #2b62bd;
-  --wysi-highlight: #d7e4fb ;
+  --wysi-primary: #027ffe;
+  --wysi-hover: #0266cb;
+  --wysi-highlight: #cce5ff ;
 }
 
 .wysi-wrapper {
@@ -9,7 +9,7 @@
   flex-direction: column;
   position: relative;
   border-radius: 5px;
-  outline: 1px solid rgba(160, 160, 160, .45);
+  outline: 1px solid rgba(160, 160, 160, .3);
 }
 
 .wysi-wrapper:focus-within {

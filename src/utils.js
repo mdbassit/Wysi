@@ -2,6 +2,7 @@ import document from 'document';
 import toolset from './toolset.js';
 import {
   execCommand,
+  getAttribute,
   hasClass,
   querySelector,
   setAttribute,
@@ -164,6 +165,15 @@ function findInstance(currentNode) {
 }
 
 /**
+ * Get an editor's instance id.
+ * @param {object} editor The editor element.
+ * @return {string} The instance id.
+ */ 
+function getInstanceId(editor) {
+  return getAttribute(editor, 'data-wid');
+}
+
+/**
  * Try to guess the textarea element's label if any.
  * @param {object} textarea The textarea element.
  * @return {string} The textarea element's label or an empty string.
@@ -243,6 +253,7 @@ export {
   DOMReady,
   execAction,
   findInstance,
+  getInstanceId,
   getTextAreaLabel,
   restoreSelection,
   setCurrentSelection,

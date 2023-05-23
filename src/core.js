@@ -10,6 +10,7 @@ import {
   createElement,
   DOMReady,
   findInstance,
+  getInstanceId,
   getTextAreaLabel
 } from './utils.js';
 import {
@@ -136,7 +137,7 @@ function destroy(selector) {
     const sibling = field.previousElementSibling;
 
     if (sibling && hasClass(sibling, 'wysi-wrapper')) {
-      const instanceId = getAttribute(sibling.lastChild, 'data-wid');
+      const instanceId = getInstanceId(sibling.lastChild);
 
       delete instances[instanceId];
       sibling.remove();
@@ -154,7 +155,7 @@ function cleanPastedContent(event) {
 
   if (region && clipboardData.types.includes('text/html')) {
     const pasted = clipboardData.getData('text/html');
-    const instanceId = getAttribute(region, 'data-wid');
+    const instanceId = getInstanceId(region);
     const allowedTags = instances[instanceId].allowedTags;
     const content = prepareContent(pasted, allowedTags);
 

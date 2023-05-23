@@ -18,6 +18,7 @@ import {
   DOMReady,
   execAction,
   findInstance,
+  getInstanceId,
   setSelection
 } from './utils.js';
 
@@ -148,7 +149,7 @@ function updateToolbarState() {
   }
 
   // Get the list of allowed tags in the current editable region
-  const instanceId = getAttribute(region, 'data-wid');
+  const instanceId = getInstanceId(region);
   const allowedTags = instances[instanceId].allowedTags;
 
   // Reset the state of all buttons
@@ -234,7 +235,7 @@ addListener(document, 'click', '.wysi-editor img', event => {
 // Toolbar button click
 addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
-  const action = button.getAttribute('data-action');
+  const action = getAttribute(button, 'data-action');
   const { region } = findInstance(button);
   const selection = document.getSelection();
 

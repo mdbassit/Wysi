@@ -5,7 +5,7 @@
 
 A lightweight and simple WYSIWYG editor written in vanilla ES6 with no dependencies.
 
-[**View demo**](https://https://mdbassit.github.io/Wysi)
+[**View demo**](https://mdbassit.github.io/Wysi)
 
 This is an early release. Use in production is NOT YET RECOMMENDED.
 
@@ -109,4 +109,4 @@ When submitting a PR, please do not include the changes to the `dist` directory 
 ## License
 
 Copyright (c) 2023 Momo Bassit.  
-**Wysi** is licensed under the [MIT license](https://github.com/mdbassit/Wysi/blob/main/LICENSE).
+**Wysi** is licensed under the [MIT license](https://github.com/mdbassit/Wysi/blob/main/LICENSE.txt).

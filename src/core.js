@@ -182,9 +182,16 @@ function bootstrap() {
   addListener(document, 'input', '.wysi-editor', event => {
     const editor = event.target;
     const textarea = editor.parentNode.nextElementSibling;
+    const instanceId = getInstanceId(editor);
+    const onChange = instances[instanceId].onChange;
+    const content = editor.innerHTML;
 
-    textarea.value = editor.innerHTML;
-    dispatchEvent(textarea, 'input');
+    textarea.value = content;
+    dispatchEvent(textarea, 'change');
+
+    if (onChange) {
+      onChange(content);
+    }
   });
 
   // Clean up pasted content

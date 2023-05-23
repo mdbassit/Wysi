@@ -45,7 +45,7 @@
   transform: translate(-50%, -100%);
   margin-top: -5px;
   border-radius: 5px;
-  outline: 1px solid rgba(160, 160, 160, .45);
+  outline: 1px solid rgba(160, 160, 160, .3);
 }
 
 .wysi-toolbar *,

@@ -104,10 +104,10 @@ function openPopover(button) {
   const inputs = querySelectorAll('input', button.nextElementSibling);
   const selection = document.getSelection();
   const anchorNode = selection.anchorNode;
-  const { region, nodes } = findInstance(anchorNode);
+  const { editor, nodes } = findInstance(anchorNode);
   const values = [];
 
-  if (region) {
+  if (editor) {
     // Try to find an existing target of the popover's action from the DOM selection
     const action = getAttribute(button, 'data-action');
     const tool = toolset[action];
@@ -116,7 +116,7 @@ function openPopover(button) {
 
     // If that fails, look for an element with the selection CSS class
     if (!target) {
-      target = querySelector(`.${selectedClass}`, region);
+      target = querySelector(`.${selectedClass}`, editor);
       selectContents = false;
     }
 
@@ -141,7 +141,7 @@ function openPopover(button) {
       })
 
     // If no existing target is found, we are adding new content
-    } else if (selection && region.contains(anchorNode) && selection.rangeCount) {
+    } else if (selection && editor.contains(anchorNode) && selection.rangeCount) {
       // Save the current selection to keep track of where to insert the content
       setCurrentSelection(selection.getRangeAt(0));
     }
@@ -166,7 +166,7 @@ function openPopover(button) {
 function execPopoverAction(button) {
   const action = getAttribute(button, 'data-action');
   const inputs = querySelectorAll('input', button.parentNode);
-  const { region } = findInstance(button);
+  const { editor } = findInstance(button);
   const options = [];
 
   inputs.forEach(input => {
@@ -175,7 +175,7 @@ function execPopoverAction(button) {
 
   // Workaround for links being removed when updating images
   if (action === 'image') {
-    const selected = querySelector(`.${selectedClass}`, region);
+    const selected = querySelector(`.${selectedClass}`, editor);
     const parent = selected ? selected.parentNode : {};
 
     if (selected && parent.tagName === 'A') {
@@ -183,7 +183,7 @@ function execPopoverAction(button) {
     }
   }
 
-  execAction(action, region, options);
+  execAction(action, editor, options);
 }
 
 /**

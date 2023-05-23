@@ -107,10 +107,10 @@ function DOMReady(fn, args) {
 /**
  * Execute an action.
  * @param {string} action The action to execute.
- * @param {object} region The editable region.
+ * @param {object} editor The editor instance.
  * @param {array} [options] Optional action parameters.
  */
-function execAction(action, region, options = []) {
+function execAction(action, editor, options = []) {
   const tool = toolset[action];
   
   if (tool) {
@@ -123,8 +123,8 @@ function execAction(action, region, options = []) {
     // Execute the tool's action
     realAction(...options);
 
-    // Focus the editable region
-    region.focus();
+    // Focus the editor instance
+    editor.focus();
   }
 }
 
@@ -135,7 +135,7 @@ function execAction(action, region, options = []) {
  */
 function findInstance(currentNode) {
   const nodes = [];
-  let ancestor, toolbar, region;
+  let ancestor, toolbar, editor;
 
   // Find all HTML tags between the current node and the editable ancestor
   while (currentNode && currentNode !== document.body) {
@@ -158,10 +158,10 @@ function findInstance(currentNode) {
     const children = ancestor.children;
 
     toolbar = children[0];
-    region = children[1];
+    editor = children[1];
   }
 
-  return { toolbar, region, nodes };
+  return { toolbar, editor, nodes };
 }
 
 /**

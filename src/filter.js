@@ -50,7 +50,7 @@ function enableTags(tools) {
 
 /**
  * Prepare raw content for editing.
- * @param {string} content The editable region's raw content.
+ * @param {string} content The raw content.
  * @param {array} allowedTags The list of allowed tags.
  * @return {string} The filter HTML content.
  */

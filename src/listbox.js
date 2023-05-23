@@ -156,11 +156,11 @@ addListener(document, 'click', '.wysi-listbox > div > button', event => {
   const item = event.target;
   const action = getAttribute(item, 'data-action');
   const option = getAttribute(item, 'data-option');
-  const { region } = findInstance(item);
+  const { editor } = findInstance(item);
   const selection = document.getSelection();
 
-  if (selection && region.contains(selection.anchorNode)) {
-    execAction(action, region, [option]);
+  if (selection && editor.contains(selection.anchorNode)) {
+    execAction(action, editor, [option]);
   }
 
   selectListBoxItem(item);

@@ -140,16 +140,16 @@ function renderFormatTool(translations) {
  * Update toolbar buttons state.
  */
 function updateToolbarState() {
-  const { toolbar, region, nodes } = findInstance(document.getSelection().anchorNode);
+  const { toolbar, editor, nodes } = findInstance(document.getSelection().anchorNode);
   const tags = nodes.map(node => toLowerCase(node.tagName));
 
-  // Abort if the selection is not within an editable region
-  if (!region) {
+  // Abort if the selection is not within an editor instance
+  if (!editor) {
     return;
   }
 
-  // Get the list of allowed tags in the current editable region
-  const instanceId = getInstanceId(region);
+  // Get the list of allowed tags in the current editor instance
+  const instanceId = getInstanceId(editor);
   const allowedTags = instances[instanceId].allowedTags;
 
   // Reset the state of all buttons
@@ -236,11 +236,11 @@ addListener(document, 'click', '.wysi-editor img', event => {
 addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
   const action = getAttribute(button, 'data-action');
-  const { region } = findInstance(button);
+  const { editor } = findInstance(button);
   const selection = document.getSelection();
 
-  if (selection && region.contains(selection.anchorNode)) {
-    execAction(action, region);
+  if (selection && editor.contains(selection.anchorNode)) {
+    execAction(action, editor);
   }
 });
 

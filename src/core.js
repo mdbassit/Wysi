@@ -28,7 +28,7 @@ import {
 let nextId = 0;
 
 /**
- * Init a WYSIWYG editor instance.
+ * Init WYSIWYG editor instances.
  * @param {object} options Configuration options.
  */
 function init(options) {
@@ -53,7 +53,7 @@ function init(options) {
     }
   });
 
-  // Append an editable region
+  // Append an editor instance
   querySelectorAll(selector).forEach(field => {
     const sibling = field.previousElementSibling;
 
@@ -82,7 +82,7 @@ function init(options) {
         _innerHTML: prepareContent(field.value, allowedTags)
       });      
 
-      // Insert the editable region in the document
+      // Insert the editor instance in the document
       appendChild(wrapper, toolbar.cloneNode(true));
       appendChild(wrapper, editor);
       field.before(wrapper);
@@ -118,10 +118,10 @@ function configure(instance, options) {
         const height = options.height;
 
         if (!isNaN(height)) {
-          const region = instance.lastChild;
+          const editor = instance.lastChild;
 
-          region.style.minHeight = `${height}px`;
-          region.style.maxHeight = `${height}px`;
+          editor.style.minHeight = `${height}px`;
+          editor.style.maxHeight = `${height}px`;
         }
         break;
     }
@@ -146,16 +146,16 @@ function destroy(selector) {
 }
 
 /**
- * Clean up content before pasting it in an editable region.
+ * Clean up content before pasting it in an editor.
  * @param {object} event The browser's paste event.
  */
 function cleanPastedContent(event) {
-  const { region } = findInstance(event.target);
+  const { editor } = findInstance(event.target);
   const clipboardData = event.clipboardData;
 
-  if (region && clipboardData.types.includes('text/html')) {
+  if (editor && clipboardData.types.includes('text/html')) {
     const pasted = clipboardData.getData('text/html');
-    const instanceId = getInstanceId(region);
+    const instanceId = getInstanceId(editor);
     const allowedTags = instances[instanceId].allowedTags;
     const content = prepareContent(pasted, allowedTags);
 
@@ -198,7 +198,7 @@ function bootstrap() {
   addListener(document, 'paste', cleanPastedContent);
 }
 
-// Expose the WYSIWYG editor to the global scope
+// Expose Wysi to the global scope
 window.Wysi = (() => {
   const methods = {
     destroy: destroy
@@ -219,5 +219,5 @@ window.Wysi = (() => {
   return Wysi;
 })();
 
-// Bootstrap the WYSIWYG editor when the DOM is ready
+// Bootstrap Wysi when the DOM is ready
 DOMReady(bootstrap);

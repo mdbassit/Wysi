@@ -20,7 +20,7 @@
   <symbol id="wysi-alignRight" viewBox="0 0 24 24">
     <path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-12c-1.33 0-1.33-2 0-2h12c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path>
   </symbol>
-  <symbol id="wysi-justify" viewBox="0 0 24 24">
+  <symbol id="wysi-alignJustify" viewBox="0 0 24 24">
     <path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path>
   </symbol>
   <symbol id="wysi-ul" viewBox="0 0 24 24">

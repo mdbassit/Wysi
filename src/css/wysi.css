@@ -65,7 +65,7 @@
   color: #444;
   background-color: transparent;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 1em;
   font-weight: 400;
   box-shadow: none;
   cursor: pointer;
@@ -99,8 +99,8 @@
 }
 
 .wysi-toolbar svg {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.5em;
+  height: 1.5em;
   fill: currentColor;
 }
 
@@ -155,6 +155,10 @@
 }
 
 /** Format tool **/
+.wysi-format {
+  font-size: 14px;
+}
+
 .wysi-format > button {
   width: 120px;
   padding: 0 10px;

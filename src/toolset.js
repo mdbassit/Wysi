@@ -55,7 +55,7 @@ export default {
     label: 'Align right',
     command: 'justifyRight'
   },
-  justify: {
+  alignJustify: {
     label: 'Justify',
     command: 'justifyFull'
   },

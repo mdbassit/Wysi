@@ -154,17 +154,39 @@ function updateToolbarState() {
   // Reset the state of all buttons
   querySelectorAll('[aria-pressed="true"]', toolbar).forEach(button => setAttribute(button, 'aria-pressed', 'false'));
 
-  // Update the buttons states
-  tags.forEach(tag => {
-    let listBoxItem;
+  // Reset the state of all list boxes
+  querySelectorAll('.wysi-listbox > div > button:first-of-type', toolbar).forEach(button => selectListBoxItem(button));
+  
 
+  // Update the buttons states
+  tags.forEach((tag, i) => {
     switch (tag) {
       case 'p':
       case 'h1':
       case 'h2':
       case 'h3':
       case 'h4':
-        listBoxItem = querySelector(`[data-action="format"][data-option="${tag}"]`, toolbar);
+      case 'li':
+        const format = querySelector(`[data-action="format"][data-option="${tag}"]`, toolbar);
+        const textAlign = nodes[i].style.textAlign;
+
+        if (format) {
+          selectListBoxItem(format);
+        }
+
+        // Check for text align
+        if (textAlign) {
+          const action = 'align' + textAlign.charAt(0).toUpperCase() + textAlign.slice(1);
+          const button = querySelector(`[data-action="${action}"]`, toolbar);
+          
+          if (button) {
+            if (getAttribute(button.parentNode, 'role') === 'listbox') {
+              selectListBoxItem(button);
+            } else {
+              setAttribute(button, 'aria-pressed', 'true');
+            }
+          }
+        }
         break;
       default:
         const allowedTag = allowedTags[tag];
@@ -174,11 +196,7 @@ function updateToolbarState() {
           const button = querySelector(`[data-action="${action}"]`, toolbar);
           setAttribute(button, 'aria-pressed', 'true');
         }
-    }
-
-    if (listBoxItem) {
-      selectListBoxItem(listBoxItem);
-    }
+    }    
   });
 }
 

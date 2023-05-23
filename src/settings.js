@@ -6,7 +6,11 @@ export default {
 
   // Default tools in the toolbar
   tools: [
-    'format', '|', 'bold', 'italic', '|', 'alignLeft', 'alignCenter', 'alignRight', '|',
+    'format', '|', 'bold', 'italic', '|', 
+    {
+      label: 'Text alignment',
+      items: ['alignLeft', 'alignCenter', 'alignRight', 'alignJustify']
+    }, '|',
     'ul', 'ol', '|', 'indent', 'outdent', '|', 'link', 'image'
   ],
 

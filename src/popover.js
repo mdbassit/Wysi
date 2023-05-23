@@ -152,9 +152,6 @@ function openPopover(button) {
     input.value = values[i] || '';
   });
 
-  // Close any open popover
-  closePopover();
-
   // Open this popover
   toggleButton(button, true);
 
@@ -191,22 +188,23 @@ function execPopoverAction(button) {
 
 /**
  * Close the open popover if any.
- * @param {boolean} restore If true, restore the previous selection.
+ * @param {boolean} ignoreSelection If true, do not restore the previous selection.
  */
-function closePopover(restore) {
+function closePopover(ignoreSelection) {
   const popover = querySelector('.wysi-popover [aria-expanded="true"]');
 
   if (popover) {
     toggleButton(popover, false);
   }
 
-  if (restore) {
+  if (!ignoreSelection) {
     restoreSelection();
   }
 }
 
 // Open a popover
 addListener(document, 'click', '.wysi-popover > button', event => {
+  closePopover();
   openPopover(event.target);
   stopImmediatePropagation(event);
 });
@@ -214,12 +212,12 @@ addListener(document, 'click', '.wysi-popover > button', event => {
 // Execute the popover action
 addListener(document, 'click', '.wysi-popover > div > button[data-action]', event => {
   execPopoverAction(event.target);
-  closePopover();
+  closePopover(true);
 });
 
 // Cancel the popover
 addListener(document, 'click', '.wysi-popover > div > button:not([data-action])', event => {
-  closePopover(true);
+  closePopover();
 });
 
 // Prevent clicks on the popover content to propagate (keep popover open)
@@ -258,7 +256,7 @@ addListener(document, 'keydown', '.wysi-popover *', event => {
       }
       break;
     case 'Escape':
-      closePopover(true);
+      closePopover();
       break;
   }
 
@@ -269,7 +267,7 @@ let isSelectionInProgress = false;
 // Close open popups and dropdowns on click outside
 addListener(document, 'click', event => {
   if (!isSelectionInProgress) {
-    closePopover(true);
+    closePopover();
   }
 });
 

@@ -14,13 +14,9 @@ import {
   getTextAreaLabel
 } from './utils.js';
 import {
-  appendChild,
   dispatchEvent,
   execCommand,
-  getAttribute,
-  hasClass,
-  querySelectorAll,
-  toLowerCase
+  hasClass
 } from './shortcuts.js';
 
 
@@ -54,7 +50,7 @@ function init(options) {
   });
 
   // Append an editor instance
-  querySelectorAll(selector).forEach(field => {
+  document.querySelectorAll(selector).forEach(field => {
     const sibling = field.previousElementSibling;
 
     if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
@@ -83,8 +79,8 @@ function init(options) {
       });      
 
       // Insert the editor instance in the document
-      appendChild(wrapper, toolbar.cloneNode(true));
-      appendChild(wrapper, editor);
+      wrapper.appendChild(toolbar.cloneNode(true));
+      wrapper.appendChild(editor);
       field.before(wrapper);
 
       // Apply configuration
@@ -112,7 +108,7 @@ function configure(instance, options) {
       case 'darkMode':
       case 'autoGrow':
       case 'autoHide':
-        instance.classList.toggle(`wysi-${toLowerCase(key)}`, !!options[key]);
+        instance.classList.toggle(`wysi-${key.toLowerCase()}`, !!options[key]);
         break;
       case 'height':
         const height = options.height;
@@ -133,7 +129,7 @@ function configure(instance, options) {
  * @param {string} selector One or more selectors pointing to textarea fields.
  */
 function destroy(selector) {
-  querySelectorAll(selector).forEach(field => {
+  document.querySelectorAll(selector).forEach(field => {
     const sibling = field.previousElementSibling;
 
     if (sibling && hasClass(sibling, 'wysi-wrapper')) {

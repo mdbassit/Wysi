@@ -1,15 +1,6 @@
 import settings from './settings.js';
 import toolset from './toolset.js';
 import { buildFragment, cloneObject, createElement } from './utils.js';
-import {
-  appendChild,
-  getAttribute,
-  removeChild,
-  removeAttribute,
-  setAttribute,
-  toLowerCase,
-} from './shortcuts.js';
-
 
 const STYLE_ATTRIBUTE = 'style';
 
@@ -61,7 +52,7 @@ function prepareContent(content, allowedTags) {
   filterContent(fragment, allowedTags);
   wrapTextNodes(fragment);
   cleanContent(fragment, allowedTags);
-  appendChild(container, fragment);
+  container.appendChild(fragment);
 
   return container.innerHTML;
 }
@@ -83,7 +74,7 @@ function replaceNode(node, tag, copyAttributes) {
   // Copy the original element's attributes
   if (copyAttributes && attributes) {
     for (let i = 0; i < attributes.length; i++) {
-      setAttribute(newElement, attributes[i].name, attributes[i].value);
+      newElement.setAttribute(attributes[i].name, attributes[i].value);
     }
   }
 
@@ -97,7 +88,7 @@ function replaceNode(node, tag, copyAttributes) {
  * @param {array} allowedStyles An array of supported styles.
  */
 function filterStyles(node, allowedStyles) {
-  const styleAttribute = getAttribute(node, STYLE_ATTRIBUTE);
+  const styleAttribute = node.getAttribute(STYLE_ATTRIBUTE);
 
   if (styleAttribute) {
     // Parse the styles
@@ -116,9 +107,9 @@ function filterStyles(node, allowedStyles) {
     .map(({ name, value }) => `${name}: ${value.trim()};`).join('');
 
     if (styles !== '') {
-      setAttribute(node, STYLE_ATTRIBUTE, styles);
+      node.setAttribute(STYLE_ATTRIBUTE, styles);
     } else {
-      removeAttribute(node, STYLE_ATTRIBUTE);
+      node.removeAttribute(STYLE_ATTRIBUTE);
     }
   }
 }
@@ -142,7 +133,7 @@ function filterContent(node, allowedTags) {
       filterContent(childNode, allowedTags);
 
       // Check if the current element is allowed
-      const tag = toLowerCase(childNode.tagName);
+      const tag = childNode.tagName.toLowerCase();
       const allowedTag = allowedTags[tag];
       const attributes = Array.from(childNode.attributes);
 
@@ -158,7 +149,7 @@ function filterContent(node, allowedTags) {
             if (attributeName === STYLE_ATTRIBUTE && allowedStyles.length) {
               filterStyles(childNode, allowedStyles);
             } else {
-              removeAttribute(childNode, attributes[i].name);
+              childNode.removeAttribute(attributes[i].name);
             }
           }
         }
@@ -171,7 +162,7 @@ function filterContent(node, allowedTags) {
       } else {
         // Remove style nodes
         if (tag === 'style') {
-          removeChild(node, childNode);
+          node.removeChild(childNode);
 
         // And unwrap the other nodes
         } else {
@@ -181,7 +172,7 @@ function filterContent(node, allowedTags) {
 
     // Remove comment nodes
     } else if (childNode.nodeType === 8) {
-      removeChild(node, childNode);
+      node.removeChild(childNode);
     }
   });
 }
@@ -205,11 +196,11 @@ function cleanContent(node, allowedTags) {
       cleanContent(childNode, allowedTags);
 
       // Check if the element can be empty
-      const tag = toLowerCase(childNode.tagName);
+      const tag = childNode.tagName.toLowerCase();
       const allowedTag = allowedTags[tag];
 
       if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
-        removeChild(node, childNode);
+        node.removeChild(childNode);
       }
     }
   });
@@ -237,7 +228,7 @@ function wrapTextNodes(node) {
 
     // Remove empty text node
     /*if (trimText(childNode.textContent) === '') {
-      removeChild(node, childNode);
+      node.removeChild(childNode);
 
     // Wrap text node in a paragraph
     } else {*/

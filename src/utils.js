@@ -2,11 +2,7 @@ import document from 'document';
 import toolset from './toolset.js';
 import {
   execCommand,
-  getAttribute,
-  hasClass,
-  querySelector,
-  setAttribute,
-  toLowerCase
+  hasClass
 } from './shortcuts.js';
 
 // Used to store the current DOM selection for later use
@@ -24,7 +20,7 @@ if (NodeList !== undefined && NodeList.prototype && !NodeList.prototype.forEach)
  * @param {(string|function)} selector Event target if delegation is used, event handler if not.
  * @param {function} [fn] Event handler if delegation is used.
  */
-function addListener(context, type, selector, fn) {
+export function addListener(context, type, selector, fn) {
   // Delegate event to the target of the selector
   if (typeof selector === 'string') {
     context.addEventListener(type, event => {
@@ -48,7 +44,7 @@ function addListener(context, type, selector, fn) {
  * @param {string} html The HTML code.
  * @return {object} A document fragment.
  */
-function buildFragment(html) {
+export function buildFragment(html) {
   const template = createElement('template');
 
   template.innerHTML = html.trim();
@@ -60,7 +56,7 @@ function buildFragment(html) {
  * @param {object} obj The object to clone.
  * @return {object} The clone object.
  */
-function cloneObject(obj) {
+export function cloneObject(obj) {
   return obj ? JSON.parse(JSON.stringify(obj)) : obj;
 }
 
@@ -70,7 +66,7 @@ function cloneObject(obj) {
  * @param {object} [attributes] The element's attributes.
  * @return {object} An HTML element.
  */
-function createElement(tag, attributes) {
+export function createElement(tag, attributes) {
   const element = document.createElement(tag);
 
   if (attributes) {
@@ -79,7 +75,7 @@ function createElement(tag, attributes) {
       if (attributeName[0] === '_') {
         element[attributeName.substring(1)] = attributes[attributeName];
       } else {
-        setAttribute(element, attributeName, attributes[attributeName]);
+        element.setAttribute(attributeName, attributes[attributeName]);
       }
     }
   }
@@ -92,7 +88,7 @@ function createElement(tag, attributes) {
  * @param {function} fn The function to call.
  * @param {array} [args] Arguments to pass to the function.
  */
-function DOMReady(fn, args) {
+export function DOMReady(fn, args) {
   args = args !== undefined ? args : [];
 
   if (document.readyState !== 'loading') {
@@ -110,7 +106,7 @@ function DOMReady(fn, args) {
  * @param {object} editor The editor instance.
  * @param {array} [options] Optional action parameters.
  */
-function execAction(action, editor, options = []) {
+export function execAction(action, editor, options = []) {
   const tool = toolset[action];
   
   if (tool) {
@@ -133,7 +129,7 @@ function execAction(action, editor, options = []) {
  * @param {object} currentNode The possible child node of the editor instance.
  * @return {object} The instance's editable region and toolbar, and an array of nodes that lead to it.
  */
-function findInstance(currentNode) {
+export function findInstance(currentNode) {
   const nodes = [];
   let ancestor, toolbar, editor;
 
@@ -169,8 +165,8 @@ function findInstance(currentNode) {
  * @param {object} editor The editor element.
  * @return {string} The instance id.
  */ 
-function getInstanceId(editor) {
-  return getAttribute(editor, 'data-wid');
+export function getInstanceId(editor) {
+  return editor.getAttribute('data-wid');
 }
 
 /**
@@ -178,7 +174,7 @@ function getInstanceId(editor) {
  * @param {object} textarea The textarea element.
  * @return {string} The textarea element's label or an empty string.
  */ 
-function getTextAreaLabel(textarea) {
+export function getTextAreaLabel(textarea) {
   const parent = textarea.parentNode;
   const id = textarea.id;
   let labelElement;
@@ -190,7 +186,7 @@ function getTextAreaLabel(textarea) {
   // Or if the textarea element has an id, and there is a label element
   // with an attribute "for" that points to that id
   } else if (id !== undefined) {
-    labelElement = querySelector(`label[for="${id}"]`);
+    labelElement = document.querySelector(`label[for="${id}"]`);
   }
 
   // If a label element is found, return the first non empty child text node
@@ -210,7 +206,7 @@ function getTextAreaLabel(textarea) {
 /**
  * Restore a previous selection if any.
  */
-function restoreSelection() {
+export function restoreSelection() {
   if (currentSelection) {
     setSelection(currentSelection);
     currentSelection = undefined;
@@ -221,7 +217,7 @@ function restoreSelection() {
  * Set the value of the current selection.
  * @param {object} range The range to set.
  */
-function setCurrentSelection(range) {
+export function setCurrentSelection(range) {
   currentSelection = range;
 }
 
@@ -229,7 +225,7 @@ function setCurrentSelection(range) {
  * Set the selection to a range.
  * @param {object} range The range to select.
  */
-function setSelection(range) {
+export function setSelection(range) {
   const selection = document.getSelection();
 
   selection.removeAllRanges();
@@ -241,22 +237,6 @@ function setSelection(range) {
  * @param {object} button The button.
  * @param {boolean} expanded The expanded state.
  */
-function toggleButton(button, expanded) {
-  setAttribute(button, 'aria-expanded', expanded);
+export function toggleButton(button, expanded) {
+  button.setAttribute('aria-expanded', expanded);
 }
-
-export {
-  addListener,
-  buildFragment,
-  cloneObject,
-  createElement,
-  DOMReady,
-  execAction,
-  findInstance,
-  getInstanceId,
-  getTextAreaLabel,
-  restoreSelection,
-  setCurrentSelection,
-  setSelection,
-  toggleButton
-};

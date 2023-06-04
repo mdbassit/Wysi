@@ -3,15 +3,6 @@ import toolset from './toolset.js';
 import { renderListBox, selectListBoxItem } from './listbox.js';
 import { selectedClass } from './common.js';
 import {
-  appendChild,
-  getAttribute,
-  querySelector,
-  querySelectorAll,
-  setAttribute,
-  stopImmediatePropagation,
-  toLowerCase
-} from './shortcuts.js';
-import {
   addListener,
   createElement,
   execAction,
@@ -49,20 +40,20 @@ function renderPopover(toolName, button, translations) {
   });
 
   // Toolbar Button
-  setAttribute(button, 'aria-haspopup', true);
-  setAttribute(button, 'aria-expanded', false);
+  button.setAttribute('aria-haspopup', true);
+  button.setAttribute('aria-expanded', false);
 
-  appendChild(wrapper, button);
-  appendChild(wrapper, popover);
+  wrapper.appendChild(button);
+  wrapper.appendChild(popover);
 
   fields.forEach(field => {
     const label = createElement('label');
     const span = createElement('span', { _textContent: field.label });
     const input = createElement('input', { type: 'text' });
 
-    appendChild(label, span);
-    appendChild(label, input);
-    appendChild(popover, label);
+    label.appendChild(span);
+    label.appendChild(input);
+    popover.appendChild(label);
   });
 
   const cancel = createElement('button', {
@@ -81,7 +72,7 @@ function renderPopover(toolName, button, translations) {
     const extraTool = 'unlink';
     const label = translations[extraTool] || toolset[extraTool].label;
 
-    appendChild(popover, createElement('button', {
+    popover.appendChild(createElement('button', {
       type: 'button',
       title: label,
       'aria-label': label,
@@ -90,8 +81,8 @@ function renderPopover(toolName, button, translations) {
     }));
   }
 
-  appendChild(popover, cancel);
-  appendChild(popover, save);
+  popover.appendChild(cancel);
+  popover.appendChild(save);
 
   return wrapper;
 }
@@ -101,7 +92,7 @@ function renderPopover(toolName, button, translations) {
  * @param {object} button The popover's button.
  */
 function openPopover(button) {
-  const inputs = querySelectorAll('input', button.nextElementSibling);
+  const inputs = button.nextElementSibling.querySelectorAll('input');
   const selection = document.getSelection();
   const anchorNode = selection.anchorNode;
   const { editor, nodes } = findInstance(anchorNode);
@@ -109,14 +100,14 @@ function openPopover(button) {
 
   if (editor) {
     // Try to find an existing target of the popover's action from the DOM selection
-    const action = getAttribute(button, 'data-action');
+    const action = button.getAttribute('data-action');
     const tool = toolset[action];
-    let target = nodes.filter(node => tool.tags.includes(toLowerCase(node.tagName)))[0];
+    let target = nodes.filter(node => tool.tags.includes(node.tagName.toLowerCase()))[0];
     let selectContents = true;
 
     // If that fails, look for an element with the selection CSS class
     if (!target) {
-      target = querySelector(`.${selectedClass}`, editor);
+      target = editor.querySelector(`.${selectedClass}`);
       selectContents = false;
     }
 
@@ -137,7 +128,7 @@ function openPopover(button) {
 
       // Retrieve the current attribute values of the target for modification
       tool.attributes.forEach(attribute => {
-        values.push(getAttribute(target, attribute));
+        values.push(target.getAttribute(attribute));
       })
 
     // If no existing target is found, we are adding new content
@@ -164,8 +155,8 @@ function openPopover(button) {
  * @param {object} button The popover's action button.
  */
 function execPopoverAction(button) {
-  const action = getAttribute(button, 'data-action');
-  const inputs = querySelectorAll('input', button.parentNode);
+  const action = button.getAttribute('data-action');
+  const inputs = button.parentNode.querySelectorAll('input');
   const { editor } = findInstance(button);
   const options = [];
 
@@ -175,7 +166,7 @@ function execPopoverAction(button) {
 
   // Workaround for links being removed when updating images
   if (action === 'image') {
-    const selected = querySelector(`.${selectedClass}`, editor);
+    const selected = editor.querySelector(`.${selectedClass}`);
     const parent = selected ? selected.parentNode : {};
 
     if (selected && parent.tagName === 'A') {
@@ -191,7 +182,7 @@ function execPopoverAction(button) {
  * @param {boolean} ignoreSelection If true, do not restore the previous selection.
  */
 function closePopover(ignoreSelection) {
-  const popover = querySelector('.wysi-popover [aria-expanded="true"]');
+  const popover = document.querySelector('.wysi-popover [aria-expanded="true"]');
 
   if (popover) {
     toggleButton(popover, false);
@@ -206,7 +197,7 @@ function closePopover(ignoreSelection) {
 addListener(document, 'click', '.wysi-popover > button', event => {
   closePopover();
   openPopover(event.target);
-  stopImmediatePropagation(event);
+  event.stopImmediatePropagation();
 });
 
 // Execute the popover action
@@ -222,7 +213,7 @@ addListener(document, 'click', '.wysi-popover > div > button:not([data-action])'
 
 // Prevent clicks on the popover content to propagate (keep popover open)
 addListener(document, 'click', '.wysi-popover *:not(button)', event => {
-  stopImmediatePropagation(event);
+  event.stopImmediatePropagation();
 });
 
 // Trap focus inside a popover until it's closed
@@ -233,7 +224,7 @@ addListener(document, 'keydown', '.wysi-popover *', event => {
 
   switch (event.key) {
     case 'Tab':
-      const firstField = querySelector('input', form);
+      const firstField = form.querySelector('input');
 
       if (event.shiftKey) {
         if (target === firstField) {
@@ -249,7 +240,7 @@ addListener(document, 'keydown', '.wysi-popover *', event => {
       break;
     case 'Enter':
       if (target.tagName === 'INPUT') {
-        const actionButton = querySelector('[data-action]:last-of-type', form);
+        const actionButton = form.querySelector('[data-action]:last-of-type');
 
         actionButton.click();
         event.preventDefault();

@@ -8,14 +8,6 @@ import {
   findInstance,
   toggleButton
 } from './utils.js';
-import {
-  appendChild,
-  getAttribute,
-  querySelector,
-  querySelectorAll,
-  setAttribute,
-  stopImmediatePropagation
-} from './shortcuts.js';
 
 
 /**
@@ -62,12 +54,12 @@ function renderListBox(details) {
       _innerHTML: renderListBoxItem(item)
     });
 
-    appendChild(menu, option);
+    menu.appendChild(option);
   });
 
   // Tie it all together
-  appendChild(listBox, button);
-  appendChild(listBox, menu);
+  listBox.appendChild(button);
+  listBox.appendChild(menu);
 
   return listBox;
 }
@@ -86,9 +78,9 @@ function renderListBoxItem(item) {
  * @param {object} button The list box's button.
  */
 function openListBox(button) {
-  const isOpen = getAttribute(button, 'aria-expanded') === 'true';
+  const isOpen = button.getAttribute('aria-expanded') === 'true';
   const listBox = button.nextElementSibling;
-  let selectedItem = querySelector('[aria-selected="true"]', listBox);
+  let selectedItem = listBox.querySelector('[aria-selected="true"]');
 
   if (!selectedItem) {
     selectedItem = listBox.firstElementChild;
@@ -105,13 +97,13 @@ function openListBox(button) {
 function selectListBoxItem(item) {
   const listBox = item.parentNode;
   const button = listBox.previousElementSibling;
-  const selectedItem = querySelector('[aria-selected="true"]', listBox);
+  const selectedItem = listBox.querySelector('[aria-selected="true"]');
 
   if (selectedItem) {
-    setAttribute(selectedItem, 'aria-selected', 'false');
+    selectedItem.setAttribute('aria-selected', 'false');
   }
 
-  setAttribute(item, 'aria-selected', 'true');
+  item.setAttribute('aria-selected', 'true');
   button.innerHTML = item.innerHTML;
 }
 
@@ -119,7 +111,7 @@ function selectListBoxItem(item) {
  * Close the currently open list box if any.
  */
 function closeListBox() {
-  const activeListBox = querySelector('.wysi-listbox [aria-expanded="true"]');
+  const activeListBox = document.querySelector('.wysi-listbox [aria-expanded="true"]');
 
   if (activeListBox) {
     toggleButton(activeListBox, false);
@@ -130,7 +122,7 @@ function closeListBox() {
 addListener(document, 'click', '.wysi-listbox > button', event => {
   closeListBox();
   openListBox(event.target);
-  stopImmediatePropagation(event);
+  event.stopImmediatePropagation();
 });
 
 // On key press on the list box button
@@ -154,8 +146,8 @@ addListener(document.documentElement, 'mousemove', '.wysi-listbox > div > button
 // On click on an list box item
 addListener(document, 'click', '.wysi-listbox > div > button', event => {
   const item = event.target;
-  const action = getAttribute(item, 'data-action');
-  const option = getAttribute(item, 'data-option');
+  const action = item.getAttribute('data-action');
+  const option = item.getAttribute('data-option');
   const { editor } = findInstance(item);
   const selection = document.getSelection();
 

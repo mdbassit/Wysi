@@ -4,14 +4,6 @@ import { renderPopover } from './popover.js';
 import { renderListBox, selectListBoxItem } from './listbox.js';
 import { instances, selectedClass } from './common.js';
 import {
-  appendChild,
-  getAttribute,
-  querySelector,
-  querySelectorAll,
-  setAttribute,
-  toLowerCase
-} from './shortcuts.js';
-import {
   addListener,
   buildFragment,
   createElement,
@@ -36,24 +28,24 @@ function renderToolbar(tools, translations) {
     switch (toolName) {
       // Toolbar separator
       case '|':
-        appendChild(toolbar, createElement('div', { class: 'wysi-separator' }));
+        toolbar.appendChild(createElement('div', { class: 'wysi-separator' }));
         break;
 
       // Toolbar new line
       case '-':
-        appendChild(toolbar, createElement('div', { class: 'wysi-newline' }));
+        toolbar.appendChild(createElement('div', { class: 'wysi-newline' }));
         break;
 
       // The format tool renders as a list box
       case 'format':
-        appendChild(toolbar, renderFormatTool(translations));
+        toolbar.appendChild(renderFormatTool(translations));
         break;
 
       // All the other tools render as buttons
       default:
         if (typeof toolName === 'object') {
           if (toolName.items) {
-            appendChild(toolbar, renderToolGroup(toolName, translations));
+            toolbar.appendChild(renderToolGroup(toolName, translations));
           }
         } else {
           renderTool(toolName, toolbar, translations);
@@ -85,11 +77,11 @@ function renderTool(name, toolbar, translations) {
   // Tools that require parameters (e.g: image, link) need a popover
   if (tool.hasForm) {
     const popover = renderPopover(name, button, translations);
-    appendChild(toolbar, popover);
+    toolbar.appendChild(popover);
 
   // The other tools only display a button
   } else {
-    appendChild(toolbar, button);
+    toolbar.appendChild(button);
   }
 }
 
@@ -141,7 +133,7 @@ function renderFormatTool(translations) {
  */
 function updateToolbarState() {
   const { toolbar, editor, nodes } = findInstance(document.getSelection().anchorNode);
-  const tags = nodes.map(node => toLowerCase(node.tagName));
+  const tags = nodes.map(node => node.tagName.toLowerCase());
 
   // Abort if the selection is not within an editor instance
   if (!editor) {
@@ -153,10 +145,10 @@ function updateToolbarState() {
   const allowedTags = instances[instanceId].allowedTags;
 
   // Reset the state of all buttons
-  querySelectorAll('[aria-pressed="true"]', toolbar).forEach(button => setAttribute(button, 'aria-pressed', 'false'));
+  toolbar.querySelectorAll('[aria-pressed="true"]').forEach(button => button.setAttribute('aria-pressed', 'false'));
 
   // Reset the state of all list boxes
-  querySelectorAll('.wysi-listbox > div > button:first-of-type', toolbar).forEach(button => selectListBoxItem(button));
+  toolbar.querySelectorAll('.wysi-listbox > div > button:first-of-type').forEach(button => selectListBoxItem(button));
   
 
   // Update the buttons states
@@ -168,7 +160,7 @@ function updateToolbarState() {
       case 'h3':
       case 'h4':
       case 'li':
-        const format = querySelector(`[data-action="format"][data-option="${tag}"]`, toolbar);
+        const format = toolbar.querySelector(`[data-action="format"][data-option="${tag}"]`);
         const textAlign = nodes[i].style.textAlign;
 
         if (format) {
@@ -178,13 +170,13 @@ function updateToolbarState() {
         // Check for text align
         if (textAlign) {
           const action = 'align' + textAlign.charAt(0).toUpperCase() + textAlign.slice(1);
-          const button = querySelector(`[data-action="${action}"]`, toolbar);
+          const button = toolbar.querySelector(`[data-action="${action}"]`);
           
           if (button) {
-            if (getAttribute(button.parentNode, 'role') === 'listbox') {
+            if (button.parentNode.getAttribute('role') === 'listbox') {
               selectListBoxItem(button);
             } else {
-              setAttribute(button, 'aria-pressed', 'true');
+              button.setAttribute('aria-pressed', 'true');
             }
           }
         }
@@ -194,8 +186,8 @@ function updateToolbarState() {
         const action = allowedTag ? allowedTag.toolName : undefined;
 
         if (action) {
-          const button = querySelector(`[data-action="${action}"]`, toolbar);
-          setAttribute(button, 'aria-pressed', 'true');
+          const button = toolbar.querySelector(`[data-action="${action}"]`);
+          button.setAttribute('aria-pressed', 'true');
         }
     }    
   });
@@ -209,12 +201,12 @@ function embedSVGIcons() {
   const icons = '_SVGIcons_';
   const svgElement = buildFragment(icons);
 
-  appendChild(document.body, svgElement);
+  document.body.appendChild(svgElement);
 }
 
 // Deselect selected element when clicking outside
 addListener(document, 'click', '.wysi-editor, .wysi-editor *', event => {
-  const selected = querySelector(`.${selectedClass}`);
+  const selected = document.querySelector(`.${selectedClass}`);
 
   if (selected && selected !== event.target) {
     selected.classList.remove(selectedClass);
@@ -235,7 +227,7 @@ addListener(document, 'click', '.wysi-editor img', event => {
 // Toolbar button click
 addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
-  const action = getAttribute(button, 'data-action');
+  const action = button.getAttribute('data-action');
   const { editor } = findInstance(button);
   const selection = document.getSelection();
 

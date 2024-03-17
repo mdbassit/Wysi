@@ -138,8 +138,8 @@ function filterContent(node, allowedTags) {
       const attributes = Array.from(childNode.attributes);
 
       if (allowedTag) {
-        const allowedAttributes = allowedTag.attributes;
-        const allowedStyles = allowedTag.styles;
+        const allowedAttributes = allowedTag.attributes || [];
+        const allowedStyles = allowedTag.styles || [];
 
         // Remove attributes that are not allowed
         for (let i = 0; i < attributes.length; i++) {

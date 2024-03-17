@@ -31,6 +31,7 @@ export default {
   allowedTags: {
     br: {
       attributes: [],
+      styles: [],
       isEmpty: true
     }
   },

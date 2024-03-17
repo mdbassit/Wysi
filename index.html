@@ -4,32 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="wysi.min.css">
-    <style type="text/css">
-    @import url(https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap);
-
-    body {
-      margin: 30px;
-      color: #444;
-      background-color: #fff;
-      font-family: 'Lato', sans-serif;
-    }
-
-    .demo {
-      width: 800px;
-      max-width: 100%;
-      margin: 0 auto;
-    }
-
-    .demo a {
-      color: #0000ee;
-    }
-
-    .demo label {
-      display: block;
-      margin-bottom: 0.5em;
-    }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="demo.css">
   </head>
   <body>
     <div class="demo" spellcheck="false">
@@ -39,14 +14,6 @@
       <textarea id="demo1"><h1>Lorem ipsum dolor sit amet</h1><p>Consectetur adipiscing elit. <a href="https://internetzaddy.com">Curabitur et lectus sit amet</a> est bibendum <strong>condimentum</strong>. Nam eleifend justo condimentum, consequat est sollicitudin, mollis libero. Class <strong><em>aptent taciti</em></strong> sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Maecenas elit massa, finibus faucibus magna.</p><h2>Suspendisse id turpis turpis</h2><p>Vivamus lacinia dolor sit amet justo luctus ultricies. Pellentesque pellentesque interdum libero quis vehicula. Mauris ac tortor quis risus maximus facilisis ut a orci.</p><ul><li>Donec eu est congue augue rhoncus lobortis id mattis purus.</li><li>Class aptent taciti sociosqu ad litora torquent.</li></ul><h2>Etiam consectetur sollicitudin aliquam</h2><p>Donec dapibus massa tortor, eu laoreet quam luctus et. Integer at vestibulum velit. Pellentesque quis diam quam. Nunc at ex tincidunt, hendrerit urna eget, tristique est. Praesent semper sem ut enim commodo pretium. Sed iaculis arcu ultrices turpis interdum lobortis quis a erat.</p></textarea>
     </div>
     <script type="text/javascript" src="wysi.min.js"></script>
-    <script type="text/javascript">
-
-    Wysi({
-      el: '#demo1',
-      height: 320,
-      onChange: content => console.log('Content updated: ', content)
-    });
-
-    </script>
+    <script type="text/javascript" src="demo.js"></script>
   </body>
 </html>

@@ -1,0 +1,23 @@
+@import url(https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap);
+
+body {
+  margin: 30px;
+  color: #444;
+  background-color: #fff;
+  font-family: 'Lato', sans-serif;
+}
+
+.demo {
+  width: 800px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.demo a {
+  color: #0000ee;
+}
+
+.demo label {
+  display: block;
+  margin-bottom: 0.5em;
+}

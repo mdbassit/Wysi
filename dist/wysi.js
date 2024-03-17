@@ -28,6 +28,7 @@
     allowedTags: {
       br: {
         attributes: [],
+        styles: [],
         isEmpty: true
       }
     },
@@ -51,9 +52,6 @@
   var selectedClass = 'wysi-selected';
 
   // Shortcuts
-  var appendChild = function appendChild(parent, child) {
-    return parent.appendChild(child);
-  };
   var dispatchEvent = function dispatchEvent(element, event) {
     return element.dispatchEvent(new Event(event, {
       bubbles: true
@@ -67,36 +65,6 @@
   };
   var hasClass = function hasClass(element, classes) {
     return element.classList && element.classList.contains(classes);
-  };
-  var getAttribute = function getAttribute(element, attribute) {
-    return element.getAttribute(attribute);
-  };
-  var querySelector = function querySelector(selector, context) {
-    if (context === void 0) {
-      context = document;
-    }
-    return context.querySelector(selector);
-  };
-  var querySelectorAll = function querySelectorAll(selector, context) {
-    if (context === void 0) {
-      context = document;
-    }
-    return context.querySelectorAll(selector);
-  };
-  var removeChild = function removeChild(parent, child) {
-    return parent.removeChild(child);
-  };
-  var removeAttribute = function removeAttribute(element, attribute) {
-    return element.removeAttribute(attribute);
-  };
-  var setAttribute = function setAttribute(element, attribute, value) {
-    return element.setAttribute(attribute, value);
-  };
-  var stopImmediatePropagation = function stopImmediatePropagation(event) {
-    return event.stopImmediatePropagation();
-  };
-  var toLowerCase = function toLowerCase(str) {
-    return str.toLowerCase();
   };
 
   /**
@@ -289,7 +257,7 @@
         if (attributeName[0] === '_') {
           element[attributeName.substring(1)] = attributes[attributeName];
         } else {
-          setAttribute(element, attributeName, attributes[attributeName]);
+          element.setAttribute(attributeName, attributes[attributeName]);
         }
       }
     }
@@ -315,10 +283,10 @@
   /**
    * Execute an action.
    * @param {string} action The action to execute.
-   * @param {object} region The editable region.
+   * @param {object} editor The editor instance.
    * @param {array} [options] Optional action parameters.
    */
-  function execAction(action, region, options) {
+  function execAction(action, editor, options) {
     if (options === void 0) {
       options = [];
     }
@@ -335,8 +303,8 @@
       // Execute the tool's action
       realAction.apply(void 0, options);
 
-      // Focus the editable region
-      region.focus();
+      // Focus the editor instance
+      editor.focus();
     }
   }
 
@@ -347,7 +315,7 @@
    */
   function findInstance(currentNode) {
     var nodes = [];
-    var ancestor, toolbar, region;
+    var ancestor, toolbar, editor;
 
     // Find all HTML tags between the current node and the editable ancestor
     while (currentNode && currentNode !== document.body) {
@@ -366,11 +334,11 @@
     if (ancestor) {
       var children = ancestor.children;
       toolbar = children[0];
-      region = children[1];
+      editor = children[1];
     }
     return {
       toolbar: toolbar,
-      region: region,
+      editor: editor,
       nodes: nodes
     };
   }
@@ -381,7 +349,7 @@
    * @return {string} The instance id.
    */
   function getInstanceId(editor) {
-    return getAttribute(editor, 'data-wid');
+    return editor.getAttribute('data-wid');
   }
 
   /**
@@ -401,7 +369,7 @@
       // Or if the textarea element has an id, and there is a label element
       // with an attribute "for" that points to that id
     } else if (id !== undefined) {
-      labelElement = querySelector("label[for=\"" + id + "\"]");
+      labelElement = document.querySelector("label[for=\"" + id + "\"]");
     }
 
     // If a label element is found, return the first non empty child text node
@@ -456,7 +424,7 @@
    * @param {boolean} expanded The expanded state.
    */
   function toggleButton(button, expanded) {
-    setAttribute(button, 'aria-expanded', expanded);
+    button.setAttribute('aria-expanded', expanded);
   }
 
   /**
@@ -504,12 +472,12 @@
         'data-option': item.name || '',
         _innerHTML: renderListBoxItem(item)
       });
-      appendChild(menu, option);
+      menu.appendChild(option);
     });
 
     // Tie it all together
-    appendChild(listBox, button);
-    appendChild(listBox, menu);
+    listBox.appendChild(button);
+    listBox.appendChild(menu);
     return listBox;
   }
 
@@ -527,9 +495,9 @@
    * @param {object} button The list box's button.
    */
   function openListBox(button) {
-    var isOpen = getAttribute(button, 'aria-expanded') === 'true';
+    var isOpen = button.getAttribute('aria-expanded') === 'true';
     var listBox = button.nextElementSibling;
-    var selectedItem = querySelector('[aria-selected="true"]', listBox);
+    var selectedItem = listBox.querySelector('[aria-selected="true"]');
     if (!selectedItem) {
       selectedItem = listBox.firstElementChild;
     }
@@ -544,11 +512,11 @@
   function selectListBoxItem(item) {
     var listBox = item.parentNode;
     var button = listBox.previousElementSibling;
-    var selectedItem = querySelector('[aria-selected="true"]', listBox);
+    var selectedItem = listBox.querySelector('[aria-selected="true"]');
     if (selectedItem) {
-      setAttribute(selectedItem, 'aria-selected', 'false');
+      selectedItem.setAttribute('aria-selected', 'false');
     }
-    setAttribute(item, 'aria-selected', 'true');
+    item.setAttribute('aria-selected', 'true');
     button.innerHTML = item.innerHTML;
   }
 
@@ -556,7 +524,7 @@
    * Close the currently open list box if any.
    */
   function closeListBox() {
-    var activeListBox = querySelector('.wysi-listbox [aria-expanded="true"]');
+    var activeListBox = document.querySelector('.wysi-listbox [aria-expanded="true"]');
     if (activeListBox) {
       toggleButton(activeListBox, false);
     }
@@ -566,7 +534,7 @@
   addListener(document, 'click', '.wysi-listbox > button', function (event) {
     closeListBox();
     openListBox(event.target);
-    stopImmediatePropagation(event);
+    event.stopImmediatePropagation();
   });
 
   // On key press on the list box button
@@ -590,13 +558,13 @@
   // On click on an list box item
   addListener(document, 'click', '.wysi-listbox > div > button', function (event) {
     var item = event.target;
-    var action = getAttribute(item, 'data-action');
-    var option = getAttribute(item, 'data-option');
+    var action = item.getAttribute('data-action');
+    var option = item.getAttribute('data-option');
     var _findInstance = findInstance(item),
-      region = _findInstance.region;
+      editor = _findInstance.editor;
     var selection = document.getSelection();
-    if (selection && region.contains(selection.anchorNode)) {
-      execAction(action, region, [option]);
+    if (selection && editor.contains(selection.anchorNode)) {
+      execAction(action, editor, [option]);
     }
     selectListBoxItem(item);
   });
@@ -673,10 +641,10 @@
     });
 
     // Toolbar Button
-    setAttribute(button, 'aria-haspopup', true);
-    setAttribute(button, 'aria-expanded', false);
-    appendChild(wrapper, button);
-    appendChild(wrapper, popover);
+    button.setAttribute('aria-haspopup', true);
+    button.setAttribute('aria-expanded', false);
+    wrapper.appendChild(button);
+    wrapper.appendChild(popover);
     fields.forEach(function (field) {
       var label = createElement('label');
       var span = createElement('span', {
@@ -685,9 +653,9 @@
       var input = createElement('input', {
         type: 'text'
       });
-      appendChild(label, span);
-      appendChild(label, input);
-      appendChild(popover, label);
+      label.appendChild(span);
+      label.appendChild(input);
+      popover.appendChild(label);
     });
     var cancel = createElement('button', {
       type: 'button',
@@ -703,7 +671,7 @@
     if (toolName === 'link') {
       var extraTool = 'unlink';
       var label = translations[extraTool] || toolset[extraTool].label;
-      appendChild(popover, createElement('button', {
+      popover.appendChild(createElement('button', {
         type: 'button',
         title: label,
         'aria-label': label,
@@ -711,8 +679,8 @@
         _innerHTML: "<svg><use href=\"#wysi-delete\"></use></svg>"
       }));
     }
-    appendChild(popover, cancel);
-    appendChild(popover, save);
+    popover.appendChild(cancel);
+    popover.appendChild(save);
     return wrapper;
   }
 
@@ -721,25 +689,25 @@
    * @param {object} button The popover's button.
    */
   function openPopover(button) {
-    var inputs = querySelectorAll('input', button.nextElementSibling);
+    var inputs = button.nextElementSibling.querySelectorAll('input');
     var selection = document.getSelection();
     var anchorNode = selection.anchorNode;
     var _findInstance = findInstance(anchorNode),
-      region = _findInstance.region,
+      editor = _findInstance.editor,
       nodes = _findInstance.nodes;
     var values = [];
-    if (region) {
+    if (editor) {
       // Try to find an existing target of the popover's action from the DOM selection
-      var action = getAttribute(button, 'data-action');
+      var action = button.getAttribute('data-action');
       var tool = toolset[action];
       var target = nodes.filter(function (node) {
-        return tool.tags.includes(toLowerCase(node.tagName));
+        return tool.tags.includes(node.tagName.toLowerCase());
       })[0];
       var selectContents = true;
 
       // If that fails, look for an element with the selection CSS class
       if (!target) {
-        target = querySelector("." + selectedClass, region);
+        target = editor.querySelector("." + selectedClass);
         selectContents = false;
       }
 
@@ -760,11 +728,11 @@
 
         // Retrieve the current attribute values of the target for modification
         tool.attributes.forEach(function (attribute) {
-          values.push(getAttribute(target, attribute));
+          values.push(target.getAttribute(attribute));
         });
 
         // If no existing target is found, we are adding new content
-      } else if (selection && region.contains(anchorNode) && selection.rangeCount) {
+      } else if (selection && editor.contains(anchorNode) && selection.rangeCount) {
         // Save the current selection to keep track of where to insert the content
         setCurrentSelection(selection.getRangeAt(0));
       }
@@ -787,10 +755,10 @@
    * @param {object} button The popover's action button.
    */
   function execPopoverAction(button) {
-    var action = getAttribute(button, 'data-action');
-    var inputs = querySelectorAll('input', button.parentNode);
+    var action = button.getAttribute('data-action');
+    var inputs = button.parentNode.querySelectorAll('input');
     var _findInstance2 = findInstance(button),
-      region = _findInstance2.region;
+      editor = _findInstance2.editor;
     var options = [];
     inputs.forEach(function (input) {
       options.push(input.value);
@@ -798,13 +766,13 @@
 
     // Workaround for links being removed when updating images
     if (action === 'image') {
-      var selected = querySelector("." + selectedClass, region);
+      var selected = editor.querySelector("." + selectedClass);
       var parent = selected ? selected.parentNode : {};
       if (selected && parent.tagName === 'A') {
         options.push(parent.outerHTML);
       }
     }
-    execAction(action, region, options);
+    execAction(action, editor, options);
   }
 
   /**
@@ -812,7 +780,7 @@
    * @param {boolean} ignoreSelection If true, do not restore the previous selection.
    */
   function closePopover(ignoreSelection) {
-    var popover = querySelector('.wysi-popover [aria-expanded="true"]');
+    var popover = document.querySelector('.wysi-popover [aria-expanded="true"]');
     if (popover) {
       toggleButton(popover, false);
     }
@@ -825,7 +793,7 @@
   addListener(document, 'click', '.wysi-popover > button', function (event) {
     closePopover();
     openPopover(event.target);
-    stopImmediatePropagation(event);
+    event.stopImmediatePropagation();
   });
 
   // Execute the popover action
@@ -841,7 +809,7 @@
 
   // Prevent clicks on the popover content to propagate (keep popover open)
   addListener(document, 'click', '.wysi-popover *:not(button)', function (event) {
-    stopImmediatePropagation(event);
+    event.stopImmediatePropagation();
   });
 
   // Trap focus inside a popover until it's closed
@@ -851,7 +819,7 @@
     var form = parent.tagName === 'DIV' ? parent : parent.parentNode;
     switch (event.key) {
       case 'Tab':
-        var firstField = querySelector('input', form);
+        var firstField = form.querySelector('input');
         if (event.shiftKey) {
           if (target === firstField) {
             form.lastElementChild.focus();
@@ -866,7 +834,7 @@
         break;
       case 'Enter':
         if (target.tagName === 'INPUT') {
-          var actionButton = querySelector('[data-action]:last-of-type', form);
+          var actionButton = form.querySelector('[data-action]:last-of-type');
           actionButton.click();
           event.preventDefault();
         }
@@ -914,28 +882,28 @@
       switch (toolName) {
         // Toolbar separator
         case '|':
-          appendChild(toolbar, createElement('div', {
+          toolbar.appendChild(createElement('div', {
             class: 'wysi-separator'
           }));
           break;
 
         // Toolbar new line
         case '-':
-          appendChild(toolbar, createElement('div', {
+          toolbar.appendChild(createElement('div', {
             class: 'wysi-newline'
           }));
           break;
 
         // The format tool renders as a list box
         case 'format':
-          appendChild(toolbar, renderFormatTool(translations));
+          toolbar.appendChild(renderFormatTool(translations));
           break;
 
         // All the other tools render as buttons
         default:
           if (typeof toolName === 'object') {
             if (toolName.items) {
-              appendChild(toolbar, renderToolGroup(toolName, translations));
+              toolbar.appendChild(renderToolGroup(toolName, translations));
             }
           } else {
             renderTool(toolName, toolbar, translations);
@@ -966,11 +934,11 @@
     // Tools that require parameters (e.g: image, link) need a popover
     if (tool.hasForm) {
       var popover = renderPopover(name, button, translations);
-      appendChild(toolbar, popover);
+      toolbar.appendChild(popover);
 
       // The other tools only display a button
     } else {
-      appendChild(toolbar, button);
+      toolbar.appendChild(button);
     }
   }
 
@@ -1033,28 +1001,28 @@
   function updateToolbarState() {
     var _findInstance = findInstance(document.getSelection().anchorNode),
       toolbar = _findInstance.toolbar,
-      region = _findInstance.region,
+      editor = _findInstance.editor,
       nodes = _findInstance.nodes;
     var tags = nodes.map(function (node) {
-      return toLowerCase(node.tagName);
+      return node.tagName.toLowerCase();
     });
 
-    // Abort if the selection is not within an editable region
-    if (!region) {
+    // Abort if the selection is not within an editor instance
+    if (!editor) {
       return;
     }
 
-    // Get the list of allowed tags in the current editable region
-    var instanceId = getInstanceId(region);
+    // Get the list of allowed tags in the current editor instance
+    var instanceId = getInstanceId(editor);
     var allowedTags = instances[instanceId].allowedTags;
 
     // Reset the state of all buttons
-    querySelectorAll('[aria-pressed="true"]', toolbar).forEach(function (button) {
-      return setAttribute(button, 'aria-pressed', 'false');
+    toolbar.querySelectorAll('[aria-pressed="true"]').forEach(function (button) {
+      return button.setAttribute('aria-pressed', 'false');
     });
 
     // Reset the state of all list boxes
-    querySelectorAll('.wysi-listbox > div > button:first-of-type', toolbar).forEach(function (button) {
+    toolbar.querySelectorAll('.wysi-listbox > div > button:first-of-type').forEach(function (button) {
       return selectListBoxItem(button);
     });
 
@@ -1067,7 +1035,7 @@
         case 'h3':
         case 'h4':
         case 'li':
-          var format = querySelector("[data-action=\"format\"][data-option=\"" + tag + "\"]", toolbar);
+          var format = toolbar.querySelector("[data-action=\"format\"][data-option=\"" + tag + "\"]");
           var textAlign = nodes[i].style.textAlign;
           if (format) {
             selectListBoxItem(format);
@@ -1076,12 +1044,12 @@
           // Check for text align
           if (textAlign) {
             var _action = 'align' + textAlign.charAt(0).toUpperCase() + textAlign.slice(1);
-            var button = querySelector("[data-action=\"" + _action + "\"]", toolbar);
+            var button = toolbar.querySelector("[data-action=\"" + _action + "\"]");
             if (button) {
-              if (getAttribute(button.parentNode, 'role') === 'listbox') {
+              if (button.parentNode.getAttribute('role') === 'listbox') {
                 selectListBoxItem(button);
               } else {
-                setAttribute(button, 'aria-pressed', 'true');
+                button.setAttribute('aria-pressed', 'true');
               }
             }
           }
@@ -1090,8 +1058,8 @@
           var allowedTag = allowedTags[tag];
           var action = allowedTag ? allowedTag.toolName : undefined;
           if (action) {
-            var _button = querySelector("[data-action=\"" + action + "\"]", toolbar);
-            setAttribute(_button, 'aria-pressed', 'true');
+            var _button = toolbar.querySelector("[data-action=\"" + action + "\"]");
+            _button.setAttribute('aria-pressed', 'true');
           }
       }
     });
@@ -1102,14 +1070,14 @@
    */
   function embedSVGIcons() {
     // The icons will be included during the build process
-    var icons = '<svg id="wysi-svg-icons" style="display: none;" xmlns="http://www.w3.org/2000/svg"><symbol id="wysi-bold" viewBox="0 0 24 24"><path d="M16.5,9.5A3.5,3.5,0,0,0,13,6H8.5a1,1,0,0,0-1,1V17a1,1,0,0,0,1,1H13a3.49,3.49,0,0,0,2.44-6A3.5,3.5,0,0,0,16.5,9.5ZM13,16H9.5V13H13a1.5,1.5,0,0,1,0,3Zm0-5H9.5V8H13a1.5,1.5,0,0,1,0,3Z"></path></symbol><symbol id="wysi-italic" viewBox="0 0 24 24"><path d="M17,6H11a1,1,0,0,0,0,2h1.52l-3.2,8H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2H11.48l3.2-8H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-underline" viewBox="0 0 24 24"><path d="M12,15.5a5,5,0,0,0,5-5v-5a1,1,0,0,0-2,0v5a3,3,0,0,1-6,0v-5a1,1,0,0,0-2,0v5A5,5,0,0,0,12,15.5Zm5,2H7a1,1,0,0,0,0,2H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-strike" viewBox="0 0 24 24"><path d="M12 6C9.33 6 7.5 7.34 7.5 9.5c0 .58.12 1.07.35 1.5H13c-1.49-.34-3.49-.48-3.5-1.5 0-1.03 1.08-1.75 2.5-1.75s2.5.83 2.5 1.75h2C16.5 7.4 14.67 6 12 6zm-5.5 6c-.67 0-.67 1 0 1h4.35c.5.17 1.04.34 1.65.5.58.15 1.75.23 1.75 1s-.66 1.75-2.25 1.75-2.5-1.01-2.5-1.75h-2c0 1.64 1.33 3.5 4.5 3.5s4.5-2.08 4.5-3.5c0-.58-.05-1.07-.2-1.5h1.2c.67 0 .67-1 0-1z"></path></symbol><symbol id="wysi-alignLeft" viewBox="0 0 24 24"><path d="m4 8h16c1.33 0 1.33-2 0-2h-16c-1.33 0-1.33 2 0 2zm0 5h12c1.33 0 1.33-2 0-2h-12c-1.33 0-1.33 2 0 2zm16 3h-16c-1.33 0-1.33 2 0 2h16c1.34 0 1.29-2 0-2z"></path></symbol><symbol id="wysi-alignCenter" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-4 5h-8c-1.33 0-1.33-2 0-2h8c1.33 0 1.33 2 0 2zm-12 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignRight" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-12c-1.33 0-1.33-2 0-2h12c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignJustify" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-ul" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7z"></path></symbol><symbol id="wysi-ol" viewBox="0 0 24 24"><path d="M4 5c-.25 0-.5.17-.5.5v3c0 .67 1 .67 1 0v-3c0-.33-.25-.5-.5-.5zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zm-6 5.5h.75c0-.43.34-.75.75-.75.4 0 .75.28.75.75L2.5 13.25V14h3v-.75H3.75L5.5 12v-.5c0-.9-.73-1.49-1.5-1.5-.77 0-1.5.59-1.5 1.5zm6-.5c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zM4 15c-.83 0-1.5.63-1.5 1.25h.75c0-.28.34-.5.75-.5s.75.22.75.5-.34.5-.75.5v.5c.41 0 .75.22.75.5s-.34.5-.75.5-.75-.22-.75-.5H2.5c0 .62.67 1.25 1.5 1.25s1.5-.5 1.5-1.12c0-.34-.2-.66-.56-.88.35-.2.56-.53.56-.87 0-.62-.67-1.12-1.5-1.12zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-indent" viewBox="0 0 24 24"><path d="m20 8h-15.9c-1.33 0-1.33-2 0-2h15.9c1.33 0 1.33 2 0 2zm2.86e-4 5h-9.08c-1.33 0-1.33-2 0-2h9.08c1.33 0 1.33 2 0 2zm-16.7-3.31c0.356-0.423 0.988-0.477 1.41-0.12l2 1.66c0.483 0.4 0.483 1.14 0 1.54l-2 1.66c-0.179 0.153-0.405 0.238-0.64 0.24-0.297 4.83e-4 -0.58-0.131-0.77-0.36-0.354-0.425-0.296-1.06 0.13-1.41l1.08-0.9-1.08-0.9c-0.426-0.353-0.484-0.985-0.13-1.41zm0.77 6.31h15.9c1.33 0 1.33 2 0 2h-15.9c-1.33 0-1.33-2 0-2z"></path></symbol><symbol id="wysi-outdent" viewBox="0 0 24 24"><path d="m4.1 6c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9zm1.96 3.33c-0.224 0.00238-0.448 0.0803-0.633 0.236l-2 1.66c-0.483 0.4-0.483 1.14 0 1.54l2 1.66c0.179 0.153 0.404 0.238 0.639 0.24 0.297 4.83e-4 0.581-0.131 0.771-0.359 0.354-0.425 0.295-1.06-0.131-1.41l-1.08-0.9 1.08-0.9c0.426-0.353 0.485-0.985 0.131-1.41-0.2-0.238-0.489-0.359-0.777-0.355zm4.88 1.67c-1.33 0-1.33 2 0 2h9.08c1.33 0 1.33-2 0-2h-9.08zm-6.87 5c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9z"></path></symbol><symbol id="wysi-link" viewBox="0 0 24 24"><path d="M8,12a1,1,0,0,0,1,1h6a1,1,0,0,0,0-2H9A1,1,0,0,0,8,12Zm2,3H7A3,3,0,0,1,7,9h3a1,1,0,0,0,0-2H7A5,5,0,0,0,7,17h3a1,1,0,0,0,0-2Zm7-8H14a1,1,0,0,0,0,2h3a3,3,0,0,1,0,6H14a1,1,0,0,0,0,2h3A5,5,0,0,0,17,7Z"></path></symbol><symbol id="wysi-image" viewBox="0 0 24 24"><path d="M6 5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6zm0 2h12a1 1 0 0 1 1 1v5.73l-.88-.88a3.06 3.06 0 0 0-4.24 0l-.88.88-2.88-2.88A3.06 3.06 0 0 0 8 10a3.06 3.06 0 0 0-2.12.85l-.88.88V8a1 1 0 0 1 1-1zm1.85 4.98a1 1 0 0 1 .85.27L13.45 17H6a1 1 0 0 1-.98-.92H5v-1.53l2.3-2.3a1 1 0 0 1 .55-.26zm8 2a1 1 0 0 1 .85.27l2.17 2.16c-.19.33-.55.59-.86.59h-1.72l-1.86-1.87.88-.88a1 1 0 0 1 .54-.28z"></path></symbol><symbol id="wysi-quote" viewBox="0 0 24 24"><path d="m9 6c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545zm8 0c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545z"></path></symbol><symbol id="wysi-hr" viewBox="0 0 24 24"><path d="m20 11h-16c-1.33 0-1.33 2 0 2 0 0 16-0.018 16 0 1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-removeFormat" viewBox="0 0 24 24"><path d="M7 6C5.67 6 5.67 8 7 8h3l-2 7c0 .02 2 0 2 0l2-7h3c1.33 0 1.33-2 0-2H7zm7.06 7c-.79-.04-1.49.98-.75 1.72l.78.78-.78.79c-.94.93.47 2.35 1.4 1.4l.79-.78.78.79c.94.93 2.35-.47 1.41-1.41l-.78-.79.78-.78c.94-.94-.47-2.35-1.4-1.41l-.8.79-.77-.79a.99.99 0 0 0-.66-.3zM7 16c-1.33 0-1.33 2 0 2 .02-.02 4 0 4 0 1.33 0 1.33-2 0-2H7z"></path></symbol><symbol id="wysi-delete" viewBox="0 0 24 24"><path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18ZM20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Zm-3-1a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"></path></symbol></svg>';
+    var icons = '<svg id="wysi-svg-icons" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="wysi-bold" viewBox="0 0 24 24"><path d="M16.5,9.5A3.5,3.5,0,0,0,13,6H8.5a1,1,0,0,0-1,1V17a1,1,0,0,0,1,1H13a3.49,3.49,0,0,0,2.44-6A3.5,3.5,0,0,0,16.5,9.5ZM13,16H9.5V13H13a1.5,1.5,0,0,1,0,3Zm0-5H9.5V8H13a1.5,1.5,0,0,1,0,3Z"></path></symbol><symbol id="wysi-italic" viewBox="0 0 24 24"><path d="M17,6H11a1,1,0,0,0,0,2h1.52l-3.2,8H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2H11.48l3.2-8H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-underline" viewBox="0 0 24 24"><path d="M12,15.5a5,5,0,0,0,5-5v-5a1,1,0,0,0-2,0v5a3,3,0,0,1-6,0v-5a1,1,0,0,0-2,0v5A5,5,0,0,0,12,15.5Zm5,2H7a1,1,0,0,0,0,2H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-strike" viewBox="0 0 24 24"><path d="M12 6C9.33 6 7.5 7.34 7.5 9.5c0 .58.12 1.07.35 1.5H13c-1.49-.34-3.49-.48-3.5-1.5 0-1.03 1.08-1.75 2.5-1.75s2.5.83 2.5 1.75h2C16.5 7.4 14.67 6 12 6zm-5.5 6c-.67 0-.67 1 0 1h4.35c.5.17 1.04.34 1.65.5.58.15 1.75.23 1.75 1s-.66 1.75-2.25 1.75-2.5-1.01-2.5-1.75h-2c0 1.64 1.33 3.5 4.5 3.5s4.5-2.08 4.5-3.5c0-.58-.05-1.07-.2-1.5h1.2c.67 0 .67-1 0-1z"></path></symbol><symbol id="wysi-alignLeft" viewBox="0 0 24 24"><path d="m4 8h16c1.33 0 1.33-2 0-2h-16c-1.33 0-1.33 2 0 2zm0 5h12c1.33 0 1.33-2 0-2h-12c-1.33 0-1.33 2 0 2zm16 3h-16c-1.33 0-1.33 2 0 2h16c1.34 0 1.29-2 0-2z"></path></symbol><symbol id="wysi-alignCenter" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-4 5h-8c-1.33 0-1.33-2 0-2h8c1.33 0 1.33 2 0 2zm-12 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignRight" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-12c-1.33 0-1.33-2 0-2h12c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignJustify" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-ul" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7z"></path></symbol><symbol id="wysi-ol" viewBox="0 0 24 24"><path d="M4 5c-.25 0-.5.17-.5.5v3c0 .67 1 .67 1 0v-3c0-.33-.25-.5-.5-.5zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zm-6 5.5h.75c0-.43.34-.75.75-.75.4 0 .75.28.75.75L2.5 13.25V14h3v-.75H3.75L5.5 12v-.5c0-.9-.73-1.49-1.5-1.5-.77 0-1.5.59-1.5 1.5zm6-.5c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zM4 15c-.83 0-1.5.63-1.5 1.25h.75c0-.28.34-.5.75-.5s.75.22.75.5-.34.5-.75.5v.5c.41 0 .75.22.75.5s-.34.5-.75.5-.75-.22-.75-.5H2.5c0 .62.67 1.25 1.5 1.25s1.5-.5 1.5-1.12c0-.34-.2-.66-.56-.88.35-.2.56-.53.56-.87 0-.62-.67-1.12-1.5-1.12zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-indent" viewBox="0 0 24 24"><path d="m20 8h-15.9c-1.33 0-1.33-2 0-2h15.9c1.33 0 1.33 2 0 2zm2.86e-4 5h-9.08c-1.33 0-1.33-2 0-2h9.08c1.33 0 1.33 2 0 2zm-16.7-3.31c0.356-0.423 0.988-0.477 1.41-0.12l2 1.66c0.483 0.4 0.483 1.14 0 1.54l-2 1.66c-0.179 0.153-0.405 0.238-0.64 0.24-0.297 4.83e-4 -0.58-0.131-0.77-0.36-0.354-0.425-0.296-1.06 0.13-1.41l1.08-0.9-1.08-0.9c-0.426-0.353-0.484-0.985-0.13-1.41zm0.77 6.31h15.9c1.33 0 1.33 2 0 2h-15.9c-1.33 0-1.33-2 0-2z"></path></symbol><symbol id="wysi-outdent" viewBox="0 0 24 24"><path d="m4.1 6c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9zm1.96 3.33c-0.224 0.00238-0.448 0.0803-0.633 0.236l-2 1.66c-0.483 0.4-0.483 1.14 0 1.54l2 1.66c0.179 0.153 0.404 0.238 0.639 0.24 0.297 4.83e-4 0.581-0.131 0.771-0.359 0.354-0.425 0.295-1.06-0.131-1.41l-1.08-0.9 1.08-0.9c0.426-0.353 0.485-0.985 0.131-1.41-0.2-0.238-0.489-0.359-0.777-0.355zm4.88 1.67c-1.33 0-1.33 2 0 2h9.08c1.33 0 1.33-2 0-2h-9.08zm-6.87 5c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9z"></path></symbol><symbol id="wysi-link" viewBox="0 0 24 24"><path d="M8,12a1,1,0,0,0,1,1h6a1,1,0,0,0,0-2H9A1,1,0,0,0,8,12Zm2,3H7A3,3,0,0,1,7,9h3a1,1,0,0,0,0-2H7A5,5,0,0,0,7,17h3a1,1,0,0,0,0-2Zm7-8H14a1,1,0,0,0,0,2h3a3,3,0,0,1,0,6H14a1,1,0,0,0,0,2h3A5,5,0,0,0,17,7Z"></path></symbol><symbol id="wysi-image" viewBox="0 0 24 24"><path d="M6 5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6zm0 2h12a1 1 0 0 1 1 1v5.73l-.88-.88a3.06 3.06 0 0 0-4.24 0l-.88.88-2.88-2.88A3.06 3.06 0 0 0 8 10a3.06 3.06 0 0 0-2.12.85l-.88.88V8a1 1 0 0 1 1-1zm1.85 4.98a1 1 0 0 1 .85.27L13.45 17H6a1 1 0 0 1-.98-.92H5v-1.53l2.3-2.3a1 1 0 0 1 .55-.26zm8 2a1 1 0 0 1 .85.27l2.17 2.16c-.19.33-.55.59-.86.59h-1.72l-1.86-1.87.88-.88a1 1 0 0 1 .54-.28z"></path></symbol><symbol id="wysi-quote" viewBox="0 0 24 24"><path d="m9 6c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545zm8 0c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545z"></path></symbol><symbol id="wysi-hr" viewBox="0 0 24 24"><path d="m20 11h-16c-1.33 0-1.33 2 0 2 0 0 16-0.018 16 0 1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-removeFormat" viewBox="0 0 24 24"><path d="M7 6C5.67 6 5.67 8 7 8h3l-2 7c0 .02 2 0 2 0l2-7h3c1.33 0 1.33-2 0-2H7zm7.06 7c-.79-.04-1.49.98-.75 1.72l.78.78-.78.79c-.94.93.47 2.35 1.4 1.4l.79-.78.78.79c.94.93 2.35-.47 1.41-1.41l-.78-.79.78-.78c.94-.94-.47-2.35-1.4-1.41l-.8.79-.77-.79a.99.99 0 0 0-.66-.3zM7 16c-1.33 0-1.33 2 0 2 .02-.02 4 0 4 0 1.33 0 1.33-2 0-2H7z"></path></symbol><symbol id="wysi-delete" viewBox="0 0 24 24"><path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18ZM20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Zm-3-1a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"></path></symbol></defs></svg>';
     var svgElement = buildFragment(icons);
-    appendChild(document.body, svgElement);
+    document.body.appendChild(svgElement);
   }
 
   // Deselect selected element when clicking outside
   addListener(document, 'click', '.wysi-editor, .wysi-editor *', function (event) {
-    var selected = querySelector("." + selectedClass);
+    var selected = document.querySelector("." + selectedClass);
     if (selected && selected !== event.target) {
       selected.classList.remove(selectedClass);
     }
@@ -1127,12 +1095,12 @@
   // Toolbar button click
   addListener(document, 'click', '.wysi-toolbar > button', function (event) {
     var button = event.target;
-    var action = getAttribute(button, 'data-action');
+    var action = button.getAttribute('data-action');
     var _findInstance2 = findInstance(button),
-      region = _findInstance2.region;
+      editor = _findInstance2.editor;
     var selection = document.getSelection();
-    if (selection && region.contains(selection.anchorNode)) {
-      execAction(action, region);
+    if (selection && editor.contains(selection.anchorNode)) {
+      execAction(action, editor);
     }
   });
 
@@ -1180,7 +1148,7 @@
 
   /**
    * Prepare raw content for editing.
-   * @param {string} content The editable region's raw content.
+   * @param {string} content The raw content.
    * @param {array} allowedTags The list of allowed tags.
    * @return {string} The filter HTML content.
    */
@@ -1190,7 +1158,7 @@
     filterContent(fragment, allowedTags);
     wrapTextNodes(fragment);
     cleanContent(fragment, allowedTags);
-    appendChild(container, fragment);
+    container.appendChild(fragment);
     return container.innerHTML;
   }
 
@@ -1211,7 +1179,7 @@
     // Copy the original element's attributes
     if (copyAttributes && attributes) {
       for (var i = 0; i < attributes.length; i++) {
-        setAttribute(newElement, attributes[i].name, attributes[i].value);
+        newElement.setAttribute(attributes[i].name, attributes[i].value);
       }
     }
 
@@ -1225,7 +1193,7 @@
    * @param {array} allowedStyles An array of supported styles.
    */
   function filterStyles(node, allowedStyles) {
-    var styleAttribute = getAttribute(node, STYLE_ATTRIBUTE);
+    var styleAttribute = node.getAttribute(STYLE_ATTRIBUTE);
     if (styleAttribute) {
       // Parse the styles
       var styles = styleAttribute.split(';').map(function (style) {
@@ -1247,9 +1215,9 @@
         return name + ": " + value.trim() + ";";
       }).join('');
       if (styles !== '') {
-        setAttribute(node, STYLE_ATTRIBUTE, styles);
+        node.setAttribute(STYLE_ATTRIBUTE, styles);
       } else {
-        removeAttribute(node, STYLE_ATTRIBUTE);
+        node.removeAttribute(STYLE_ATTRIBUTE);
       }
     }
   }
@@ -1271,12 +1239,12 @@
         filterContent(childNode, allowedTags);
 
         // Check if the current element is allowed
-        var tag = toLowerCase(childNode.tagName);
+        var tag = childNode.tagName.toLowerCase();
         var allowedTag = allowedTags[tag];
         var attributes = Array.from(childNode.attributes);
         if (allowedTag) {
-          var allowedAttributes = allowedTag.attributes;
-          var allowedStyles = allowedTag.styles;
+          var allowedAttributes = allowedTag.attributes || [];
+          var allowedStyles = allowedTag.styles || [];
 
           // Remove attributes that are not allowed
           for (var i = 0; i < attributes.length; i++) {
@@ -1285,7 +1253,7 @@
               if (attributeName === STYLE_ATTRIBUTE && allowedStyles.length) {
                 filterStyles(childNode, allowedStyles);
               } else {
-                removeAttribute(childNode, attributes[i].name);
+                childNode.removeAttribute(attributes[i].name);
               }
             }
           }
@@ -1298,7 +1266,7 @@
         } else {
           // Remove style nodes
           if (tag === 'style') {
-            removeChild(node, childNode);
+            node.removeChild(childNode);
 
             // And unwrap the other nodes
           } else {
@@ -1308,7 +1276,7 @@
 
         // Remove comment nodes
       } else if (childNode.nodeType === 8) {
-        removeChild(node, childNode);
+        node.removeChild(childNode);
       }
     });
   }
@@ -1330,10 +1298,10 @@
         cleanContent(childNode, allowedTags);
 
         // Check if the element can be empty
-        var tag = toLowerCase(childNode.tagName);
+        var tag = childNode.tagName.toLowerCase();
         var allowedTag = allowedTags[tag];
         if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
-          removeChild(node, childNode);
+          node.removeChild(childNode);
         }
       }
     });
@@ -1358,7 +1326,7 @@
 
       // Remove empty text node
       /*if (trimText(childNode.textContent) === '') {
-        removeChild(node, childNode);
+        node.removeChild(childNode);
        // Wrap text node in a paragraph
       } else {*/
       if (appendToPrev) {
@@ -1387,7 +1355,7 @@
   var nextId = 0;
 
   /**
-   * Init a WYSIWYG editor instance.
+   * Init WYSIWYG editor instances.
    * @param {object} options Configuration options.
    */
   function init(options) {
@@ -1415,8 +1383,8 @@
       }
     });
 
-    // Append an editable region
-    querySelectorAll(selector).forEach(function (field) {
+    // Append an editor instance
+    document.querySelectorAll(selector).forEach(function (field) {
       var sibling = field.previousElementSibling;
       if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
         var instanceId = nextId++;
@@ -1443,9 +1411,9 @@
           _innerHTML: prepareContent(field.value, allowedTags)
         });
 
-        // Insert the editable region in the document
-        appendChild(wrapper, toolbar.cloneNode(true));
-        appendChild(wrapper, editor);
+        // Insert the editor instance in the document
+        wrapper.appendChild(toolbar.cloneNode(true));
+        wrapper.appendChild(editor);
         field.before(wrapper);
 
         // Apply configuration
@@ -1472,14 +1440,14 @@
         case 'darkMode':
         case 'autoGrow':
         case 'autoHide':
-          instance.classList.toggle("wysi-" + toLowerCase(key), !!options[key]);
+          instance.classList.toggle("wysi-" + key.toLowerCase(), !!options[key]);
           break;
         case 'height':
           var height = options.height;
           if (!isNaN(height)) {
-            var region = instance.lastChild;
-            region.style.minHeight = height + "px";
-            region.style.maxHeight = height + "px";
+            var editor = instance.lastChild;
+            editor.style.minHeight = height + "px";
+            editor.style.maxHeight = height + "px";
           }
           break;
       }
@@ -1491,7 +1459,7 @@
    * @param {string} selector One or more selectors pointing to textarea fields.
    */
   function destroy(selector) {
-    querySelectorAll(selector).forEach(function (field) {
+    document.querySelectorAll(selector).forEach(function (field) {
       var sibling = field.previousElementSibling;
       if (sibling && hasClass(sibling, 'wysi-wrapper')) {
         var instanceId = getInstanceId(sibling.lastChild);
@@ -1502,16 +1470,16 @@
   }
 
   /**
-   * Clean up content before pasting it in an editable region.
+   * Clean up content before pasting it in an editor.
    * @param {object} event The browser's paste event.
    */
   function cleanPastedContent(event) {
     var _findInstance = findInstance(event.target),
-      region = _findInstance.region;
+      editor = _findInstance.editor;
     var clipboardData = event.clipboardData;
-    if (region && clipboardData.types.includes('text/html')) {
+    if (editor && clipboardData.types.includes('text/html')) {
       var pasted = clipboardData.getData('text/html');
-      var instanceId = getInstanceId(region);
+      var instanceId = getInstanceId(editor);
       var allowedTags = instances[instanceId].allowedTags;
       var content = prepareContent(pasted, allowedTags);
 
@@ -1551,7 +1519,7 @@
     addListener(document, 'paste', cleanPastedContent);
   }
 
-  // Expose the WYSIWYG editor to the global scope
+  // Expose Wysi to the global scope
   window.Wysi = function () {
     var methods = {
       destroy: destroy
@@ -1575,7 +1543,7 @@
     return Wysi;
   }();
 
-  // Bootstrap the WYSIWYG editor when the DOM is ready
+  // Bootstrap Wysi when the DOM is ready
   DOMReady(bootstrap);
 
 })(window, document);

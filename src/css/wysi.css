@@ -4,6 +4,10 @@
   --wysi-highlight: #cce5ff ;
 }
 
+#wysi-svg-icons {
+  display: none;
+}
+
 .wysi-wrapper {
   display: flex;
   flex-direction: column;

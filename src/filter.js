@@ -1,6 +1,7 @@
 import settings from './settings.js';
 import toolset from './toolset.js';
 import { buildFragment, cloneObject, createElement } from './utils.js';
+import { blockElements } from './common.js';
 
 const STYLE_ATTRIBUTE = 'style';
 
@@ -217,11 +218,10 @@ function wrapTextNodes(node) {
     return;
   }
 
-  const exclude = ['BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'HR', 'P', 'OL', 'UL'];
   let appendToPrev = false;
 
   children.forEach(childNode => {
-    if (childNode.nodeType !== 3 && exclude.includes(childNode.tagName)) {
+    if (childNode.nodeType !== 3 && blockElements.includes(childNode.tagName)) {
       appendToPrev = false;
       return;
     }

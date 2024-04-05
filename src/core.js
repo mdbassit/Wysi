@@ -1,9 +1,15 @@
 import window from 'window';
 import document from 'document';
 import settings from './settings.js';
-import { instances } from './common.js';
 import { renderToolbar } from './toolbar.js';
 import { enableTags, prepareContent } from './filter.js';
+import {
+  instances,
+  placeholderClass,
+  headingElements,
+  blockElements,
+  isFirefox
+} from './common.js';
 import { 
   addListener,
   cloneObject,
@@ -146,17 +152,43 @@ function destroy(selector) {
  * @param {object} event The browser's paste event.
  */
 function cleanPastedContent(event) {
-  const { editor } = findInstance(event.target);
+  const { editor, nodes } = findInstance(event.target);
   const clipboardData = event.clipboardData;
 
   if (editor && clipboardData.types.includes('text/html')) {
     const pasted = clipboardData.getData('text/html');
     const instanceId = getInstanceId(editor);
     const allowedTags = instances[instanceId].allowedTags;
-    const content = prepareContent(pasted, allowedTags);
+    let content = prepareContent(pasted, allowedTags);
+
+    // Detect a heading tag in the current selection
+    const splitHeadingTag = nodes.filter(n => headingElements.includes(n.tagName)).length > 0;
+
+    // Force split the heading tag if any.
+    // This fixes a bug in Webkit/Blink browsers where the whole content is converted to a heading
+    if (splitHeadingTag && !isFirefox) {
+      const splitter = `<h1 class="${placeholderClass}"><br></h1><p class="${placeholderClass}"><br></p>`;
+      content = splitter + content + splitter;
+    }
 
     // Manually paste the cleaned content
     execCommand('insertHTML', content);
+
+    if (splitHeadingTag && !isFirefox) {
+      // Remove placeholder elements if any
+      editor.querySelectorAll(`.${placeholderClass}`).forEach(fragment => {
+        fragment.remove();
+      });
+
+      // Unwrap nested heading elements to fix a bug in Webkit/Blink browsers
+      editor.querySelectorAll(headingElements.join()).forEach(heading => {
+        const firstChild = heading.firstElementChild;
+
+        if (firstChild && blockElements.includes(firstChild.tagName)) {
+          heading.replaceWith(...heading.childNodes);
+        }
+      });
+    }
 
     // Prevent the default paste action
     event.preventDefault();

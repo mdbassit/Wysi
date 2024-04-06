@@ -170,6 +170,35 @@ export function getInstanceId(editor) {
 }
 
 /**
+ * Get a list of DOM elements based on a selector value.
+ * @param {(string|object)} selector A CSS selector string, a DOM element or a list of DOM elements.
+ * @return {array} A list of DOM elements.
+ */ 
+export function getTargetElements(selector) {
+  // If selector is a string, get the elements that it represents
+  if (typeof selector === 'string') {
+    return Array.from(document.querySelectorAll(selector));
+  }
+
+  // If selector is a DOM element, wrap it in an array
+  if (selector instanceof Node) {
+    return [selector];
+  }
+
+  // If selector is a NodeList or an HTMLCollection, convert it to an array
+  if (selector instanceof NodeList || selector instanceof HTMLCollection) {
+    return Array.from(selector);
+  }
+
+  // If selector is an array, find any DOM elements it contains
+  if (Array.isArray(selector)) {
+    return selector.filter(el => el instanceof Node);
+  }
+
+  return [];
+}
+
+/**
  * Try to guess the textarea element's label if any.
  * @param {object} textarea The textarea element.
  * @return {string} The textarea element's label or an empty string.

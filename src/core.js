@@ -17,6 +17,7 @@ import {
   DOMReady,
   findInstance,
   getInstanceId,
+  getTargetElements,
   getTextAreaLabel
 } from './utils.js';
 import {
@@ -38,6 +39,7 @@ function init(options) {
   const translations = Object.assign({}, globalTranslations, options.translations || {});
   const tools = options.tools || settings.tools;
   const selector = options.el || settings.el;
+  const targetEls = getTargetElements(selector);
   const toolbar = renderToolbar(tools, translations);
   const allowedTags = enableTags(tools);
   const customTags = options.customTags || [];
@@ -55,8 +57,8 @@ function init(options) {
     }
   });
 
-  // Append an editor instance
-  document.querySelectorAll(selector).forEach(field => {
+  // Append an editor instance to target elements
+  targetEls.forEach(field => {
     const sibling = field.previousElementSibling;
 
     if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {

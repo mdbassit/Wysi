@@ -56,6 +56,7 @@ The editor can be configured by calling `Wysi()` and passing an options object t
 Wysi({
   
   // A selector pointing to one or more textarea elements to convert into WYSIWYG editors.
+  // This can also accept a Node, a NodeList, an HTMLCollection or an array of DOM elements.
   el: '.richtext',
 
   // Enable dark mode. This only affects the toolbar, not the content area.

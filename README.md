@@ -20,6 +20,18 @@ This is an early release. Use in production is NOT YET RECOMMENDED.
 * Filters content when pasting
 * Works on all modern browsers
 
+### TODO
+
+(Work in progress)
+
+* Normalize the HTML output across browsers
+* Use semantic HTML when possible
+* Add support for custom tools (plugins)
+* Add support for link target
+* Add support for image scaling, positioning and caption
+* Add support for custom CSS classes
+* Theming
+
 ## Getting Started
 
 ### Basic usage

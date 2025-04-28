@@ -3,12 +3,12 @@ import toolset from './toolset.js';
 import { renderPopover } from './popover.js';
 import { renderListBox, selectListBoxItem } from './listbox.js';
 import { instances, selectedClass } from './common.js';
+import { execAction } from './commands.js';
 import {
   addListener,
   buildFragment,
   createElement,
   DOMReady,
-  execAction,
   findInstance,
   getInstanceId,
   setSelection

@@ -1,9 +1,5 @@
 import document from 'document';
-import toolset from './toolset.js';
-import {
-  execCommand,
-  hasClass
-} from './shortcuts.js';
+import { hasClass } from './shortcuts.js';
 
 // Used to store the current DOM selection for later use
 let currentSelection;
@@ -97,30 +93,6 @@ export function DOMReady(fn, args) {
     addListener(document, 'DOMContentLoaded', () => {
       fn(...args);
     });
-  }
-}
-
-/**
- * Execute an action.
- * @param {string} action The action to execute.
- * @param {object} editor The editor instance.
- * @param {array} [options] Optional action parameters.
- */
-export function execAction(action, editor, options = []) {
-  const tool = toolset[action];
-  
-  if (tool) {
-    const command = tool.command || action;
-    const realAction = tool.action || (() => execCommand(command));
-
-    // Restore selection if any
-    restoreSelection();
-
-    // Execute the tool's action
-    realAction(...options);
-
-    // Focus the editor instance
-    editor.focus();
   }
 }
 

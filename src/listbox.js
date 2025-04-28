@@ -1,10 +1,10 @@
 import document from 'document';
 import toolset from './toolset.js';
 import { instances } from './common.js';
+import { execAction } from './commands.js';
 import {
   addListener,
   createElement,
-  execAction,
   findInstance,
   toggleButton
 } from './utils.js';

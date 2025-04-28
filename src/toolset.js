@@ -1,13 +1,3 @@
-import { execCommand } from './shortcuts.js';
-
-/**
- * Execute a formatBlock command.
- * @param {string} format The block format to apply.
- */
-function formatBlock(format) {
-  execCommand('formatBlock', `<${format}>`);
-}
-
 // Supported tools
 export default {
   format: {
@@ -15,27 +5,25 @@ export default {
     styles: ['text-align'],
     label: 'Select block format',
     paragraph: 'Paragraph',
-    heading: 'Heading',
-    action: (format) => formatBlock(format)
+    heading: 'Heading'
   },
   quote: {
     tags: ['blockquote'],
-    label: 'Quote',
-    action: () => formatBlock('blockquote')
+    label: 'Quote'
   },
   bold: {
     tags: ['strong'],
     alias: ['b'],
-    label: 'Bold',
+    label: 'Bold'
   },
   italic: {
     tags: ['em'],
     alias: ['i'],
-    label: 'Italic',
+    label: 'Italic'
   },
   underline: {
     tags: ['u'],
-    label: 'Underline',
+    label: 'Underline'
   },
   strike: {
     tags: ['s'],
@@ -74,18 +62,17 @@ export default {
     command: 'insertOrderedList'
   },
   indent: {
-    label: 'Increase indent',
+    label: 'Increase indent'
   },
   outdent: {
-    label: 'Decrease indent',
+    label: 'Decrease indent'
   },
   link: {
     tags: ['a'],
     attributes: [/*'id', 'name', */'href', /*'target', 'onclick'*/],
     attributeLabels: ['URL'],
     hasForm: true,
-    label: 'Link',
-    action: (url) => execCommand('createLink', url)
+    label: 'Link'
   },
   image: {
     tags: ['img'],
@@ -93,12 +80,7 @@ export default {
     attributeLabels: ['URL', 'Alternative text'],
     isEmpty: true,
     hasForm: true,
-    label: 'Image',
-    action: (url, text = '', original) => {
-      const image = `<img src="${url}" alt="${text}" class="wysi-selected">`;
-      const html = original ? original.replace(/<img[^>]+>/i, image) : image;
-      execCommand('insertHTML', html);
-    }
+    label: 'Image'
   },
   hr: {
     tags: ['hr'],

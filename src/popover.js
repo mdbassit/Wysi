@@ -2,10 +2,10 @@ import document from 'document';
 import toolset from './toolset.js';
 import { renderListBox, selectListBoxItem } from './listbox.js';
 import { selectedClass } from './common.js';
+import { execAction } from './commands.js';
 import {
   addListener,
   createElement,
-  execAction,
   findInstance,
   restoreSelection,
   setCurrentSelection,

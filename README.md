@@ -7,8 +7,6 @@ A lightweight and simple WYSIWYG editor written in vanilla ES6 with no dependenc
 
 [**View demo**](https://mdbassit.github.io/Wysi)
 
-This is an early release. Use in production is NOT YET RECOMMENDED.
-
 ## Features
 
 * Lightweight (around 10KB minified and gzipped)

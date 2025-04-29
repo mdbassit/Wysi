@@ -45,36 +45,6 @@
     ]
   };
 
-  // Instances storage
-  var instances = {};
-
-  // The CSS class to use for selected elements
-  var selectedClass = 'wysi-selected';
-
-  // Shortcuts
-  var dispatchEvent = function dispatchEvent(element, event) {
-    return element.dispatchEvent(new Event(event, {
-      bubbles: true
-    }));
-  };
-  var execCommand = function execCommand(command, value) {
-    if (value === void 0) {
-      value = null;
-    }
-    return document.execCommand(command, false, value);
-  };
-  var hasClass = function hasClass(element, classes) {
-    return element.classList && element.classList.contains(classes);
-  };
-
-  /**
-   * Execute a formatBlock command.
-   * @param {string} format The block format to apply.
-   */
-  function formatBlock(format) {
-    execCommand('formatBlock', "<" + format + ">");
-  }
-
   // Supported tools
   var toolset = {
     format: {
@@ -82,17 +52,11 @@
       styles: ['text-align'],
       label: 'Select block format',
       paragraph: 'Paragraph',
-      heading: 'Heading',
-      action: function action(format) {
-        return formatBlock(format);
-      }
+      heading: 'Heading'
     },
     quote: {
       tags: ['blockquote'],
-      label: 'Quote',
-      action: function action() {
-        return formatBlock('blockquote');
-      }
+      label: 'Quote'
     },
     bold: {
       tags: ['strong'],
@@ -155,10 +119,7 @@
       attributes: [/*'id', 'name', */'href' /*'target', 'onclick'*/],
       attributeLabels: ['URL'],
       hasForm: true,
-      label: 'Link',
-      action: function action(url) {
-        return execCommand('createLink', url);
-      }
+      label: 'Link'
     },
     image: {
       tags: ['img'],
@@ -166,15 +127,7 @@
       attributeLabels: ['URL', 'Alternative text'],
       isEmpty: true,
       hasForm: true,
-      label: 'Image',
-      action: function action(url, text, original) {
-        if (text === void 0) {
-          text = '';
-        }
-        var image = "<img src=\"" + url + "\" alt=\"" + text + "\" class=\"wysi-selected\">";
-        var html = original ? original.replace(/<img[^>]+>/i, image) : image;
-        execCommand('insertHTML', html);
-      }
+      label: 'Image'
     },
     hr: {
       tags: ['hr'],
@@ -188,6 +141,40 @@
     unlink: {
       label: 'Remove link'
     }
+  };
+
+  // Instances storage
+  var instances = {};
+
+  // The CSS class to use for selected elements
+  var selectedClass = 'wysi-selected';
+
+  // Placeholder elements CSS class
+  var placeholderClass = 'wysi-fragment-placeholder';
+
+  // Heading elements
+  var headingElements = ['H1', 'H2', 'H3', 'H4'];
+
+  // Block type HTML elements
+  var blockElements = ['BLOCKQUOTE', 'HR', 'P', 'OL', 'UL'].concat(headingElements);
+
+  // Detect Firefox browser
+  var isFirefox = navigator.userAgent.search(/Gecko\//) > -1;
+
+  // Shortcuts
+  var dispatchEvent = function dispatchEvent(element, event) {
+    return element.dispatchEvent(new Event(event, {
+      bubbles: true
+    }));
+  };
+  var execCommand = function execCommand(command, value) {
+    if (value === void 0) {
+      value = null;
+    }
+    return document.execCommand(command, false, value);
+  };
+  var hasClass = function hasClass(element, classes) {
+    return element.classList && element.classList.contains(classes);
   };
 
   // Used to store the current DOM selection for later use
@@ -281,34 +268,6 @@
   }
 
   /**
-   * Execute an action.
-   * @param {string} action The action to execute.
-   * @param {object} editor The editor instance.
-   * @param {array} [options] Optional action parameters.
-   */
-  function execAction(action, editor, options) {
-    if (options === void 0) {
-      options = [];
-    }
-    var tool = toolset[action];
-    if (tool) {
-      var command = tool.command || action;
-      var realAction = tool.action || function () {
-        return execCommand(command);
-      };
-
-      // Restore selection if any
-      restoreSelection();
-
-      // Execute the tool's action
-      realAction.apply(void 0, options);
-
-      // Focus the editor instance
-      editor.focus();
-    }
-  }
-
-  /**
    * Find the current editor instance.
    * @param {object} currentNode The possible child node of the editor instance.
    * @return {object} The instance's editable region and toolbar, and an array of nodes that lead to it.
@@ -350,6 +309,36 @@
    */
   function getInstanceId(editor) {
     return editor.getAttribute('data-wid');
+  }
+
+  /**
+   * Get a list of DOM elements based on a selector value.
+   * @param {(string|object)} selector A CSS selector string, a DOM element or a list of DOM elements.
+   * @return {array} A list of DOM elements.
+   */
+  function getTargetElements(selector) {
+    // If selector is a string, get the elements that it represents
+    if (typeof selector === 'string') {
+      return Array.from(document.querySelectorAll(selector));
+    }
+
+    // If selector is a DOM element, wrap it in an array
+    if (selector instanceof Node) {
+      return [selector];
+    }
+
+    // If selector is a NodeList or an HTMLCollection, convert it to an array
+    if (selector instanceof NodeList || selector instanceof HTMLCollection) {
+      return Array.from(selector);
+    }
+
+    // If selector is an array, find any DOM elements it contains
+    if (Array.isArray(selector)) {
+      return selector.filter(function (el) {
+        return el instanceof Node;
+      });
+    }
+    return [];
   }
 
   /**
@@ -425,6 +414,67 @@
    */
   function toggleButton(button, expanded) {
     button.setAttribute('aria-expanded', expanded);
+  }
+
+  /**
+   * Execute an action.
+   * @param {string} action The action to execute.
+   * @param {object} editor The editor instance.
+   * @param {array} [options] Optional action parameters.
+   */
+  function execAction(action, editor, options) {
+    if (options === void 0) {
+      options = [];
+    }
+    var tool = toolset[action];
+    if (tool) {
+      var command = tool.command || action;
+
+      // Restore selection if any
+      restoreSelection();
+
+      // Execute the tool's action
+      execEditorCommand(command, options);
+
+      // Focus the editor instance
+      editor.focus();
+    }
+  }
+
+  /**
+   * Execute an editor command.
+   * @param {string} command The command to execute.
+   * @param {array} [options] Optional command parameters.
+   */
+  function execEditorCommand(command, options) {
+    switch (command) {
+      // Block level formatting
+      case 'quote':
+        options[0] = 'blockquote';
+      case 'format':
+        execCommand('formatBlock', "<" + options[0] + ">");
+        break;
+
+      // Links
+      case 'link':
+        execCommand('createLink', options[0]);
+        break;
+
+      // Images
+      case 'image':
+        var url = options[0],
+          _options$ = options[1],
+          text = _options$ === void 0 ? '' : _options$,
+          original = options[2];
+        var image = "<img src=\"" + url + "\" alt=\"" + text + "\" class=\"wysi-selected\">";
+        var html = original ? original.replace(/<img[^>]+>/i, image) : image;
+        execCommand('insertHTML', html);
+        break;
+
+      // All the other commands
+      default:
+        execCommand(command);
+    }
   }
 
   /**
@@ -1316,10 +1366,9 @@
     if (!children || !children.length) {
       return;
     }
-    var exclude = ['BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'HR', 'P', 'OL', 'UL'];
     var appendToPrev = false;
     children.forEach(function (childNode) {
-      if (childNode.nodeType !== 3 && exclude.includes(childNode.tagName)) {
+      if (childNode.nodeType !== 3 && blockElements.includes(childNode.tagName)) {
         appendToPrev = false;
         return;
       }
@@ -1363,6 +1412,7 @@
     var translations = Object.assign({}, globalTranslations, options.translations || {});
     var tools = options.tools || settings.tools;
     var selector = options.el || settings.el;
+    var targetEls = getTargetElements(selector);
     var toolbar = renderToolbar(tools, translations);
     var allowedTags = enableTags(tools);
     var customTags = options.customTags || [];
@@ -1383,8 +1433,8 @@
       }
     });
 
-    // Append an editor instance
-    document.querySelectorAll(selector).forEach(function (field) {
+    // Append an editor instance to target elements
+    targetEls.forEach(function (field) {
       var sibling = field.previousElementSibling;
       if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
         var instanceId = nextId++;
@@ -1475,7 +1525,8 @@
    */
   function cleanPastedContent(event) {
     var _findInstance = findInstance(event.target),
-      editor = _findInstance.editor;
+      editor = _findInstance.editor,
+      nodes = _findInstance.nodes;
     var clipboardData = event.clipboardData;
     if (editor && clipboardData.types.includes('text/html')) {
       var pasted = clipboardData.getData('text/html');
@@ -1483,8 +1534,34 @@
       var allowedTags = instances[instanceId].allowedTags;
       var content = prepareContent(pasted, allowedTags);
 
+      // Detect a heading tag in the current selection
+      var splitHeadingTag = nodes.filter(function (n) {
+        return headingElements.includes(n.tagName);
+      }).length > 0;
+
+      // Force split the heading tag if any.
+      // This fixes a bug in Webkit/Blink browsers where the whole content is converted to a heading
+      if (splitHeadingTag && !isFirefox) {
+        var splitter = "<h1 class=\"" + placeholderClass + "\"><br></h1><p class=\"" + placeholderClass + "\"><br></p>";
+        content = splitter + content + splitter;
+      }
+
       // Manually paste the cleaned content
       execCommand('insertHTML', content);
+      if (splitHeadingTag && !isFirefox) {
+        // Remove placeholder elements if any
+        editor.querySelectorAll("." + placeholderClass).forEach(function (fragment) {
+          fragment.remove();
+        });
+
+        // Unwrap nested heading elements to fix a bug in Webkit/Blink browsers
+        editor.querySelectorAll(headingElements.join()).forEach(function (heading) {
+          var firstChild = heading.firstElementChild;
+          if (firstChild && blockElements.includes(firstChild.tagName)) {
+            heading.replaceWith.apply(heading, heading.childNodes);
+          }
+        });
+      }
 
       // Prevent the default paste action
       event.preventDefault();

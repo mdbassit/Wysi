@@ -78,6 +78,7 @@ export default {
     tags: ['img'],
     attributes: ['src', 'alt'/*, 'title'*/],
     attributeLabels: ['URL', 'Alternative text'],
+    styles: ['max-width'],
     isEmpty: true,
     hasForm: true,
     label: 'Image'

@@ -47,7 +47,7 @@ export function execEditorCommand(command, options) {
     // Images
     case 'image':
       const [url, text = '', original] = options;
-      const image = `<img src="${url}" alt="${text}" class="wysi-selected">`;
+      const image = `<img src="${url}" alt="${text}" class="wysi-selected" style="max-width: 100%;">`;
       const html = original ? original.replace(/<img[^>]+>/i, image) : image;
 
       execCommand('insertHTML', html);

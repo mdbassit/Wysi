@@ -140,6 +140,14 @@ function updateToolbarState() {
     return;
   }
 
+  // Check for an element with the selection class (likely an image)
+  const selectedObject = editor.querySelector(`.${selectedClass}`);
+
+  // If such element exists, add its tag to the list of active tags
+  if (selectedObject) {
+    tags.push(selectedObject.tagName.toLowerCase());
+  }
+
   // Get the list of allowed tags in the current editor instance
   const instanceId = getInstanceId(editor);
   const allowedTags = instances[instanceId].allowedTags;
@@ -149,7 +157,6 @@ function updateToolbarState() {
 
   // Reset the state of all list boxes
   toolbar.querySelectorAll('.wysi-listbox > div > button:first-of-type').forEach(button => selectListBoxItem(button));
-  
 
   // Update the buttons states
   tags.forEach((tag, i) => {
@@ -205,7 +212,7 @@ function embedSVGIcons() {
 }
 
 // Deselect selected element when clicking outside
-addListener(document, 'click', '.wysi-editor, .wysi-editor *', event => {
+addListener(document, 'mousedown', '.wysi-editor, .wysi-editor *', event => {
   const selected = document.querySelector(`.${selectedClass}`);
 
   if (selected && selected !== event.target) {
@@ -214,7 +221,7 @@ addListener(document, 'click', '.wysi-editor, .wysi-editor *', event => {
 });
 
 // Select an image when it's clicked
-addListener(document, 'click', '.wysi-editor img', event => {
+addListener(document, 'mousedown', '.wysi-editor img', event => {
   const image = event.target;
   const range = document.createRange();
 

@@ -9,6 +9,7 @@ import {
   buildFragment,
   createElement,
   DOMReady,
+  findDeepestChildNode,
   findInstance,
   getInstanceId,
   setSelection
@@ -132,7 +133,18 @@ function renderFormatTool(translations) {
  * Update toolbar buttons state.
  */
 function updateToolbarState() {
-  const { toolbar, editor, nodes } = findInstance(document.getSelection().anchorNode);
+  const range = document.getSelection().getRangeAt(0);
+  const anchorNode = document.getSelection().anchorNode;
+
+  // This is to fix double click selection on Firefox not highlighting the relevant tool in some cases
+  // We want to find the deepest child node to properly handle nested styles
+  const candidateNode = findDeepestChildNode(range.startContainer.nextElementSibling || range.startContainer);
+
+  // Fallback to the original selection.anchorNode if a more suitable node is not found
+  const selectedNode = range.intersectsNode(candidateNode) ? candidateNode : anchorNode;
+
+  // Get editor instance
+  const { toolbar, editor, nodes } = findInstance(selectedNode);
   const tags = nodes.map(node => node.tagName.toLowerCase());
 
   // Abort if the selection is not within an editor instance
@@ -245,6 +257,7 @@ addListener(document, 'click', '.wysi-toolbar > button', event => {
 
 // Update the toolbar buttons state
 addListener(document, 'selectionchange', updateToolbarState);
+addListener(document, 'input', '.wysi-editor', updateToolbarState);
 
 // include SVG icons
 DOMReady(embedSVGIcons);

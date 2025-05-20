@@ -97,6 +97,19 @@ export function DOMReady(fn, args) {
 }
 
 /**
+ * Find the the deepest child of a node.
+ * @param {object} node The target node.
+ * @return {object} The deepest child node of our target node.
+ */
+export function findDeepestChildNode(node) {
+  while(node.firstChild !== null) {
+    node = node.firstChild;
+  }
+
+  return node;
+}
+
+/**
  * Find the current editor instance.
  * @param {object} currentNode The possible child node of the editor instance.
  * @return {object} The instance's editable region and toolbar, and an array of nodes that lead to it.

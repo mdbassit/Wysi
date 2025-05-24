@@ -146,6 +146,26 @@ export function findInstance(currentNode) {
 }
 
 /**
+ * Get the current selection.
+ * @return {object} The current selection.
+ */
+export function getCurrentSelection() {
+  return currentSelection;
+}
+
+/**
+ * Get the html content of a document fragment.
+ * @param {string} fragment A document fragment.
+ * @return {string} The html content of the fragment.
+ */
+export function getFragmentContent(fragment) {
+  const wrapper = createElement('div');
+
+  wrapper.appendChild(fragment);
+  return wrapper.innerHTML;
+}
+
+/**
  * Get an editor's instance id.
  * @param {object} editor The editor element.
  * @return {string} The instance id.

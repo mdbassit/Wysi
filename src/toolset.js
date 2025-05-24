@@ -69,14 +69,26 @@ export default {
   },
   link: {
     tags: ['a'],
-    attributes: [/*'id', 'name', */'href', /*'target', 'onclick'*/],
-    attributeLabels: ['URL'],
+    attributes: ['href', 'target'],
+    attributeLabels: ['URL', 'Open link in'],
     hasForm: true,
+    formOptions: {
+      target: [
+        {
+          label: 'Current tab',
+          value: ''
+        },
+        {
+          label: 'New tab',
+          value: '_blank'
+        }
+      ]
+    },
     label: 'Link'
   },
   image: {
     tags: ['img'],
-    attributes: ['src', 'alt'/*, 'title'*/],
+    attributes: ['src', 'alt'],
     attributeLabels: ['URL', 'Alternative text'],
     styles: ['max-width'],
     isEmpty: true,

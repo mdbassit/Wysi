@@ -41,16 +41,23 @@ export function execEditorCommand(command, options) {
 
     // Links
     case 'link':
-      execCommand('createLink', options[0]);
+      const [linkUrl, linkTarget = '', linkText] = options;
+
+      if (linkText) {
+        const targetAttr = linkTarget !== '' ? ` target="${linkTarget}"` : '';
+        const linkTag = `<a href="${linkUrl}"${targetAttr}>${linkText}</a>`;
+
+        execCommand('insertHTML', linkTag);
+      }
       break;
 
     // Images
     case 'image':
-      const [url, text = '', original] = options;
-      const image = `<img src="${url}" alt="${text}" class="wysi-selected" style="max-width: 100%;">`;
-      const html = original ? original.replace(/<img[^>]+>/i, image) : image;
+      const [imageUrl, altText = '', originalHtml] = options;
+      const image = `<img src="${imageUrl}" alt="${altText}" class="wysi-selected" style="max-width: 100%;">`;
+      const imageTag = originalHtml ? originalHtml.replace(/<img[^>]+>/i, image) : image;
 
-      execCommand('insertHTML', html);
+      execCommand('insertHTML', imageTag);
       break;
 
     // All the other commands

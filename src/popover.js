@@ -7,6 +7,8 @@ import {
   addListener,
   createElement,
   findInstance,
+  getCurrentSelection,
+  getFragmentContent, 
   restoreSelection,
   setCurrentSelection,
   toggleButton
@@ -47,28 +49,31 @@ function renderPopover(toolName, button, translations) {
   wrapper.appendChild(popover);
 
   fields.forEach(field => {
-    const label = createElement('label');
-    const span = createElement('span', { _textContent: field.label });
-    const input = createElement('input', { type: 'text' });
+    // Link target requires special handling later
+    if (toolName !== 'link' || field.name !== 'target') {
+      const label = createElement('label');
+      const span = createElement('span', { _textContent: field.label });
+      const input = createElement('input', { type: 'text', 'data-attribute': field.name });
 
-    label.appendChild(span);
-    label.appendChild(input);
-    popover.appendChild(label);
+      label.appendChild(span);
+      label.appendChild(input);
+      popover.appendChild(label);
+    }
   });
 
-  const cancel = createElement('button', {
-    type: 'button',
-    _textContent: translations.cancel || 'Cancel'
-  });
-
-  const save = createElement('button', {
-    type: 'button',
-    'data-action': toolName,
-    _textContent: translations.save || 'Save'
-  });
-
-  // The link popover needs an extra "Remove link" button
+  // Link popover
   if (toolName === 'link') {
+    // Add the target attribute
+    const targetField = fields.find(f => f.name === 'target');
+
+    if (targetField) {
+      targetField.toolName = toolName;
+      targetField.options = tool.formOptions ? tool.formOptions.target || [] : [];
+      popover.appendChild(createElement('label', { _textContent: targetField.label }));
+      popover.appendChild(renderSegmentedField(targetField));
+    }
+
+    // The link popover needs an extra "Remove link" button
     const extraTool = 'unlink';
     const label = translations[extraTool] || toolset[extraTool].label;
 
@@ -81,6 +86,17 @@ function renderPopover(toolName, button, translations) {
     }));
   }
 
+  const cancel = createElement('button', {
+    type: 'button',
+    _textContent: translations.cancel || 'Cancel'
+  });
+
+  const save = createElement('button', {
+    type: 'button',
+    'data-action': toolName,
+    _textContent: translations.save || 'Save'
+  });
+
   popover.appendChild(cancel);
   popover.appendChild(save);
 
@@ -88,15 +104,48 @@ function renderPopover(toolName, button, translations) {
 }
 
 /**
+ * Render a segmented form field.
+ * @param {object} field The field attributes.
+ * @return {object} A DOM element representing the segmented field.
+ */
+function renderSegmentedField(field) {
+  const segmented = createElement('fieldset', {
+    class: 'wysi-segmented'
+  });
+
+  // Add the fieldset legend for accessibility
+  segmented.appendChild(createElement('legend', { _textContent: field.label }));
+
+  // Add field options
+  field.options.forEach((option, i) => {
+    segmented.appendChild(createElement('input', {
+      id: `wysi-${field.toolName}-${field.name}-${i}`,
+      name: `wysi-${field.toolName}-${field.name}`,
+      type: 'radio',
+      'data-attribute': field.name,
+      value: option.value
+    }));
+    
+    segmented.appendChild(createElement('label', {
+      for: `wysi-${field.toolName}-${field.name}-${i}`,
+      _textContent: option.label
+    }));
+  });
+
+  return segmented;
+}
+
+/**
  * Open a popover.
  * @param {object} button The popover's button.
  */
 function openPopover(button) {
-  const inputs = button.nextElementSibling.querySelectorAll('input');
+  const inputs = button.nextElementSibling.querySelectorAll('input[type="text"]');
+  const radioButtons = button.nextElementSibling.querySelectorAll('input[type="radio"]');
   const selection = document.getSelection();
   const anchorNode = selection.anchorNode;
   const { editor, nodes } = findInstance(anchorNode);
-  const values = [];
+  const values = {};
 
   if (editor) {
     // Try to find an existing target of the popover's action from the DOM selection
@@ -128,7 +177,7 @@ function openPopover(button) {
 
       // Retrieve the current attribute values of the target for modification
       tool.attributes.forEach(attribute => {
-        values.push(target.getAttribute(attribute));
+        values[attribute] = target.getAttribute(attribute);
       })
 
     // If no existing target is found, we are adding new content
@@ -138,9 +187,18 @@ function openPopover(button) {
     }
   }
 
-  // Populate the form fields with the existing values if any
-  inputs.forEach((input, i) => {
-    input.value = values[i] || '';
+  // Populate the input fields with the existing values if any
+  inputs.forEach(input => {
+    input.value = values[input.dataset.attribute] || '';
+  });
+
+  // Check the relevent radio fields if any
+  radioButtons.forEach(radio => {
+    const value = values[radio.dataset.attribute] || '';
+
+    if (radio.value === value) {
+      radio.checked = true;
+    }
   });
 
   // Open this popover
@@ -156,12 +214,20 @@ function openPopover(button) {
  */
 function execPopoverAction(button) {
   const action = button.dataset.action;
-  const inputs = button.parentNode.querySelectorAll('input');
+  const selection = getCurrentSelection();
+  const inputs = button.parentNode.querySelectorAll('input[type="text"]');
+  const radioButtons = button.parentNode.querySelectorAll('input[type="radio"]');
   const { editor } = findInstance(button);
   const options = [];
 
   inputs.forEach(input => {
     options.push(input.value);
+  });
+
+  radioButtons.forEach(radio => {
+    if (radio.checked) {
+      options.push(radio.value);
+    }
   });
 
   // Workaround for links being removed when updating images
@@ -172,6 +238,10 @@ function execPopoverAction(button) {
     if (selected && parent.tagName === 'A') {
       options.push(parent.outerHTML);
     }
+
+  // Save the content of the current selection to use as a link text
+  } else if (action === 'link' && selection) {
+    options.push(getFragmentContent(selection.cloneContents()));
   }
 
   execAction(action, editor, options);

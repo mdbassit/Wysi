@@ -180,7 +180,7 @@ function updateToolbarState() {
       case 'h4':
       case 'li':
         const format = toolbar.querySelector(`[data-action="format"][data-option="${tag}"]`);
-        const textAlign = nodes[i].style.textAlign;
+        const textAlign = nodes[i].style.textAlign || nodes[i].getAttribute('align');
 
         if (format) {
           selectListBoxItem(format);

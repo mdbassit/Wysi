@@ -4,6 +4,7 @@ import { buildFragment, cloneObject, createElement } from './utils.js';
 import { blockElements } from './common.js';
 
 const STYLE_ATTRIBUTE = 'style';
+const ALIGN_ATTRIBUTE = 'align';
 
 /**
  * Enable HTML tags belonging to a set of tools.
@@ -104,6 +105,9 @@ function filterStyles(node, allowedStyles) {
     // Filter the styles
     .filter(style => allowedStyles.includes(style.name))
 
+    // Remove text-align: left
+    .filter(style => style.name !== 'text-align' || style.value.trim() !== 'left')
+
     // Convert back to a style string
     .map(({ name, value }) => `${name}: ${value.trim()};`).join('');
 
@@ -130,13 +134,16 @@ function filterContent(node, allowedTags) {
   children.forEach(childNode => {
     // Element nodes
     if (childNode.nodeType === 1) {
-      // Filter recursively (deeper nodes firest)
+      // Filter recursively (deeper nodes first)
       filterContent(childNode, allowedTags);
 
       // Check if the current element is allowed
       const tag = childNode.tagName.toLowerCase();
       const allowedTag = allowedTags[tag];
       const attributes = Array.from(childNode.attributes);
+
+      // Check for the deprecated align attribute (mainly in Firefox)
+      const deprecatedAlignAttribute = childNode.getAttribute(ALIGN_ATTRIBUTE);
 
       if (allowedTag) {
         const allowedAttributes = allowedTag.attributes || [];
@@ -147,6 +154,13 @@ function filterContent(node, allowedTags) {
           const attributeName = attributes[i].name;
 
           if (!allowedAttributes.includes(attributes[i].name)) {
+            // Replace deprecated align attribute with text-align style
+            if (attributeName === ALIGN_ATTRIBUTE) {
+              if (deprecatedAlignAttribute !== 'left') {
+                childNode.style.textAlign = deprecatedAlignAttribute;
+              }
+            }
+
             if (attributeName === STYLE_ATTRIBUTE && allowedStyles.length) {
               filterStyles(childNode, allowedStyles);
             } else {
@@ -167,6 +181,17 @@ function filterContent(node, allowedTags) {
 
         // And unwrap the other nodes
         } else {
+          // Fix bad alignment handling on Firefox
+          if (deprecatedAlignAttribute !== null) {
+            if (childNode.parentNode && childNode.parentNode.tagName === 'LI') {
+              childNode.parentNode.style.textAlign = deprecatedAlignAttribute;
+            } else {
+              for (const divChild of childNode.childNodes) {
+                divChild.style.textAlign = deprecatedAlignAttribute;
+              }
+            }
+          }
+
           childNode.replaceWith(...childNode.childNodes);
         }
       }

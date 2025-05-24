@@ -22,9 +22,6 @@ A lightweight and simple WYSIWYG editor written in vanilla ES6 with no dependenc
 
 (Work in progress)
 
-* Normalize the HTML output across browsers
-* Use semantic HTML when possible
-* Add support for custom tools (plugins)
 * Add support for link target
 * Add support for image scaling, positioning and caption
 * Add support for custom CSS classes
@@ -57,6 +54,15 @@ Wysi({
 ```
 
 This will convert the textarea element to a WYSIWYG editor with the default settings.
+
+### Getting the content
+
+The content of an editor can be retrieved simply by reading the `value` property of the original textarea element:
+```js
+const content = document.querySelector('#demo1').value;
+```
+
+Alternatively, the `onChange` function can be used to achieve the same result (see below).
 
 ### Customizing the editor
 

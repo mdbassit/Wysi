@@ -214,7 +214,7 @@ function bootstrap() {
     const textarea = editor.parentNode.nextElementSibling;
     const instanceId = getInstanceId(editor);
     const onChange = instances[instanceId].onChange;
-    const content = editor.innerHTML;
+    const content = prepareContent(editor.innerHTML, instances[instanceId].allowedTags, true);
 
     textarea.value = content;
     dispatchEvent(textarea, 'change');

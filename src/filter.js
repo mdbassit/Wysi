@@ -45,15 +45,20 @@ function enableTags(tools) {
  * Prepare raw content for editing.
  * @param {string} content The raw content.
  * @param {array} allowedTags The list of allowed tags.
- * @return {string} The filter HTML content.
+ * @param {boolean} filterOnly If true, only filter the content, without further cleaning.
+ * @return {string} The filtered HTML content.
  */
-function prepareContent(content, allowedTags) {
+function prepareContent(content, allowedTags, filterOnly) {
   const container = createElement('div');
   const fragment = buildFragment(content);
 
   filterContent(fragment, allowedTags);
-  wrapTextNodes(fragment);
-  cleanContent(fragment, allowedTags);
+
+  if (!filterOnly) {
+    wrapTextNodes(fragment);
+    cleanContent(fragment, allowedTags);
+  }
+
   container.appendChild(fragment);
 
   return container.innerHTML;

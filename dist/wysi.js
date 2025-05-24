@@ -125,6 +125,7 @@
       tags: ['img'],
       attributes: ['src', 'alt' /*, 'title'*/],
       attributeLabels: ['URL', 'Alternative text'],
+      styles: ['max-width'],
       isEmpty: true,
       hasForm: true,
       label: 'Image'
@@ -268,6 +269,18 @@
   }
 
   /**
+   * Find the the deepest child of a node.
+   * @param {object} node The target node.
+   * @return {object} The deepest child node of our target node.
+   */
+  function findDeepestChildNode(node) {
+    while (node.firstChild !== null) {
+      node = node.firstChild;
+    }
+    return node;
+  }
+
+  /**
    * Find the current editor instance.
    * @param {object} currentNode The possible child node of the editor instance.
    * @return {object} The instance's editable region and toolbar, and an array of nodes that lead to it.
@@ -308,7 +321,7 @@
    * @return {string} The instance id.
    */
   function getInstanceId(editor) {
-    return editor.getAttribute('data-wid');
+    return editor.dataset.wid;
   }
 
   /**
@@ -466,7 +479,7 @@
           _options$ = options[1],
           text = _options$ === void 0 ? '' : _options$,
           original = options[2];
-        var image = "<img src=\"" + url + "\" alt=\"" + text + "\" class=\"wysi-selected\">";
+        var image = "<img src=\"" + url + "\" alt=\"" + text + "\" class=\"wysi-selected\" style=\"max-width: 100%;\">";
         var html = original ? original.replace(/<img[^>]+>/i, image) : image;
         execCommand('insertHTML', html);
         break;
@@ -608,8 +621,8 @@
   // On click on an list box item
   addListener(document, 'click', '.wysi-listbox > div > button', function (event) {
     var item = event.target;
-    var action = item.getAttribute('data-action');
-    var option = item.getAttribute('data-option');
+    var action = item.dataset.action;
+    var option = item.dataset.option;
     var _findInstance = findInstance(item),
       editor = _findInstance.editor;
     var selection = document.getSelection();
@@ -748,7 +761,7 @@
     var values = [];
     if (editor) {
       // Try to find an existing target of the popover's action from the DOM selection
-      var action = button.getAttribute('data-action');
+      var action = button.dataset.action;
       var tool = toolset[action];
       var target = nodes.filter(function (node) {
         return tool.tags.includes(node.tagName.toLowerCase());
@@ -805,7 +818,7 @@
    * @param {object} button The popover's action button.
    */
   function execPopoverAction(button) {
-    var action = button.getAttribute('data-action');
+    var action = button.dataset.action;
     var inputs = button.parentNode.querySelectorAll('input');
     var _findInstance2 = findInstance(button),
       editor = _findInstance2.editor;
@@ -1049,7 +1062,18 @@
    * Update toolbar buttons state.
    */
   function updateToolbarState() {
-    var _findInstance = findInstance(document.getSelection().anchorNode),
+    var range = document.getSelection().getRangeAt(0);
+    var anchorNode = document.getSelection().anchorNode;
+
+    // This is to fix double click selection on Firefox not highlighting the relevant tool in some cases
+    // We want to find the deepest child node to properly handle nested styles
+    var candidateNode = findDeepestChildNode(range.startContainer.nextElementSibling || range.startContainer);
+
+    // Fallback to the original selection.anchorNode if a more suitable node is not found
+    var selectedNode = range.intersectsNode(candidateNode) ? candidateNode : anchorNode;
+
+    // Get editor instance
+    var _findInstance = findInstance(selectedNode),
       toolbar = _findInstance.toolbar,
       editor = _findInstance.editor,
       nodes = _findInstance.nodes;
@@ -1060,6 +1084,14 @@
     // Abort if the selection is not within an editor instance
     if (!editor) {
       return;
+    }
+
+    // Check for an element with the selection class (likely an image)
+    var selectedObject = editor.querySelector("." + selectedClass);
+
+    // If such element exists, add its tag to the list of active tags
+    if (selectedObject) {
+      tags.push(selectedObject.tagName.toLowerCase());
     }
 
     // Get the list of allowed tags in the current editor instance
@@ -1086,7 +1118,7 @@
         case 'h4':
         case 'li':
           var format = toolbar.querySelector("[data-action=\"format\"][data-option=\"" + tag + "\"]");
-          var textAlign = nodes[i].style.textAlign;
+          var textAlign = nodes[i].style.textAlign || nodes[i].getAttribute('align');
           if (format) {
             selectListBoxItem(format);
           }
@@ -1126,7 +1158,7 @@
   }
 
   // Deselect selected element when clicking outside
-  addListener(document, 'click', '.wysi-editor, .wysi-editor *', function (event) {
+  addListener(document, 'mousedown', '.wysi-editor, .wysi-editor *', function (event) {
     var selected = document.querySelector("." + selectedClass);
     if (selected && selected !== event.target) {
       selected.classList.remove(selectedClass);
@@ -1134,7 +1166,7 @@
   });
 
   // Select an image when it's clicked
-  addListener(document, 'click', '.wysi-editor img', function (event) {
+  addListener(document, 'mousedown', '.wysi-editor img', function (event) {
     var image = event.target;
     var range = document.createRange();
     image.classList.add(selectedClass);
@@ -1145,7 +1177,7 @@
   // Toolbar button click
   addListener(document, 'click', '.wysi-toolbar > button', function (event) {
     var button = event.target;
-    var action = button.getAttribute('data-action');
+    var action = button.dataset.action;
     var _findInstance2 = findInstance(button),
       editor = _findInstance2.editor;
     var selection = document.getSelection();
@@ -1156,11 +1188,45 @@
 
   // Update the toolbar buttons state
   addListener(document, 'selectionchange', updateToolbarState);
+  addListener(document, 'input', '.wysi-editor', updateToolbarState);
 
   // include SVG icons
   DOMReady(embedSVGIcons);
 
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+    return arr2;
+  }
+  function _createForOfIteratorHelperLoose(o, allowArrayLike) {
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+    if (it) return (it = it.call(o)).next.bind(it);
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
+      var i = 0;
+      return function () {
+        if (i >= o.length) return {
+          done: true
+        };
+        return {
+          done: false,
+          value: o[i++]
+        };
+      };
+    }
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
   var STYLE_ATTRIBUTE = 'style';
+  var ALIGN_ATTRIBUTE = 'align';
 
   /**
    * Enable HTML tags belonging to a set of tools.
@@ -1200,14 +1266,17 @@
    * Prepare raw content for editing.
    * @param {string} content The raw content.
    * @param {array} allowedTags The list of allowed tags.
-   * @return {string} The filter HTML content.
+   * @param {boolean} filterOnly If true, only filter the content, without further cleaning.
+   * @return {string} The filtered HTML content.
    */
-  function prepareContent(content, allowedTags) {
+  function prepareContent(content, allowedTags, filterOnly) {
     var container = createElement('div');
     var fragment = buildFragment(content);
     filterContent(fragment, allowedTags);
-    wrapTextNodes(fragment);
-    cleanContent(fragment, allowedTags);
+    if (!filterOnly) {
+      wrapTextNodes(fragment);
+      cleanContent(fragment, allowedTags);
+    }
     container.appendChild(fragment);
     return container.innerHTML;
   }
@@ -1258,6 +1327,11 @@
         return allowedStyles.includes(style.name);
       })
 
+      // Remove text-align: left
+      .filter(function (style) {
+        return style.name !== 'text-align' || style.value.trim() !== 'left';
+      })
+
       // Convert back to a style string
       .map(function (_ref) {
         var name = _ref.name,
@@ -1285,13 +1359,16 @@
     children.forEach(function (childNode) {
       // Element nodes
       if (childNode.nodeType === 1) {
-        // Filter recursively (deeper nodes firest)
+        // Filter recursively (deeper nodes first)
         filterContent(childNode, allowedTags);
 
         // Check if the current element is allowed
         var tag = childNode.tagName.toLowerCase();
         var allowedTag = allowedTags[tag];
         var attributes = Array.from(childNode.attributes);
+
+        // Check for the deprecated align attribute (mainly in Firefox)
+        var deprecatedAlignAttribute = childNode.getAttribute(ALIGN_ATTRIBUTE);
         if (allowedTag) {
           var allowedAttributes = allowedTag.attributes || [];
           var allowedStyles = allowedTag.styles || [];
@@ -1300,6 +1377,12 @@
           for (var i = 0; i < attributes.length; i++) {
             var attributeName = attributes[i].name;
             if (!allowedAttributes.includes(attributes[i].name)) {
+              // Replace deprecated align attribute with text-align style
+              if (attributeName === ALIGN_ATTRIBUTE) {
+                if (deprecatedAlignAttribute !== 'left') {
+                  childNode.style.textAlign = deprecatedAlignAttribute;
+                }
+              }
               if (attributeName === STYLE_ATTRIBUTE && allowedStyles.length) {
                 filterStyles(childNode, allowedStyles);
               } else {
@@ -1320,6 +1403,17 @@
 
             // And unwrap the other nodes
           } else {
+            // Fix bad alignment handling on Firefox
+            if (deprecatedAlignAttribute !== null) {
+              if (childNode.parentNode && childNode.parentNode.tagName === 'LI') {
+                childNode.parentNode.style.textAlign = deprecatedAlignAttribute;
+              } else {
+                for (var _iterator = _createForOfIteratorHelperLoose(childNode.childNodes), _step; !(_step = _iterator()).done;) {
+                  var divChild = _step.value;
+                  divChild.style.textAlign = deprecatedAlignAttribute;
+                }
+              }
+            }
             childNode.replaceWith.apply(childNode, childNode.childNodes);
           }
         }
@@ -1584,7 +1678,7 @@
       var textarea = editor.parentNode.nextElementSibling;
       var instanceId = getInstanceId(editor);
       var onChange = instances[instanceId].onChange;
-      var content = editor.innerHTML;
+      var content = prepareContent(editor.innerHTML, instances[instanceId].allowedTags, true);
       textarea.value = content;
       dispatchEvent(textarea, 'change');
       if (onChange) {

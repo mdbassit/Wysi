@@ -246,7 +246,7 @@ addListener(document, 'mousedown', '.wysi-editor img', event => {
 // Toolbar button click
 addListener(document, 'click', '.wysi-toolbar > button', event => {
   const button = event.target;
-  const action = button.getAttribute('data-action');
+  const action = button.dataset.action;
   const { editor } = findInstance(button);
   const selection = document.getSelection();
 

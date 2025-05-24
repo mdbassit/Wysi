@@ -151,7 +151,7 @@ export function findInstance(currentNode) {
  * @return {string} The instance id.
  */ 
 export function getInstanceId(editor) {
-  return editor.getAttribute('data-wid');
+  return editor.dataset.wid;
 }
 
 /**

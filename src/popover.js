@@ -100,7 +100,7 @@ function openPopover(button) {
 
   if (editor) {
     // Try to find an existing target of the popover's action from the DOM selection
-    const action = button.getAttribute('data-action');
+    const action = button.dataset.action;
     const tool = toolset[action];
     let target = nodes.filter(node => tool.tags.includes(node.tagName.toLowerCase()))[0];
     let selectContents = true;
@@ -155,7 +155,7 @@ function openPopover(button) {
  * @param {object} button The popover's action button.
  */
 function execPopoverAction(button) {
-  const action = button.getAttribute('data-action');
+  const action = button.dataset.action;
   const inputs = button.parentNode.querySelectorAll('input');
   const { editor } = findInstance(button);
   const options = [];

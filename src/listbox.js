@@ -146,8 +146,8 @@ addListener(document.documentElement, 'mousemove', '.wysi-listbox > div > button
 // On click on an list box item
 addListener(document, 'click', '.wysi-listbox > div > button', event => {
   const item = event.target;
-  const action = item.getAttribute('data-action');
-  const option = item.getAttribute('data-option');
+  const action = item.dataset.action;
+  const option = item.dataset.option;
   const { editor } = findInstance(item);
   const selection = document.getSelection();
 

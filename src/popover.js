@@ -27,7 +27,7 @@ function renderPopover(toolName, button, translations) {
   const fields = tool.attributes.map((attribute, i) => {
     return {
       name: attribute,
-      label: translations[attribute] || labels[i],
+      label: translations[attribute] || labels[i]
     }
   });
 
@@ -84,6 +84,23 @@ function renderPopover(toolName, button, translations) {
       'data-action': extraTool,
       _innerHTML: `<svg><use href="#wysi-delete"></use></svg>`
     }));
+  }
+
+  // Image popover
+  if (toolName === 'image') {
+    const imageSettings = tool.extraSettings.map((setting, i) => {
+      return {
+        name: setting,
+        label: translations[setting] || tool.extraSettingLabels[i]
+      }
+    });
+
+    imageSettings.forEach(setting => {
+      setting.toolName = toolName;
+      setting.options = tool.formOptions ? tool.formOptions[setting.name] || [] : [];
+      popover.appendChild(createElement('label', { _textContent: setting.label }));
+      popover.appendChild(renderSegmentedField(setting));
+    });
   }
 
   const cancel = createElement('button', {
@@ -151,13 +168,13 @@ function openPopover(button) {
     // Try to find an existing target of the popover's action from the DOM selection
     const action = button.dataset.action;
     const tool = toolset[action];
-    let target = nodes.filter(node => tool.tags.includes(node.tagName.toLowerCase()))[0];
-    let selectContents = true;
+    let target = editor.querySelector(`.${selectedClass}`);
+    let selectContents = false;
 
     // If that fails, look for an element with the selection CSS class
     if (!target) {
-      target = editor.querySelector(`.${selectedClass}`);
-      selectContents = false;
+      target = nodes.filter(node => tool.tags.includes(node.tagName.toLowerCase()))[0];
+      selectContents = true;
     }
 
     // If an existing target is found, we will be in modification mode
@@ -178,7 +195,28 @@ function openPopover(button) {
       // Retrieve the current attribute values of the target for modification
       tool.attributes.forEach(attribute => {
         values[attribute] = target.getAttribute(attribute);
-      })
+      });
+
+      // Process extra popover settings
+      if (tool.extraSettings) {
+        tool.extraSettings.forEach(setting => {
+          const settingOptions = tool.formOptions[setting];
+
+          for (const option of settingOptions) {
+            if (!option.criterion) {
+              continue;
+            }
+
+            const key = Object.keys(option.criterion)[0];
+            const value = option.criterion[key];
+
+            if (target.style[key] && target.style[key] === value) {
+              values[setting] = option.value;
+              break;
+            }
+          }
+        });
+      }
 
     // If no existing target is found, we are adding new content
     } else if (selection && editor.contains(anchorNode) && selection.rangeCount) {

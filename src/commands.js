@@ -53,8 +53,23 @@ export function execEditorCommand(command, options) {
 
     // Images
     case 'image':
-      const [imageUrl, altText = '', originalHtml] = options;
-      const image = `<img src="${imageUrl}" alt="${altText}" class="wysi-selected" style="max-width: 100%;">`;
+      const styles = [];
+      const [imageUrl, altText = '', size, position, originalHtml] = options;
+
+      if (size !== '') {
+        styles.push(`width: ${size};`);
+      }
+
+      if (position !== '') {
+        if (position === 'center') {
+          styles.push('display: block; margin: auto;')
+        } else {
+          styles.push(`float: ${position};`);
+        }
+      }
+
+      const styleAttr = styles.length > 0 ? ` style="${styles.join(' ')}"` : '';
+      const image = `<img src="${imageUrl}" alt="${altText}" class="wysi-selected"${styleAttr}>`;
       const imageTag = originalHtml ? originalHtml.replace(/<img[^>]+>/i, image) : image;
 
       execCommand('insertHTML', imageTag);

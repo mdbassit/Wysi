@@ -9,7 +9,7 @@ A lightweight and simple WYSIWYG editor written in vanilla ES6 with no dependenc
 
 ## Features
 
-* Lightweight (around 10KB minified and gzipped)
+* Lightweight (around 12KB minified and gzipped)
 * Zero dependencies
 * Very easy to use
 * Customizable
@@ -22,8 +22,6 @@ A lightweight and simple WYSIWYG editor written in vanilla ES6 with no dependenc
 
 (Work in progress)
 
-* Add support for link target
-* Add support for image scaling, positioning and caption
 * Add support for custom CSS classes
 * Theming
 

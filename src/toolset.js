@@ -90,9 +90,57 @@ export default {
     tags: ['img'],
     attributes: ['src', 'alt'],
     attributeLabels: ['URL', 'Alternative text'],
-    styles: ['max-width'],
+    extraSettings: ['size', 'position'],
+    extraSettingLabels: ['Image size', 'Image position'],
+    styles: ['width', 'display', 'margin', 'float'],
     isEmpty: true,
     hasForm: true,
+    formOptions: {
+      size: [
+        {
+          label: 'None',
+          value: '',
+          criterion: null 
+        },
+        {
+          label: '100%',
+          value: '100%',
+          criterion: { width: '100%' }
+        },
+        {
+          label: '50%',
+          value: '50%',
+          criterion: { width: '50%' }
+        },
+        {
+          label: '25%',
+          value: '25%',
+          criterion: { width: '25%' }
+        }
+      ],
+      position: [
+        {
+          label: 'None',
+          value: '',
+          criterion: null 
+        },
+        {
+          label: 'Left',
+          value: 'left',
+          criterion: { float: 'left' }
+        },
+        {
+          label: 'Center',
+          value: 'center',
+          criterion: { margin: 'auto' }
+        },
+        {
+          label: 'Right',
+          value: 'right',
+          criterion: { float: 'right' }
+        }
+      ]
+    },
     label: 'Image'
   },
   hr: {

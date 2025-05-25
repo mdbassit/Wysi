@@ -133,8 +133,14 @@ function renderFormatTool(translations) {
  * Update toolbar buttons state.
  */
 function updateToolbarState() {
-  const range = document.getSelection().getRangeAt(0);
-  const anchorNode = document.getSelection().anchorNode;
+  const selection = document.getSelection();
+  const anchorNode = selection.anchorNode;
+
+  if (!anchorNode) {
+    return;
+  }
+
+  const range = selection.getRangeAt(0);
 
   // This is to fix double click selection on Firefox not highlighting the relevant tool in some cases
   // We want to find the deepest child node to properly handle nested styles

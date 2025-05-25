@@ -343,6 +343,7 @@
 }
 
 .wysi-segmented input:checked + label {
+  color: #333;
   background-color: var(--wysi-highlight);
 }
 

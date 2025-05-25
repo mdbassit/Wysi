@@ -12,16 +12,16 @@ import {
   findDeepestChildNode,
   findInstance,
   getInstanceId,
+  getTranslation,
   setSelection
 } from './utils.js';
 
 /**
  * Render the toolbar.
  * @param {array} tools The list of tools in the toolbar.
- * @param {object} translations The labels translation object.
  * @return {string} The toolbars HTML string.
  */
-function renderToolbar(tools, translations) {
+function renderToolbar(tools) {
   const toolbar = createElement('div', { class: 'wysi-toolbar' });
 
   // Generate toolbar buttons
@@ -39,17 +39,17 @@ function renderToolbar(tools, translations) {
 
       // The format tool renders as a list box
       case 'format':
-        toolbar.appendChild(renderFormatTool(translations));
+        toolbar.appendChild(renderFormatTool());
         break;
 
       // All the other tools render as buttons
       default:
         if (typeof toolName === 'object') {
           if (toolName.items) {
-            toolbar.appendChild(renderToolGroup(toolName, translations));
+            toolbar.appendChild(renderToolGroup(toolName));
           }
         } else {
-          renderTool(toolName, toolbar, translations);
+          renderTool(toolName, toolbar);
         }
     }
   });
@@ -61,11 +61,10 @@ function renderToolbar(tools, translations) {
  * Render a tool.
  * @param {string} name The tool's name.
  * @param {object} toolbar The toolbar to which the tool will be appended.
- * @param {object} translations The labels translation object.
  */
-function renderTool(name, toolbar, translations) {
+function renderTool(name, toolbar) {
   const tool = toolset[name];
-  const label = translations[name] || tool.label;
+  const label = getTranslation(name, tool.label);
   const button = createElement('button', {
     type: 'button',
     title: label,
@@ -77,7 +76,7 @@ function renderTool(name, toolbar, translations) {
 
   // Tools that require parameters (e.g: image, link) need a popover
   if (tool.hasForm) {
-    const popover = renderPopover(name, button, translations);
+    const popover = renderPopover(name, button);
     toolbar.appendChild(popover);
 
   // The other tools only display a button
@@ -89,16 +88,15 @@ function renderTool(name, toolbar, translations) {
 /**
  * Render a tool group.
  * @param {object} details The group's properties.
- * @param {object} translations The labels translation object.
  * @return {object} A DOM element containing the tool group.
  */
-function renderToolGroup(details, translations) {
-  const label = details.label || translations.select || 'Select an item';
+function renderToolGroup(details) {
+  const label = details.label || getTranslation('toolbar', 'Select an item');
   const options = details.items;
 
   const items = options.map(option => {
     const tool = toolset[option];
-    const label = translations[option] || tool.label;
+    const label = getTranslation(option, tool.label);
     const icon = option;
     const action = option;
 
@@ -110,13 +108,13 @@ function renderToolGroup(details, translations) {
 
 /**
  * Render format tool.
- * @param {object} translations The labels translation object.
  * @return {object} A DOM element containing the format tool.
  */
-function renderFormatTool(translations) {
-  const label = translations['format'] || toolset.format.label;
-  const paragraphLabel = translations['paragraph'] || toolset.format.paragraph;
-  const headingLabel = translations['heading'] || toolset.format.heading;
+function renderFormatTool() {
+  const toolName = 'format';
+  const label = getTranslation(toolName, toolset.format.label);
+  const paragraphLabel = getTranslation(toolName, toolset.format.paragraph);
+  const headingLabel = getTranslation(toolName, toolset.format.heading);
   const classes = 'wysi-format';
   const items = toolset.format.tags.map(tag => { 
     const name = tag;

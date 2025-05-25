@@ -8,7 +8,8 @@ import {
   createElement,
   findInstance,
   getCurrentSelection,
-  getFragmentContent, 
+  getFragmentContent,
+  getTranslation,
   restoreSelection,
   setCurrentSelection,
   toggleButton
@@ -18,16 +19,15 @@ import {
  * Render a popover form to set a tool's parameters.
  * @param {string} toolName The tool name.
  * @param {object} button The tool's toolbar button.
- * @param {object} translations The labels translation object.
  * @return {object} A DOM element containing the button and the popover.
  */
-function renderPopover(toolName, button, translations) {
+function renderPopover(toolName, button) {
   const tool = toolset[toolName];
   const labels = tool.attributeLabels;
   const fields = tool.attributes.map((attribute, i) => {
     return {
       name: attribute,
-      label: translations[attribute] || labels[i]
+      label: getTranslation(toolName, labels[i]),
     }
   });
 
@@ -75,7 +75,7 @@ function renderPopover(toolName, button, translations) {
 
     // The link popover needs an extra "Remove link" button
     const extraTool = 'unlink';
-    const label = translations[extraTool] || toolset[extraTool].label;
+    const label = getTranslation(toolName, toolset[extraTool].label);
 
     popover.appendChild(createElement('button', {
       type: 'button',
@@ -91,7 +91,7 @@ function renderPopover(toolName, button, translations) {
     const imageSettings = tool.extraSettings.map((setting, i) => {
       return {
         name: setting,
-        label: translations[setting] || tool.extraSettingLabels[i]
+        label: getTranslation(toolName, tool.extraSettingLabels[i])
       }
     });
 
@@ -105,13 +105,13 @@ function renderPopover(toolName, button, translations) {
 
   const cancel = createElement('button', {
     type: 'button',
-    _textContent: translations.cancel || 'Cancel'
+    _textContent: getTranslation('popover', 'Cancel')
   });
 
   const save = createElement('button', {
     type: 'button',
     'data-action': toolName,
-    _textContent: translations.save || 'Save'
+    _textContent: getTranslation('popover', 'Save')
   });
 
   popover.appendChild(cancel);
@@ -145,7 +145,7 @@ function renderSegmentedField(field) {
     
     segmented.appendChild(createElement('label', {
       for: `wysi-${field.toolName}-${field.name}-${i}`,
-      _textContent: option.label
+      _textContent: getTranslation(field.toolName, option.label)
     }));
   });
 

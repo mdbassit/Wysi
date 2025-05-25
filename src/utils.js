@@ -4,6 +4,9 @@ import { hasClass } from './shortcuts.js';
 // Used to store the current DOM selection for later use
 let currentSelection;
 
+// For storing translated strings
+let availableTranslations;
+
 // Polyfill for Nodelist.forEach
 if (NodeList !== undefined && NodeList.prototype && !NodeList.prototype.forEach) {
     NodeList.prototype.forEach = Array.prototype.forEach;
@@ -238,6 +241,20 @@ export function getTextAreaLabel(textarea) {
 }
 
 /**
+ * Get a translated string if applicable.
+ * @param {string} category The category of the string.
+ * @param {string} str The string to translate.
+ * @return {string} The translated string, or the original string otherwise.
+ */ 
+export function getTranslation(category, str) {
+  if (availableTranslations[category] && availableTranslations[category][str]) {
+    return availableTranslations[category][str];
+  }
+
+  return str;
+}
+
+/**
  * Restore a previous selection if any.
  */
 export function restoreSelection() {
@@ -264,6 +281,14 @@ export function setSelection(range) {
 
   selection.removeAllRanges();
   selection.addRange(range);
+}
+
+/**
+ * Store translated strings.
+ * @param {object} translations The translated strings.
+ */
+export function storeTranslations(translations) {
+  availableTranslations = translations;
 }
 
 /**

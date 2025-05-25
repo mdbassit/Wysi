@@ -18,7 +18,8 @@ import {
   findInstance,
   getInstanceId,
   getTargetElements,
-  getTextAreaLabel
+  getTextAreaLabel,
+  storeTranslations
 } from './utils.js';
 import {
   dispatchEvent,
@@ -37,10 +38,14 @@ let nextId = 0;
 function init(options) {
   const globalTranslations = window.wysiGlobalTranslations || {};
   const translations = Object.assign({}, globalTranslations, options.translations || {});
+
+  // Store translated strings
+  storeTranslations(translations);
+
   const tools = options.tools || settings.tools;
   const selector = options.el || settings.el;
   const targetEls = getTargetElements(selector);
-  const toolbar = renderToolbar(tools, translations);
+  const toolbar = renderToolbar(tools);
   const allowedTags = enableTags(tools);
   const customTags = options.customTags || [];
 

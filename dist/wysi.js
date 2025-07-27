@@ -116,18 +116,77 @@
     },
     link: {
       tags: ['a'],
-      attributes: [/*'id', 'name', */'href' /*'target', 'onclick'*/],
-      attributeLabels: ['URL'],
+      attributes: ['href', 'target'],
+      attributeLabels: ['URL', 'Open link in'],
       hasForm: true,
+      formOptions: {
+        target: [{
+          label: 'Current tab',
+          value: ''
+        }, {
+          label: 'New tab',
+          value: '_blank'
+        }]
+      },
       label: 'Link'
     },
     image: {
       tags: ['img'],
-      attributes: ['src', 'alt' /*, 'title'*/],
+      attributes: ['src', 'alt'],
       attributeLabels: ['URL', 'Alternative text'],
-      styles: ['max-width'],
+      extraSettings: ['size', 'position'],
+      extraSettingLabels: ['Image size', 'Image position'],
+      styles: ['width', 'display', 'margin', 'float'],
       isEmpty: true,
       hasForm: true,
+      formOptions: {
+        size: [{
+          label: 'None',
+          value: '',
+          criterion: null
+        }, {
+          label: '100%',
+          value: '100%',
+          criterion: {
+            width: '100%'
+          }
+        }, {
+          label: '50%',
+          value: '50%',
+          criterion: {
+            width: '50%'
+          }
+        }, {
+          label: '25%',
+          value: '25%',
+          criterion: {
+            width: '25%'
+          }
+        }],
+        position: [{
+          label: 'None',
+          value: '',
+          criterion: null
+        }, {
+          label: 'Left',
+          value: 'left',
+          criterion: {
+            float: 'left'
+          }
+        }, {
+          label: 'Center',
+          value: 'center',
+          criterion: {
+            margin: 'auto'
+          }
+        }, {
+          label: 'Right',
+          value: 'right',
+          criterion: {
+            float: 'right'
+          }
+        }]
+      },
       label: 'Image'
     },
     hr: {
@@ -143,6 +202,38 @@
       label: 'Remove link'
     }
   };
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+    return arr2;
+  }
+  function _createForOfIteratorHelperLoose(o, allowArrayLike) {
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+    if (it) return (it = it.call(o)).next.bind(it);
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
+      var i = 0;
+      return function () {
+        if (i >= o.length) return {
+          done: true
+        };
+        return {
+          done: false,
+          value: o[i++]
+        };
+      };
+    }
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
 
   // Instances storage
   var instances = {};
@@ -180,6 +271,9 @@
 
   // Used to store the current DOM selection for later use
   var currentSelection;
+
+  // For storing translated strings
+  var availableTranslations;
 
   // Polyfill for Nodelist.forEach
   if (NodeList !== undefined && NodeList.prototype && !NodeList.prototype.forEach) {
@@ -316,6 +410,25 @@
   }
 
   /**
+   * Get the current selection.
+   * @return {object} The current selection.
+   */
+  function getCurrentSelection() {
+    return currentSelection;
+  }
+
+  /**
+   * Get the html content of a document fragment.
+   * @param {string} fragment A document fragment.
+   * @return {string} The html content of the fragment.
+   */
+  function getFragmentContent(fragment) {
+    var wrapper = createElement('div');
+    wrapper.appendChild(fragment);
+    return wrapper.innerHTML;
+  }
+
+  /**
    * Get an editor's instance id.
    * @param {object} editor The editor element.
    * @return {string} The instance id.
@@ -393,6 +506,19 @@
   }
 
   /**
+   * Get a translated string if applicable.
+   * @param {string} category The category of the string.
+   * @param {string} str The string to translate.
+   * @return {string} The translated string, or the original string otherwise.
+   */
+  function getTranslation(category, str) {
+    if (availableTranslations[category] && availableTranslations[category][str]) {
+      return availableTranslations[category][str];
+    }
+    return str;
+  }
+
+  /**
    * Restore a previous selection if any.
    */
   function restoreSelection() {
@@ -418,6 +544,14 @@
     var selection = document.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
+  }
+
+  /**
+   * Store translated strings.
+   * @param {object} translations The translated strings.
+   */
+  function storeTranslations(translations) {
+    availableTranslations = translations;
   }
 
   /**
@@ -470,18 +604,40 @@
 
       // Links
       case 'link':
-        execCommand('createLink', options[0]);
+        var linkUrl = options[0],
+          _options$ = options[1],
+          linkTarget = _options$ === void 0 ? '' : _options$,
+          linkText = options[2];
+        if (linkText) {
+          var targetAttr = linkTarget !== '' ? " target=\"" + linkTarget + "\"" : '';
+          var linkTag = "<a href=\"" + linkUrl + "\"" + targetAttr + ">" + linkText + "</a>";
+          execCommand('insertHTML', linkTag);
+        }
         break;
 
       // Images
       case 'image':
-        var url = options[0],
-          _options$ = options[1],
-          text = _options$ === void 0 ? '' : _options$,
-          original = options[2];
-        var image = "<img src=\"" + url + "\" alt=\"" + text + "\" class=\"wysi-selected\" style=\"max-width: 100%;\">";
-        var html = original ? original.replace(/<img[^>]+>/i, image) : image;
-        execCommand('insertHTML', html);
+        var styles = [];
+        var imageUrl = options[0],
+          _options$2 = options[1],
+          altText = _options$2 === void 0 ? '' : _options$2,
+          size = options[2],
+          position = options[3],
+          originalHtml = options[4];
+        if (size !== '') {
+          styles.push("width: " + size + ";");
+        }
+        if (position !== '') {
+          if (position === 'center') {
+            styles.push('display: block; margin: auto;');
+          } else {
+            styles.push("float: " + position + ";");
+          }
+        }
+        var styleAttr = styles.length > 0 ? " style=\"" + styles.join(' ') + "\"" : '';
+        var image = "<img src=\"" + imageUrl + "\" alt=\"" + altText + "\" class=\"wysi-selected\"" + styleAttr + ">";
+        var imageTag = originalHtml ? originalHtml.replace(/<img[^>]+>/i, image) : image;
+        execCommand('insertHTML', imageTag);
         break;
 
       // All the other commands
@@ -680,16 +836,15 @@
    * Render a popover form to set a tool's parameters.
    * @param {string} toolName The tool name.
    * @param {object} button The tool's toolbar button.
-   * @param {object} translations The labels translation object.
    * @return {object} A DOM element containing the button and the popover.
    */
-  function renderPopover(toolName, button, translations) {
+  function renderPopover(toolName, button) {
     var tool = toolset[toolName];
     var labels = tool.attributeLabels;
     var fields = tool.attributes.map(function (attribute, i) {
       return {
         name: attribute,
-        label: translations[attribute] || labels[i]
+        label: getTranslation(toolName, labels[i])
       };
     });
 
@@ -709,31 +864,40 @@
     wrapper.appendChild(button);
     wrapper.appendChild(popover);
     fields.forEach(function (field) {
-      var label = createElement('label');
-      var span = createElement('span', {
-        _textContent: field.label
-      });
-      var input = createElement('input', {
-        type: 'text'
-      });
-      label.appendChild(span);
-      label.appendChild(input);
-      popover.appendChild(label);
-    });
-    var cancel = createElement('button', {
-      type: 'button',
-      _textContent: translations.cancel || 'Cancel'
-    });
-    var save = createElement('button', {
-      type: 'button',
-      'data-action': toolName,
-      _textContent: translations.save || 'Save'
+      // Link target requires special handling later
+      if (toolName !== 'link' || field.name !== 'target') {
+        var label = createElement('label');
+        var span = createElement('span', {
+          _textContent: field.label
+        });
+        var input = createElement('input', {
+          type: 'text',
+          'data-attribute': field.name
+        });
+        label.appendChild(span);
+        label.appendChild(input);
+        popover.appendChild(label);
+      }
     });
 
-    // The link popover needs an extra "Remove link" button
+    // Link popover
     if (toolName === 'link') {
+      // Add the target attribute
+      var targetField = fields.find(function (f) {
+        return f.name === 'target';
+      });
+      if (targetField) {
+        targetField.toolName = toolName;
+        targetField.options = tool.formOptions ? tool.formOptions.target || [] : [];
+        popover.appendChild(createElement('label', {
+          _textContent: targetField.label
+        }));
+        popover.appendChild(renderSegmentedField(targetField));
+      }
+
+      // The link popover needs an extra "Remove link" button
       var extraTool = 'unlink';
-      var label = translations[extraTool] || toolset[extraTool].label;
+      var label = getTranslation(toolName, toolset[extraTool].label);
       popover.appendChild(createElement('button', {
         type: 'button',
         title: label,
@@ -742,9 +906,68 @@
         _innerHTML: "<svg><use href=\"#wysi-delete\"></use></svg>"
       }));
     }
+
+    // Image popover
+    if (toolName === 'image') {
+      var imageSettings = tool.extraSettings.map(function (setting, i) {
+        return {
+          name: setting,
+          label: getTranslation(toolName, tool.extraSettingLabels[i])
+        };
+      });
+      imageSettings.forEach(function (setting) {
+        setting.toolName = toolName;
+        setting.options = tool.formOptions ? tool.formOptions[setting.name] || [] : [];
+        popover.appendChild(createElement('label', {
+          _textContent: setting.label
+        }));
+        popover.appendChild(renderSegmentedField(setting));
+      });
+    }
+    var cancel = createElement('button', {
+      type: 'button',
+      _textContent: getTranslation('popover', 'Cancel')
+    });
+    var save = createElement('button', {
+      type: 'button',
+      'data-action': toolName,
+      _textContent: getTranslation('popover', 'Save')
+    });
     popover.appendChild(cancel);
     popover.appendChild(save);
     return wrapper;
+  }
+
+  /**
+   * Render a segmented form field.
+   * @param {object} field The field attributes.
+   * @return {object} A DOM element representing the segmented field.
+   */
+  function renderSegmentedField(field) {
+    var segmented = createElement('fieldset', {
+      class: 'wysi-segmented'
+    });
+
+    // Add the fieldset legend for accessibility
+    segmented.appendChild(createElement('legend', {
+      _textContent: field.label
+    }));
+
+    // Add field options
+    field.options.forEach(function (option, i) {
+      segmented.appendChild(createElement('input', {
+        id: "wysi-" + field.toolName + "-" + field.name + "-" + i,
+        name: "wysi-" + field.toolName + "-" + field.name,
+        type: 'radio',
+        'data-attribute': field.name,
+        value: option.value
+      }));
+      segmented.appendChild(createElement('label', {
+        for: "wysi-" + field.toolName + "-" + field.name + "-" + i,
+        _textContent: getTranslation(field.toolName, option.label)
+      }));
+    });
+    return segmented;
   }
 
   /**
@@ -752,26 +975,27 @@
    * @param {object} button The popover's button.
    */
   function openPopover(button) {
-    var inputs = button.nextElementSibling.querySelectorAll('input');
+    var inputs = button.nextElementSibling.querySelectorAll('input[type="text"]');
+    var radioButtons = button.nextElementSibling.querySelectorAll('input[type="radio"]');
     var selection = document.getSelection();
     var anchorNode = selection.anchorNode;
     var _findInstance = findInstance(anchorNode),
       editor = _findInstance.editor,
       nodes = _findInstance.nodes;
-    var values = [];
+    var values = {};
     if (editor) {
       // Try to find an existing target of the popover's action from the DOM selection
       var action = button.dataset.action;
       var tool = toolset[action];
-      var target = nodes.filter(function (node) {
-        return tool.tags.includes(node.tagName.toLowerCase());
-      })[0];
-      var selectContents = true;
+      var target = editor.querySelector("." + selectedClass);
+      var selectContents = false;
 
       // If that fails, look for an element with the selection CSS class
       if (!target) {
-        target = editor.querySelector("." + selectedClass);
-        selectContents = false;
+        target = nodes.filter(function (node) {
+          return tool.tags.includes(node.tagName.toLowerCase());
+        })[0];
+        selectContents = true;
       }
 
       // If an existing target is found, we will be in modification mode
@@ -791,8 +1015,27 @@
 
         // Retrieve the current attribute values of the target for modification
         tool.attributes.forEach(function (attribute) {
-          values.push(target.getAttribute(attribute));
+          values[attribute] = target.getAttribute(attribute);
         });
+
+        // Process extra popover settings
+        if (tool.extraSettings) {
+          tool.extraSettings.forEach(function (setting) {
+            var settingOptions = tool.formOptions[setting];
+            for (var _iterator = _createForOfIteratorHelperLoose(settingOptions), _step; !(_step = _iterator()).done;) {
+              var option = _step.value;
+              if (!option.criterion) {
+                continue;
+              }
+              var key = Object.keys(option.criterion)[0];
+              var value = option.criterion[key];
+              if (target.style[key] && target.style[key] === value) {
+                values[setting] = option.value;
+                break;
+              }
+            }
+          });
+        }
 
         // If no existing target is found, we are adding new content
       } else if (selection && editor.contains(anchorNode) && selection.rangeCount) {
@@ -801,9 +1044,17 @@
       }
     }
 
-    // Populate the form fields with the existing values if any
-    inputs.forEach(function (input, i) {
-      input.value = values[i] || '';
+    // Populate the input fields with the existing values if any
+    inputs.forEach(function (input) {
+      input.value = values[input.dataset.attribute] || '';
+    });
+
+    // Check the relevent radio fields if any
+    radioButtons.forEach(function (radio) {
+      var value = values[radio.dataset.attribute] || '';
+      if (radio.value === value) {
+        radio.checked = true;
+      }
     });
 
     // Open this popover
@@ -819,12 +1070,19 @@
    */
   function execPopoverAction(button) {
     var action = button.dataset.action;
-    var inputs = button.parentNode.querySelectorAll('input');
+    var selection = getCurrentSelection();
+    var inputs = button.parentNode.querySelectorAll('input[type="text"]');
+    var radioButtons = button.parentNode.querySelectorAll('input[type="radio"]');
     var _findInstance2 = findInstance(button),
       editor = _findInstance2.editor;
     var options = [];
     inputs.forEach(function (input) {
       options.push(input.value);
+    });
+    radioButtons.forEach(function (radio) {
+      if (radio.checked) {
+        options.push(radio.value);
+      }
     });
 
     // Workaround for links being removed when updating images
@@ -834,6 +1092,10 @@
       if (selected && parent.tagName === 'A') {
         options.push(parent.outerHTML);
       }
+
+      // Save the content of the current selection to use as a link text
+    } else if (action === 'link' && selection) {
+      options.push(getFragmentContent(selection.cloneContents()));
     }
     execAction(action, editor, options);
   }
@@ -932,10 +1194,9 @@
   /**
    * Render the toolbar.
    * @param {array} tools The list of tools in the toolbar.
-   * @param {object} translations The labels translation object.
    * @return {string} The toolbars HTML string.
    */
-  function renderToolbar(tools, translations) {
+  function renderToolbar(tools) {
     var toolbar = createElement('div', {
       class: 'wysi-toolbar'
     });
@@ -959,17 +1220,17 @@
 
         // The format tool renders as a list box
         case 'format':
-          toolbar.appendChild(renderFormatTool(translations));
+          toolbar.appendChild(renderFormatTool());
           break;
 
         // All the other tools render as buttons
         default:
           if (typeof toolName === 'object') {
             if (toolName.items) {
-              toolbar.appendChild(renderToolGroup(toolName, translations));
+              toolbar.appendChild(renderToolGroup(toolName));
             }
           } else {
-            renderTool(toolName, toolbar, translations);
+            renderTool(toolName, toolbar);
           }
       }
     });
@@ -980,11 +1241,10 @@
    * Render a tool.
    * @param {string} name The tool's name.
    * @param {object} toolbar The toolbar to which the tool will be appended.
-   * @param {object} translations The labels translation object.
    */
-  function renderTool(name, toolbar, translations) {
+  function renderTool(name, toolbar) {
     var tool = toolset[name];
-    var label = translations[name] || tool.label;
+    var label = getTranslation(name, tool.label);
     var button = createElement('button', {
       type: 'button',
       title: label,
@@ -996,7 +1256,7 @@
 
     // Tools that require parameters (e.g: image, link) need a popover
     if (tool.hasForm) {
-      var popover = renderPopover(name, button, translations);
+      var popover = renderPopover(name, button);
       toolbar.appendChild(popover);
 
       // The other tools only display a button
@@ -1008,15 +1268,14 @@
   /**
    * Render a tool group.
    * @param {object} details The group's properties.
-   * @param {object} translations The labels translation object.
    * @return {object} A DOM element containing the tool group.
    */
-  function renderToolGroup(details, translations) {
-    var label = details.label || translations.select || 'Select an item';
+  function renderToolGroup(details) {
+    var label = details.label || getTranslation('toolbar', 'Select an item');
     var options = details.items;
     var items = options.map(function (option) {
       var tool = toolset[option];
-      var label = translations[option] || tool.label;
+      var label = getTranslation(option, tool.label);
       var icon = option;
       var action = option;
       return {
@@ -1033,13 +1292,13 @@
 
   /**
    * Render format tool.
-   * @param {object} translations The labels translation object.
    * @return {object} A DOM element containing the format tool.
    */
-  function renderFormatTool(translations) {
-    var label = translations['format'] || toolset.format.label;
-    var paragraphLabel = translations['paragraph'] || toolset.format.paragraph;
-    var headingLabel = translations['heading'] || toolset.format.heading;
+  function renderFormatTool() {
+    var toolName = 'format';
+    var label = getTranslation(toolName, toolset.format.label);
+    var paragraphLabel = getTranslation(toolName, toolset.format.paragraph);
+    var headingLabel = getTranslation(toolName, toolset.format.heading);
     var classes = 'wysi-format';
     var items = toolset.format.tags.map(function (tag) {
       var name = tag;
@@ -1062,8 +1321,12 @@
    * Update toolbar buttons state.
    */
   function updateToolbarState() {
-    var range = document.getSelection().getRangeAt(0);
-    var anchorNode = document.getSelection().anchorNode;
+    var selection = document.getSelection();
+    var anchorNode = selection.anchorNode;
+    if (!anchorNode) {
+      return;
+    }
+    var range = selection.getRangeAt(0);
 
     // This is to fix double click selection on Firefox not highlighting the relevant tool in some cases
     // We want to find the deepest child node to properly handle nested styles
@@ -1192,38 +1455,6 @@
 
   // include SVG icons
   DOMReady(embedSVGIcons);
-
-  function _unsupportedIterableToArray(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-  }
-  function _arrayLikeToArray(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-    return arr2;
-  }
-  function _createForOfIteratorHelperLoose(o, allowArrayLike) {
-    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
-    if (it) return (it = it.call(o)).next.bind(it);
-    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-      if (it) o = it;
-      var i = 0;
-      return function () {
-        if (i >= o.length) return {
-          done: true
-        };
-        return {
-          done: false,
-          value: o[i++]
-        };
-      };
-    }
-    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
 
   var STYLE_ATTRIBUTE = 'style';
   var ALIGN_ATTRIBUTE = 'align';
@@ -1426,7 +1657,7 @@
   }
 
   /**
-   * Remove empty nodes.
+   * Remove empty nodes and clean up.
    * @param {object} node The parent element to filter recursively.
    * @param {array} allowedTags The list of allowed tags.
    */
@@ -1446,6 +1677,11 @@
         var allowedTag = allowedTags[tag];
         if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
           node.removeChild(childNode);
+        } else {
+          // Remove image styles
+          if (tag === 'img') {
+            childNode.removeAttribute('style');
+          }
         }
       }
     });
@@ -1504,10 +1740,13 @@
   function init(options) {
     var globalTranslations = window.wysiGlobalTranslations || {};
     var translations = Object.assign({}, globalTranslations, options.translations || {});
+
+    // Store translated strings
+    storeTranslations(translations);
     var tools = options.tools || settings.tools;
     var selector = options.el || settings.el;
     var targetEls = getTargetElements(selector);
-    var toolbar = renderToolbar(tools, translations);
+    var toolbar = renderToolbar(tools);
     var allowedTags = enableTags(tools);
     var customTags = options.customTags || [];
 

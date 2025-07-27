@@ -1,19 +1,270 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="wysi.min.css">
-    <link rel="stylesheet" type="text/css" href="demo.css">
-  </head>
-  <body>
-    <div class="demo" spellcheck="false">
-      <a href="https://github.com/mdbassit/Wysi">View <b>Wysi</b> on GitHub</a>
-      <h1>Wysi demo</h1>
-      <label for="demo1">Rich text content</label>
-      <textarea id="demo1"><h1>Lorem ipsum dolor sit amet</h1><p>Consectetur adipiscing elit. <a href="https://internetzaddy.com">Curabitur et lectus sit amet</a> est bibendum <strong>condimentum</strong>. Nam eleifend justo condimentum, consequat est sollicitudin, mollis libero. Class <strong><em>aptent taciti</em></strong> sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Maecenas elit massa, finibus faucibus magna.</p><h2>Suspendisse id turpis turpis</h2><p>Vivamus lacinia dolor sit amet justo luctus ultricies. Pellentesque pellentesque interdum libero quis vehicula. Mauris ac tortor quis risus maximus facilisis ut a orci.</p><ul><li>Donec eu est congue augue rhoncus lobortis id mattis purus.</li><li>Class aptent taciti sociosqu ad litora torquent.</li></ul><h2>Etiam consectetur sollicitudin aliquam</h2><p>Donec dapibus massa tortor, eu laoreet quam luctus et. Integer at vestibulum velit. Pellentesque quis diam quam. Nunc at ex tincidunt, hendrerit urna eget, tristique est. Praesent semper sem ut enim commodo pretium. Sed iaculis arcu ultrices turpis interdum lobortis quis a erat.</p></textarea>
-    </div>
-    <script type="text/javascript" src="wysi.min.js"></script>
-    <script type="text/javascript" src="demo.js"></script>
-  </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Wysi is a lightweight, dependency-free WYSIWYG HTML editor that just works. Built with vanilla JavaScript, perfect for modern web applications.">
+    <meta name="keywords" content="editor, contenteditable, wysiwyg, text editor, rich text editor, wysiwyg editor, html editor, javscript html editor, web development, wysi, frontend, css, html">
+    <title>Wysi - Lightweight WYSIWYG Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a class="logo" href="#home">
+                <span class="logo-symbol">
+                    <svg viewBox="0 0 76 60">
+                        <path d="m64.449 0c-7.7261 1.1413-13.351 6.5308-18.291 12.123-7.9411 9.6932-12.483 23.95-13.215 24.205-1.6772-0.7917-3.7045-7.1034-4.9822-8.4753-0.85967 0.71703-6.029 10.135-6.029 10.135-1.0684-2.6364-2.788-4.9429-4.6855-7.0355-1.133-1.4594-2.4121-2.8181-3.9545-3.8489-4.0113-2.8072-8.8187-4.0205-13.292-5.8545 13.697 11.291 12.157 16.155 11.4 31.668 1.2149 0.71044 2.5109 1.2788 3.7557 1.9378 3.2221 1.6325 6.4351 3.2828 9.6418 4.9455 0.31362-5.1049 1.7444-6.5844 4.0854-9.3309 1.3174 3.3158 3.7909 5.8316 6.7072 7.8069 1.5242 0.93699 3.2507 1.7231 5.0692 1.7242 1.1679-0.02635 2.6632-1.2334 2.6068-1.9461-2.5129-39.393 22.917-47.034 28.367-48.829 1.4189-0.40509 2.8933-0.59793 4.3668-0.62649-3.8504-2.866-7.7012-5.7321-11.551-8.5981z"></path>
+                    </svg>
+                </span>
+                <span>wysi</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#demo">Demo</a>
+                <a href="#code">Get Started</a>
+            </div>
+            <a href="https://github.com/mdbassit/Wysi" class="github-btn" target="_blank">
+                <svg viewBox="0 0 32 32">
+                    <path d="M16 0.395c-8.836 0-16 7.163-16 16 0 7.069 4.585 13.067 10.942 15.182 0.8 0.148 1.094-0.347 1.094-0.77 0-0.381-0.015-1.642-0.022-2.979-4.452 0.968-5.391-1.888-5.391-1.888-0.728-1.849-1.776-2.341-1.776-2.341-1.452-0.993 0.11-0.973 0.11-0.973 1.606 0.113 2.452 1.649 2.452 1.649 1.427 2.446 3.743 1.739 4.656 1.33 0.143-1.034 0.558-1.74 1.016-2.14-3.554-0.404-7.29-1.777-7.29-7.907 0-1.747 0.625-3.174 1.649-4.295-0.166-0.403-0.714-2.030 0.155-4.234 0 0 1.344-0.43 4.401 1.64 1.276-0.355 2.645-0.532 4.005-0.539 1.359 0.006 2.729 0.184 4.008 0.539 3.054-2.070 4.395-1.64 4.395-1.64 0.871 2.204 0.323 3.831 0.157 4.234 1.026 1.12 1.647 2.548 1.647 4.295 0 6.145-3.743 7.498-7.306 7.895 0.574 0.497 1.085 1.47 1.085 2.963 0 2.141-0.019 3.864-0.019 4.391 0 0.426 0.288 0.925 1.099 0.768 6.354-2.118 10.933-8.113 10.933-15.18 0-8.837-7.164-16-16-16z"></path>
+                </svg>
+                <span>GitHub</span>
+            </a>
+        </nav>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Wysi</h1>
+                <p>The lightweight, dependency-free WYSIWYG editor that just works. Built with vanilla JavaScript, perfect for modern web applications.</p>
+                <div class="cta-buttons">
+                    <a href="#demo" class="btn btn-primary">Try Live Demo</a>
+                    <a href="#code" class="btn btn-secondary">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Wysi?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10.688 24h-1.375l1.375-9.313h-4.687q-1 0-0.5-0.875 0.187-0.313 0.062-0.187 3.188-5.562 7.75-13.625h1.375l-1.375 9.313h4.687q0.875 0 0.563 0.875z"></path>
+                        </svg>
+                    </div>
+                    <h3>Lightweight</h3>
+                    <p>Only 12KB minified and gzipped. No bloat, just the features you need for rich text editing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 26 28">
+                            <path d="M20.317 8.647c0-0.633-0.514-1.147-1.147-1.147s-1.147 0.514-1.147 1.147 0.514 1.147 1.147 1.147 1.147-0.514 1.147-1.147zM22.993 5.206c0 3.967-1.099 6.608-3.931 9.451-0.693 0.681-1.482 1.386-2.33 2.103l-0.239 4.528c-0.012 0.119-0.084 0.239-0.191 0.311l-4.588 2.676c-0.060 0.036-0.119 0.048-0.191 0.048-0.096 0-0.191-0.036-0.275-0.108l-0.765-0.765c-0.096-0.108-0.131-0.251-0.096-0.382l1.016-3.298-3.358-3.358-3.298 1.016c-0.036 0.012-0.072 0.012-0.108 0.012-0.096 0-0.203-0.036-0.275-0.108l-0.765-0.765c-0.119-0.131-0.143-0.323-0.060-0.466l2.676-4.588c0.072-0.108 0.191-0.179 0.311-0.191l4.528-0.239c0.717-0.848 1.422-1.637 2.103-2.33 2.987-2.975 5.269-3.931 9.427-3.931 0.215 0 0.406 0.167 0.406 0.382z"></path>
+                        </svg>
+                    </div>
+                    <h3>Zero Dependencies</h3>
+                    <p>Built with vanilla ES6. No jQuery, no React, no framework required. Works everywhere.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M17.484 12q0.609 0 1.055-0.422t0.445-1.078-0.445-1.078-1.055-0.422-1.055 0.422-0.445 1.078 0.445 1.078 1.055 0.422zM14.484 8.016q0.609 0 1.055-0.445t0.445-1.055-0.445-1.055-1.055-0.445-1.055 0.445-0.445 1.055 0.445 1.055 1.055 0.445zM9.516 8.016q0.609 0 1.055-0.445t0.445-1.055-0.445-1.055-1.055-0.445-1.055 0.445-0.445 1.055 0.445 1.055 1.055 0.445zM6.516 12q0.609 0 1.055-0.422t0.445-1.078-0.445-1.078-1.055-0.422-1.055 0.422-0.445 1.078 0.445 1.078 1.055 0.422zM12 3q3.703 0 6.352 2.344t2.648 5.672q0 2.063-1.477 3.516t-3.539 1.453h-1.734q-0.656 0-1.078 0.445t-0.422 1.055q0 0.516 0.375 0.984t0.375 1.031q0 0.656-0.422 1.078t-1.078 0.422q-3.75 0-6.375-2.625t-2.625-6.375 2.625-6.375 6.375-2.625z"></path>
+                        </svg>
+                    </div>
+                    <h3>Customizable</h3>
+                    <p>Dark mode support, auto-grow, auto-hide toolbar, and extensive configuration options.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 32 32">
+                            <path d="M16 6c-5.523 0-10 1.399-10 3.125v1.875l7.5 7.5v6.25c0 0.69 1.119 1.25 2.5 1.25s2.5-0.56 2.5-1.25v-6.25l7.5-7.5v-1.875c0-1.726-4.477-3.125-10-3.125zM7.843 8.711c0.468-0.267 1.125-0.52 1.9-0.732 1.718-0.47 3.94-0.729 6.257-0.729s4.539 0.259 6.257 0.729c0.775 0.212 1.432 0.465 1.9 0.732 0.308 0.176 0.475 0.325 0.553 0.414-0.078 0.089-0.244 0.238-0.553 0.414-0.468 0.267-1.125 0.52-1.9 0.732-1.718 0.47-3.94 0.729-6.257 0.729s-4.539-0.259-6.257-0.729c-0.775-0.212-1.432-0.466-1.9-0.732-0.308-0.176-0.475-0.325-0.553-0.414 0.078-0.089 0.244-0.238 0.553-0.414z"></path>
+                        </svg>
+                    </div>
+                    <h3>Content Filtering</h3>
+                    <p>Smart paste filtering ensures clean, consistent content from any source.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21.984 17.016v-7.031h-3.984v7.031h3.984zM23.016 8.016q0.422 0 0.703 0.281t0.281 0.703v9.984q0 0.422-0.281 0.727t-0.703 0.305h-6q-0.422 0-0.727-0.305t-0.305-0.727v-9.984q0-0.422 0.305-0.703t0.727-0.281h6zM3.984 6v11.016h10.031v3h-14.016v-3h2.016v-11.016q0-0.797 0.586-1.406t1.383-0.609h18v2.016h-18z"></path>
+                        </svg>
+                    </div>
+                    <h3>Cross-Platform</h3>
+                    <p>Works seamlessly on all modern browsers, desktop and mobile devices.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 40 32">
+                            <path d="M25.469 22.38l2.734 2.734 9.115-9.115-9.115-9.115-2.734 2.734 6.38 6.38z"></path>
+                            <path d="M14.531 9.62l-2.734-2.734-9.115 9.115 9.115 9.115 2.734-2.734-6.38-6.38z"></path>
+                            <path d="M21.746 5.704l1.979 0.54-5.469 20.053-1.979-0.54 5.469-20.053z"></path>
+                        </svg>
+                    </div>
+                    <h3>Developer Friendly</h3>
+                    <p>Simple API, easy integration. Convert any textarea element into a full featured HTML editor.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section" id="demo">
+        <div class="container">
+            <h2 class="section-title">Interactive Demo</h2>
+            <p style="text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 20px;">
+                Experience Wysi in action. Try formatting text, adding links, and exploring all the features.
+            </p>
+            <div class="demo-container">
+                <div class="demo-tabs">
+                    <button class="demo-tab active" onclick="showDemo('basic')">Basic Editor</button>
+                    <button class="demo-tab" onclick="showDemo('minimal')">Minimal Editor</button>
+                    <button class="demo-tab" onclick="showDemo('dark')">Dark Mode</button>
+                    <button class="demo-tab" onclick="showDemo('autogrow')">Auto Grow</button>
+                </div>
+                <div class="demo-content">
+                    <div id="basic-demo" class="demo-editor">
+                        <label class="sr-only" for="demo1">Basic editor example</label>
+                        <textarea id="demo1" placeholder="Start typing to see Wysi in action...">
+                        <p>Welcome to <strong>Wysi</strong>!<p>
+                        <p>This is a <em>lightweight</em> and <u>powerful</u> WYSIWYG editor.</p>
+                        <p>Try these features:</p>
+                        <ul>
+                            <li><strong>Bold</strong> and <em>italic</em> text</li>
+                            <li>Create <a href="https://wysi.js.org">links</a></li>
+                            <li>Add lists and formatting</li>
+                            <li>Paste content from anywhere</li>
+                        </ul>
+                        <p>The editor automatically filters content and maintains clean HTML output.</p>
+                    </textarea>
+                    </div>
+                    <div id="minimal-demo" class="demo-editor" style="display: none;">
+                        <label class="sr-only" for="demo2">Minimal editor example</label>
+                        <textarea id="demo2" placeholder="Minimal editor demo...">
+                            <p>This editor has a minimal number of tools!</p>
+                        </textarea>
+                    </div>
+                    <div id="dark-demo" class="demo-editor" style="display: none;">
+                        <label class="sr-only" for="demo3">Dark mode example</label>
+                        <textarea id="demo3" placeholder="Dark mode demo...">
+                            <p>This editor is in <strong>dark mode</strong>!</p>
+                            <p>Perfect for developers who prefer darker interfaces. The content area remains clean and readable while the toolbar adapts to your preferred theme.</p>
+                        </textarea>
+                    </div>
+                    <div id="autogrow-demo" class="demo-editor" style="display: none;">
+                        <label class="sr-only" for="demo4">Dark mode example</label>
+                        <textarea id="demo4" placeholder="Start typing to see auto-grow in action...">
+                            <p>This editor will <strong>automatically grow</strong> as you add more content!</p>
+                            <p>Try adding multiple paragraphs and watch how the editor expands to fit your content perfectly. This is great for forms and content management systems where you want the editor to adapt to the user's needs.</p>
+                        </textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="code-section" id="code">
+        <div class="container">
+            <h2 class="section-title">Get Started in Seconds</h2>
+            <p style="text-align: center; color: #ccc; font-size: 1.1rem;">
+                Simple setup for a quick start. Add Wysi to your project with just a few lines of code.
+            </p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <div class="code-title">Installation</div>
+                </div>
+                <button class="copy-btn" onclick="copyCode('install')">Copy</button>
+                <pre id="install-code"><code>&lt;!-- Include Wysi CSS and JS --&gt;
+&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"wysi.min.css"</span>/&gt;
+&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"wysi.min.js"</span>&gt;&lt;/<span class="hljs-name">script</span>&gt;
+
+&lt;!-- Or from CDN (not recommended in production) --&gt;
+&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"https://cdn.jsdelivr.net/gh/mdbassit/Wysi@latest/dist/wysi.min.css"</span>/&gt;
+&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"https://cdn.jsdelivr.net/gh/mdbassit/Wysi@latest/dist/wysi.min.js"</span>&gt;&lt;/<span class="hljs-name">script</span>&gt;</code></pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <div class="code-title">Basic Usage</div>
+                </div>
+                <button class="copy-btn" onclick="copyCode('basic')">Copy</button>
+                <pre id="basic-code"><code>&lt;<span class="hljs-name">textarea</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"my-editor"</span>&gt;&lt;/<span class="hljs-name">textarea</span>&gt;
+
+&lt;<span class="hljs-name">script</span>&gt;
+<span class="hljs-comment">// Initialize Wysi</span>
+<span class="hljs-name">Wysi</span>({
+    <span class="hljs-attr">el</span>: <span class="hljs-string">'#my-editor'</span>
+});
+
+<span class="hljs-comment">// Get content</span>
+<span class="hljs-name">const</span> <span class="hljs-attr">content</span> = <span class="hljs-name">document</span>.<span class="hljs-attr">querySelector</span>(<span class="hljs-string">'#my-editor'</span>).<span class="hljs-attr">value</span>;
+&lt;/<span class="hljs-name">script</span>&gt;</code></pre>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <div class="code-title">Advanced Configuration</div>
+                </div>
+                <button class="copy-btn" onclick="copyCode('advanced')">Copy</button>
+                <pre id="advanced-code"><code><span class="hljs-name">Wysi</span>({
+    <span class="hljs-attr">el</span>: <span class="hljs-string">'.richtext'</span>,
+    <span class="hljs-attr">darkMode</span>: <span class="hljs-name">true</span>,
+    <span class="hljs-attr">height</span>: <span class="hljs-name">300</span>,
+    <span class="hljs-attr">autoGrow</span>: <span class="hljs-name">true</span>,
+    <span class="hljs-attr">autoHide</span>: <span class="hljs-name">false</span>,
+    <span class="hljs-attr">tools</span>: [
+        <span class="hljs-string">'format'</span>, <span class="hljs-string">'|'</span>, 
+        <span class="hljs-string">'bold'</span>, <span class="hljs-string">'italic'</span>, <span class="hljs-string">'underline'</span>, <span class="hljs-string">'strike'</span>, <span class="hljs-string">'|'</span>, 
+        { <span class="hljs-attr">label</span>: <span class="hljs-string">'Text alignment'</span>, <span class="hljs-attr">items</span>: [<span class="hljs-string">'alignLeft'</span>, <span class="hljs-string">'alignCenter'</span>, <span class="hljs-string">'alignRight'</span>, <span class="hljs-string">'alignJustify'</span>] }, <span class="hljs-string">'|'</span>, 
+        <span class="hljs-string">'ul'</span>, <span class="hljs-string">'ol'</span>, <span class="hljs-string">'|'</span>, 
+        <span class="hljs-string">'indent'</span>, <span class="hljs-string">'outdent'</span>, <span class="hljs-string">'|'</span>, 
+        <span class="hljs-string">'link'</span>, <span class="hljs-string">'image'</span>, <span class="hljs-string">'hr'</span>, <span class="hljs-string">'quote'</span>, <span class="hljs-string">'|'</span>, 
+        <span class="hljs-string">'removeFormat'</span>
+    ],
+    <span class="hljs-attr">onChange</span>: (<span class="hljs-attr">content</span>) =&gt; {
+        <span class="hljs-name">console</span>.<span class="hljs-attr">log</span>(<span class="hljs-string">'Content changed:'</span>, <span class="hljs-attr">content</span>);
+        <span class="hljs-comment">// Save to server, update preview, etc.</span>
+    }
+});</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="https://github.com/mdbassit/Wysi" target="_blank">GitHub</a>
+                    <a href="https://github.com/mdbassit/Wysi/releases" target="_blank">Download</a>
+                    <a href="https://github.com/mdbassit/Wysi/blob/main/README.md" target="_blank">Docs</a>
+                    <a href="https://github.com/mdbassit/Wysi/blob/main/LICENSE.txt" target="_blank">License</a>
+                </div>
+                <div>
+                    <p>&copy; 2023 Momo Bassit. Licensed under MIT.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Wysi@latest/dist/wysi.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/mdbassit/Wysi@latest/dist/wysi.min.js"></script>
+    <script src="script.js"></script>
+</body>
 </html>

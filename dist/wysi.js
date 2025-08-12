@@ -1657,7 +1657,7 @@
   }
 
   /**
-   * Remove empty nodes and clean up.
+   * Remove empty nodes.
    * @param {object} node The parent element to filter recursively.
    * @param {array} allowedTags The list of allowed tags.
    */
@@ -1669,7 +1669,7 @@
     children.forEach(function (childNode) {
       // Remove empty element nodes
       if (childNode.nodeType === 1) {
-        // Filter recursively (deeper nodes firest)
+        // Filter recursively (deeper nodes first)
         cleanContent(childNode, allowedTags);
 
         // Check if the element can be empty
@@ -1677,11 +1677,6 @@
         var allowedTag = allowedTags[tag];
         if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
           node.removeChild(childNode);
-        } else {
-          // Remove image styles
-          if (tag === 'img') {
-            childNode.removeAttribute('style');
-          }
         }
       }
     });

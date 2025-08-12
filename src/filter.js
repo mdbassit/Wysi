@@ -223,7 +223,7 @@ function cleanContent(node, allowedTags) {
   children.forEach(childNode => {
     // Remove empty element nodes
     if (childNode.nodeType === 1) {
-      // Filter recursively (deeper nodes firest)
+      // Filter recursively (deeper nodes first)
       cleanContent(childNode, allowedTags);
 
       // Check if the element can be empty

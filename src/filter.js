@@ -209,7 +209,7 @@ function filterContent(node, allowedTags) {
 }
 
 /**
- * Remove empty nodes and clean up.
+ * Remove empty nodes.
  * @param {object} node The parent element to filter recursively.
  * @param {array} allowedTags The list of allowed tags.
  */
@@ -232,11 +232,6 @@ function cleanContent(node, allowedTags) {
 
       if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
         node.removeChild(childNode);
-      } else {
-        // Remove image styles
-        if (tag === 'img') {
-          childNode.removeAttribute('style');
-        }
       }
     }
   });

@@ -71,7 +71,7 @@ nav {
 }
 
 .nav-links a:hover {
-    color: #667eea;
+    color: #3b60e4;
 }
 
 .nav-links a::after {
@@ -81,7 +81,7 @@ nav {
     left: 0;
     width: 0;
     height: 2px;
-    background: #667eea;
+    background: #3b60e4;
     transition: width 0.3s ease;
 }
 
@@ -178,7 +178,7 @@ nav {
 
 .btn-primary {
     background: white;
-    color: #667eea;
+    color: #3b60e4;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
@@ -195,7 +195,7 @@ nav {
 
 .btn-secondary:hover {
     background: white;
-    color: #667eea;
+    color: #3b60e4;
 }
 
 /* Features Section */
@@ -303,8 +303,8 @@ nav {
 }
 
 .demo-tab.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
+    color: #3b60e4;
+    border-bottom-color: #3b60e4;
 }
 
 .demo-content {
@@ -391,7 +391,7 @@ pre {
     position: absolute;
     top: 15px;
     right: 15px;
-    background: #667eea;
+    background: #3b60e4;
     color: white;
     border: none;
     padding: 8px 15px;
@@ -402,7 +402,7 @@ pre {
 }
 
 .copy-btn:hover {
-    background: #5a6fd8;
+    background: #667eea;
 }
 
 /* Footer */
@@ -419,11 +419,11 @@ footer {
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
-    color: #ccc;
+    color: #ddd;
 }
 
 .footer-content a {
-    color: #ccc;
+    color: #ddd;
     text-decoration: none;
     transition: color 0.3s ease;
 }

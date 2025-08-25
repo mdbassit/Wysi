@@ -3,7 +3,7 @@ let editors = {};
 // Basic demo
 editors.demo1 = Wysi({
     el: '#demo1',
-    height: 350,
+    height: 300,
     onChange: (content) => {
         // Optional: show content changes
     }
@@ -12,7 +12,7 @@ editors.demo1 = Wysi({
 // Full demo
 editors.demo2 = Wysi({
     el: '#demo2',
-    height: 350,
+    height: 300,
     tools: [
         'format', '|', 
         'bold', 'italic', 'underline', 'strike',
@@ -24,7 +24,7 @@ editors.demo2 = Wysi({
 editors.demo3 = Wysi({
     el: '#demo3',
     darkMode: true,
-    height: 350
+    height: 300
 });
 
 // Auto grow demo
@@ -91,11 +91,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // Header scroll effect
 window.addEventListener('scroll', () => {
     const header = document.querySelector('header');
-    if (window.scrollY > 100) {
-        header.style.background = 'rgba(255, 255, 255, 0.98)';
-        header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.1)';
+    if (window.scrollY > 50) {
+        header.classList.add('scrolled');
     } else {
-        header.style.background = 'rgba(255, 255, 255, 0.95)';
-        header.style.boxShadow = 'none';
+        header.classList.remove('scrolled');
     }
 });

@@ -832,6 +832,9 @@
     closeListBox();
   });
 
+  // Used to give form fields unique ids
+  var uniqueFieldId = 0;
+
   /**
    * Render a popover form to set a tool's parameters.
    * @param {string} toolName The tool name.
@@ -872,6 +875,7 @@
         });
         var input = createElement('input', {
           type: 'text',
+          name: "wysi-" + field.name,
           'data-attribute': field.name
         });
         label.appendChild(span);
@@ -889,7 +893,7 @@
       if (targetField) {
         targetField.toolName = toolName;
         targetField.options = tool.formOptions ? tool.formOptions.target || [] : [];
-        popover.appendChild(createElement('label', {
+        popover.appendChild(createElement('span', {
           _textContent: targetField.label
         }));
         popover.appendChild(renderSegmentedField(targetField));
@@ -918,7 +922,7 @@
       imageSettings.forEach(function (setting) {
         setting.toolName = toolName;
         setting.options = tool.formOptions ? tool.formOptions[setting.name] || [] : [];
-        popover.appendChild(createElement('label', {
+        popover.appendChild(createElement('span', {
           _textContent: setting.label
         }));
         popover.appendChild(renderSegmentedField(setting));
@@ -944,6 +948,7 @@
    * @return {object} A DOM element representing the segmented field.
    */
   function renderSegmentedField(field) {
+    var fieldId = uniqueFieldId++;
     var segmented = createElement('fieldset', {
       class: 'wysi-segmented'
     });
@@ -954,16 +959,17 @@
     }));
 
     // Add field options
-    field.options.forEach(function (option, i) {
+    field.options.forEach(function (option) {
+      var segmentId = uniqueFieldId++;
       segmented.appendChild(createElement('input', {
-        id: "wysi-" + field.toolName + "-" + field.name + "-" + i,
-        name: "wysi-" + field.toolName + "-" + field.name,
+        id: "wysi-seg-" + segmentId,
+        name: "wysi-" + field.toolName + "-" + field.name + "-" + fieldId,
         type: 'radio',
         'data-attribute': field.name,
         value: option.value
       }));
       segmented.appendChild(createElement('label', {
-        for: "wysi-" + field.toolName + "-" + field.name + "-" + i,
+        for: "wysi-seg-" + segmentId,
         _textContent: getTranslation(field.toolName, option.label)
       }));
     });

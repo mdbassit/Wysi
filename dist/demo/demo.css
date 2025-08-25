@@ -17,7 +17,7 @@ body {
   color: #0000ee;
 }
 
-.demo label {
+.demo > label {
   display: block;
   margin-bottom: 0.5em;
 }

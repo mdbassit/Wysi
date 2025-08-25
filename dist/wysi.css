@@ -243,12 +243,13 @@
   width: 100%;
   margin-bottom: 8px;
   font-size: 1em;
-  line-height: 1.5;
 }
 
 .wysi-popover span {
   display: block;
-  margin-bottom: 3px;
+  width: 100%;
+  margin-bottom: 5px;
+  line-height: 1.5;
 }
 
 .wysi-popover input[type] {

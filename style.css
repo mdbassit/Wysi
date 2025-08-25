@@ -464,6 +464,7 @@ footer {
     .code-dots { gap: 5px; }
     .dot { width :8px; height: 8px }
     .code-title { margin-left: 10px; }
+    .copy-btn { top: 10px; right: 10px; padding: 5px 15px; }
 }
 
 /* Syntax highlighting */

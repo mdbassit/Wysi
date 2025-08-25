@@ -27,7 +27,6 @@ import {
   hasClass
 } from './shortcuts.js';
 
-
 // Next available instance id
 let nextId = 0;
 

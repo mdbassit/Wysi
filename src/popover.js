@@ -15,6 +15,9 @@ import {
   toggleButton
 } from './utils.js';
 
+// Used to give form fields unique ids
+let uniqueFieldId = 0;
+
 /**
  * Render a popover form to set a tool's parameters.
  * @param {string} toolName The tool name.
@@ -53,7 +56,11 @@ function renderPopover(toolName, button) {
     if (toolName !== 'link' || field.name !== 'target') {
       const label = createElement('label');
       const span = createElement('span', { _textContent: field.label });
-      const input = createElement('input', { type: 'text', 'data-attribute': field.name });
+      const input = createElement('input', {
+        type: 'text',
+        name: `wysi-${field.name}`,
+        'data-attribute': field.name
+      });
 
       label.appendChild(span);
       label.appendChild(input);
@@ -69,7 +76,7 @@ function renderPopover(toolName, button) {
     if (targetField) {
       targetField.toolName = toolName;
       targetField.options = tool.formOptions ? tool.formOptions.target || [] : [];
-      popover.appendChild(createElement('label', { _textContent: targetField.label }));
+      popover.appendChild(createElement('span', { _textContent: targetField.label }));
       popover.appendChild(renderSegmentedField(targetField));
     }
 
@@ -98,7 +105,7 @@ function renderPopover(toolName, button) {
     imageSettings.forEach(setting => {
       setting.toolName = toolName;
       setting.options = tool.formOptions ? tool.formOptions[setting.name] || [] : [];
-      popover.appendChild(createElement('label', { _textContent: setting.label }));
+      popover.appendChild(createElement('span', { _textContent: setting.label }));
       popover.appendChild(renderSegmentedField(setting));
     });
   }
@@ -126,6 +133,7 @@ function renderPopover(toolName, button) {
  * @return {object} A DOM element representing the segmented field.
  */
 function renderSegmentedField(field) {
+  const fieldId = uniqueFieldId++;
   const segmented = createElement('fieldset', {
     class: 'wysi-segmented'
   });
@@ -134,17 +142,19 @@ function renderSegmentedField(field) {
   segmented.appendChild(createElement('legend', { _textContent: field.label }));
 
   // Add field options
-  field.options.forEach((option, i) => {
+  field.options.forEach(option => {
+    const segmentId = uniqueFieldId++;
+
     segmented.appendChild(createElement('input', {
-      id: `wysi-${field.toolName}-${field.name}-${i}`,
-      name: `wysi-${field.toolName}-${field.name}`,
+      id: `wysi-seg-${segmentId}`,
+      name: `wysi-${field.toolName}-${field.name}-${fieldId}`,
       type: 'radio',
       'data-attribute': field.name,
       value: option.value
     }));
     
     segmented.appendChild(createElement('label', {
-      for: `wysi-${field.toolName}-${field.name}-${i}`,
+      for: `wysi-seg-${segmentId}`,
       _textContent: getTranslation(field.toolName, option.label)
     }));
   });

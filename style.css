@@ -331,7 +331,6 @@ nav {
 .demo-editor {
     border: 2px solid #eee;
     border-radius: 10px;
-    overflow: hidden;
 }
 
 .sr-only {

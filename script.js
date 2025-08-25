@@ -12,7 +12,7 @@ editors.demo1 = Wysi({
 // Full demo
 editors.demo2 = Wysi({
     el: '#demo2',
-    height: 200,
+    height: 350,
     tools: [
         'format', '|', 
         'bold', 'italic', 'underline', 'strike',
@@ -24,7 +24,7 @@ editors.demo2 = Wysi({
 editors.demo3 = Wysi({
     el: '#demo3',
     darkMode: true,
-    height: 200
+    height: 350
 });
 
 // Auto grow demo

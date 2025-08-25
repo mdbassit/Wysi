@@ -436,21 +436,24 @@ footer {
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
+    color: #ccc;
 }
 
-.footer-links {
-    display: flex;
-    gap: 30px;
-}
-
-.footer-links a {
+.footer-content a {
     color: #ccc;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
-.footer-links a:hover {
+.footer-content a:hover {
     color: white;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+}
+
+.footer-links {
+    display: flex;
+    gap: 30px;
 }
 
 /* Responsive */

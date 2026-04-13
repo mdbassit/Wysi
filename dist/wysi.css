@@ -561,7 +561,7 @@
   white-space: nowrap;
 }
 
-.wysi-table-menu input[type] {
+.wysi-table-menu input[type="number"] {
   width: 60px;
   height: 26px;
   margin: 0;

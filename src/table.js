@@ -116,8 +116,19 @@ function syncEditor(editor) {
  * @param {number} rows Number of rows.
  * @param {number} cols Number of columns.
  */
-function insertTable(rows, cols) {
+function insertTable(rows, cols, header) {
   const table = createElement('table');
+
+  if (header) {
+    const thead = createElement('thead');
+    const tr = createElement('tr');
+    for (let j = 0; j < cols; j++) {
+      tr.appendChild(createCell('th'));
+    }
+    thead.appendChild(tr);
+    table.appendChild(thead);
+  }
+
   const tbody = createElement('tbody');
 
   for (let i = 0; i < rows; i++) {
@@ -575,8 +586,19 @@ function populateInsertMode(container) {
     _textContent: getTranslation('table', 'Insert')
   }));
 
+  const headerLabel = createElement('label');
+  headerLabel.appendChild(createElement('span', {
+    _textContent: getTranslation('table', 'Header row')
+  }));
+  headerLabel.appendChild(createElement('input', {
+    type: 'checkbox',
+    checked: true,
+    'data-field': 'header'
+  }));
+
   container.appendChild(rowsLabel);
   container.appendChild(colsLabel);
+  container.appendChild(headerLabel);
   container.appendChild(actions);
 }
 
@@ -676,7 +698,8 @@ function execTableAction(action, editor) {
       const menu = document.querySelector('.wysi-table-menu > div');
       const rows = parseInt(menu.querySelector('[data-field="rows"]').value) || 3;
       const cols = parseInt(menu.querySelector('[data-field="cols"]').value) || 3;
-      insertTable(rows, cols);
+      const header = menu.querySelector('[data-field="header"]').checked;
+      insertTable(rows, cols, header);
       break;
     }
     case 'tableAddRowAbove':

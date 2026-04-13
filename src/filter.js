@@ -113,6 +113,9 @@ function filterStyles(node, allowedStyles) {
     // Remove text-align: left
     .filter(style => style.name !== 'text-align' || style.value.trim() !== 'left')
 
+    // Only allow percentage-based widths
+    .filter(style => style.name !== 'width' || (style.value && style.value.trim().endsWith('%')))
+
     // Convert back to a style string
     .map(({ name, value }) => `${name}: ${value.trim()};`).join('');
 
@@ -229,8 +232,9 @@ function cleanContent(node, allowedTags) {
       // Check if the element can be empty
       const tag = childNode.tagName.toLowerCase();
       const allowedTag = allowedTags[tag];
+      const isTableCell = tag === 'td' || tag === 'th';
 
-      if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
+      if (allowedTag && !allowedTag.isEmpty && !isTableCell && trimText(childNode.innerHTML) === '') {
         node.removeChild(childNode);
       }
     }

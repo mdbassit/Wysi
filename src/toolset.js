@@ -143,6 +143,12 @@ export default {
     },
     label: 'Image'
   },
+  table: {
+    tags: ['table'],
+    extraTags: ['thead', 'tbody', 'tr', 'td', 'th'],
+    styles: ['text-align', 'width'],
+    label: 'Table'
+  },
   hr: {
     tags: ['hr'],
     isEmpty: true,

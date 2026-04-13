@@ -3,6 +3,7 @@ import document from 'document';
 import settings from './settings.js';
 import { renderToolbar } from './toolbar.js';
 import { enableTags, prepareContent } from './filter.js';
+import { isMarkdownTable, parseMarkdownTable, addResizeHandlesToAll } from './table.js';
 import {
   instances,
   placeholderClass,
@@ -96,6 +97,9 @@ function init(options) {
       wrapper.appendChild(editor);
       field.before(wrapper);
 
+      // Add column resize handles to existing tables
+      addResizeHandlesToAll(editor);
+
       // Apply configuration
       configure(wrapper, options);
 
@@ -152,6 +156,7 @@ function updateContent(textarea, editor, instanceId, rawContent, setEditorConten
 
   if (setEditorContent === true) {
     editor.innerHTML = content;
+    addResizeHandlesToAll(editor);
   }
 
   textarea.value = content;
@@ -222,10 +227,13 @@ function cleanPastedContent(event) {
 
   if (handlePastedImage(event)) return;
 
-  if (editor && clipboardData.types.includes('text/html')) {
+  if (!editor) return;
+
+  const instanceId = getInstanceId(editor);
+  const allowedTags = instances[instanceId].allowedTags;
+
+  if (clipboardData.types.includes('text/html')) {
     const pasted = clipboardData.getData('text/html');
-    const instanceId = getInstanceId(editor);
-    const allowedTags = instances[instanceId].allowedTags;
     let content = prepareContent(pasted, allowedTags);
 
     // Detect a heading tag in the current selection
@@ -257,8 +265,23 @@ function cleanPastedContent(event) {
       });
     }
 
+    // Add resize handles to pasted tables
+    addResizeHandlesToAll(editor);
+
     // Prevent the default paste action
     event.preventDefault();
+
+  // Handle plain text paste — detect markdown tables
+  } else if (allowedTags['table'] && clipboardData.types.includes('text/plain')) {
+    const plainText = clipboardData.getData('text/plain');
+
+    if (isMarkdownTable(plainText)) {
+      const tableHtml = parseMarkdownTable(plainText);
+      const content = prepareContent(tableHtml, allowedTags);
+      execCommand('insertHTML', content);
+      addResizeHandlesToAll(editor);
+      event.preventDefault();
+    }
   }
 }
 

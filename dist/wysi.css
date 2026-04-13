@@ -405,6 +405,10 @@
   outline-color: var(--wysi-primary);
 }
 
+.wysi-editor img {
+  max-width: 100%;
+}
+
 /** Dark mode **/
 
 .wysi-darkmode .wysi-toolbar {

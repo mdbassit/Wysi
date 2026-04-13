@@ -236,15 +236,60 @@ addListener(document, 'mousedown', '.wysi-editor, .wysi-editor *', event => {
   }
 });
 
-// Select an image when it's clicked
+// Drag-to-resize images from the bottom-right corner
+let resizeState = null;
+const CORNER_SIZE = 16;
+
+function isNearCorner(event, image) {
+  const rect = image.getBoundingClientRect();
+  return (rect.right - event.clientX) < CORNER_SIZE && (rect.bottom - event.clientY) < CORNER_SIZE;
+}
+
+// Show resize cursor when hovering near bottom-right corner of a selected image
+addListener(document, 'mousemove', '.wysi-editor img', event => {
+  const image = event.target;
+  image.style.cursor = image.classList.contains(selectedClass) && isNearCorner(event, image) ? 'nwse-resize' : '';
+});
+
+// Start resize if mousedown on corner of selected image
 addListener(document, 'mousedown', '.wysi-editor img', event => {
   const image = event.target;
+
+  if (image.classList.contains(selectedClass) && isNearCorner(event, image)) {
+    event.preventDefault();
+    resizeState = { image, startW: image.offsetWidth, startX: event.clientX };
+    return;
+  }
+
+  // Normal image selection
   const range = document.createRange();
-
   image.classList.add(selectedClass);
-
   range.selectNode(image);
   setSelection(range);
+});
+
+addListener(document, 'mousemove', event => {
+  if (!resizeState) return;
+  event.preventDefault();
+
+  const { image, startW, startX } = resizeState;
+  let newW = Math.max(20, startW + event.clientX - startX);
+  const editor = image.closest('.wysi-editor');
+  if (editor) newW = Math.min(newW, editor.clientWidth);
+
+  image.style.width = `${Math.round(newW)}px`;
+  image.style.height = 'auto';
+});
+
+addListener(document, 'mouseup', () => {
+  if (!resizeState) return;
+  const { image } = resizeState;
+  resizeState = null;
+
+  const editor = image.closest('.wysi-editor');
+  if (editor) {
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 });
 
 // Toolbar button click

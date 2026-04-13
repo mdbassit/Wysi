@@ -92,7 +92,7 @@ export default {
     attributeLabels: ['URL', 'Alternative text'],
     extraSettings: ['size', 'position'],
     extraSettingLabels: ['Image size', 'Image position'],
-    styles: ['width', 'display', 'margin', 'float'],
+    styles: ['width', 'height', 'display', 'margin', 'float'],
     isEmpty: true,
     hasForm: true,
     formOptions: {

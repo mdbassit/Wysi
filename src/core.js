@@ -195,9 +195,32 @@ function setContent(selector, content) {
  * Clean up content before pasting it in an editor.
  * @param {object} event The browser's paste event.
  */
+function handlePastedImage(event) {
+  const { editor } = findInstance(event.target);
+  const clipboardData = event.clipboardData;
+
+  if (!editor || !clipboardData) return false;
+
+  const imageFile = Array.from(clipboardData.files).find(f => f.type.startsWith('image/'));
+  if (!imageFile) return false;
+
+  event.preventDefault();
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    editor.focus();
+    execCommand('insertHTML', `<img src="${reader.result}" alt="">`);
+  };
+  reader.readAsDataURL(imageFile);
+
+  return true;
+}
+
 function cleanPastedContent(event) {
   const { editor, nodes } = findInstance(event.target);
   const clipboardData = event.clipboardData;
+
+  if (handlePastedImage(event)) return;
 
   if (editor && clipboardData.types.includes('text/html')) {
     const pasted = clipboardData.getData('text/html');

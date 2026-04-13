@@ -609,7 +609,22 @@
   background-color: var(--wysi-hover);
 }
 
-.wysi-table-menu > div > button {
+.wysi-table-ctx {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 8px;
+  border-radius: 5px;
+  background-color: #fff;
+  font-size: .875em;
+  line-height: 1.5;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, .2);
+  z-index: 1;
+}
+
+.wysi-table-menu > div > button,
+.wysi-table-ctx > button {
   display: flex;
   width: 100%;
   height: auto;
@@ -626,15 +641,19 @@
 }
 
 .wysi-table-menu > div > button:hover,
-.wysi-table-menu > div > button:focus {
+.wysi-table-menu > div > button:focus,
+.wysi-table-ctx > button:hover,
+.wysi-table-ctx > button:focus {
   background-color: #eee;
 }
 
-.wysi-table-menu > div > button[data-action="tableDelete"] {
+.wysi-table-menu > div > button[data-action="tableDelete"],
+.wysi-table-ctx > button[data-action="tableDelete"] {
   color: #d32f2f;
 }
 
-.wysi-table-menu > div > hr {
+.wysi-table-menu > div > hr,
+.wysi-table-ctx > hr {
   width: 100%;
   margin: 3px 0;
   border: 0;
@@ -643,7 +662,8 @@
 
 /** Table menu dark mode **/
 
-.wysi-darkmode .wysi-table-menu > div {
+.wysi-darkmode .wysi-table-menu > div,
+.wysi-darkmode .wysi-table-ctx {
   background-color: #444;
 }
 
@@ -651,7 +671,8 @@
   border-bottom-color: #444;
 }
 
-.wysi-darkmode .wysi-table-menu > div > button {
+.wysi-darkmode .wysi-table-menu > div > button,
+.wysi-darkmode .wysi-table-ctx > button {
   color: #ddd;
 }
 

@@ -706,6 +706,68 @@ function execTableAction(action, editor) {
   syncEditor(editor);
 }
 
+// ============ CONTEXT MENU ============
+
+let contextMenu = null;
+let contextMenuEditor = null;
+
+function closeContextMenu() {
+  if (contextMenu && contextMenu.parentNode) {
+    contextMenu.remove();
+  }
+  contextMenu = null;
+  contextMenuEditor = null;
+}
+
+// Right-click inside a table cell
+addListener(document, 'contextmenu', '.wysi-editor td, .wysi-editor th', event => {
+  const cell = getCurrentCell(event.target);
+  if (!cell) return;
+
+  event.preventDefault();
+  closeContextMenu();
+  closeTableMenu();
+
+  // Save selection
+  const selection = document.getSelection();
+  if (selection.rangeCount) {
+    tableMenuSelection = selection.getRangeAt(0).cloneRange();
+  }
+
+  const { editor } = findInstance(cell);
+  contextMenuEditor = editor;
+
+  // Create menu
+  contextMenu = createElement('div', { class: 'wysi-table-ctx' });
+  populateOperationsMode(contextMenu);
+
+  // Position at click using fixed positioning
+  contextMenu.style.left = event.clientX + 'px';
+  contextMenu.style.top = event.clientY + 'px';
+
+  document.body.appendChild(contextMenu);
+});
+
+// Execute action from context menu
+addListener(document, 'click', '.wysi-table-ctx button[data-action]', event => {
+  const action = event.target.dataset.action;
+  execTableAction(action, contextMenuEditor);
+  closeContextMenu();
+});
+
+// Close context menu on outside click or escape
+addListener(document, 'mousedown', event => {
+  if (contextMenu && !contextMenu.contains(event.target)) {
+    closeContextMenu();
+  }
+});
+
+addListener(document, 'keydown', event => {
+  if (event.key === 'Escape' && contextMenu) {
+    closeContextMenu();
+  }
+});
+
 // ============ EVENT LISTENERS ============
 
 // Open/close table menu on button click

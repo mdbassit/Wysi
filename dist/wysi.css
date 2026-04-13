@@ -467,7 +467,21 @@
 .wysi-editor td {
   border: 1px solid #ccc;
   padding: .4em .6em;
-  min-width: 1.5em;
+  position: relative;
+}
+
+.wysi-col-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.wysi-col-resize:hover,
+.wysi-col-resize-active {
+  background-color: rgba(0, 120, 215, .4);
 }
 
 .wysi-editor th {

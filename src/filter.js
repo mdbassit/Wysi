@@ -113,6 +113,9 @@ function filterStyles(node, allowedStyles) {
     // Remove text-align: left
     .filter(style => style.name !== 'text-align' || style.value.trim() !== 'left')
 
+    // Only allow percentage-based widths
+    .filter(style => style.name !== 'width' || (style.value && style.value.trim().endsWith('%')))
+
     // Convert back to a style string
     .map(({ name, value }) => `${name}: ${value.trim()};`).join('');
 

@@ -146,7 +146,7 @@ export default {
   table: {
     tags: ['table'],
     extraTags: ['thead', 'tbody', 'tr', 'td', 'th'],
-    styles: ['text-align'],
+    styles: ['text-align', 'width'],
     label: 'Table'
   },
   hr: {

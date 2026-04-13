@@ -132,6 +132,13 @@ function insertTable(rows, cols) {
 
   // Add a trailing paragraph so users can type after the table
   execCommand('insertHTML', table.outerHTML + '<p><br></p>');
+
+  // Add resize handles to the newly inserted table
+  const selection = document.getSelection();
+  if (selection.anchorNode) {
+    const newTable = getCurrentTable(selection.anchorNode);
+    if (newTable) addResizeHandles(newTable);
+  }
 }
 
 /**
@@ -150,7 +157,10 @@ function addRow(position) {
   const newRow = createElement('tr');
 
   for (let i = 0; i < colCount; i++) {
-    newRow.appendChild(createCell());
+    const newCell = createCell();
+    const refWidth = row.children[i].style.width;
+    if (refWidth) newCell.style.width = refWidth;
+    newRow.appendChild(newCell);
   }
 
   if (position === 'above') {
@@ -214,6 +224,12 @@ function addColumn(position) {
       refCell.after(newCell);
     }
   });
+
+  // Reset widths and refresh handles
+  getAllRows(table).forEach(row => {
+    Array.from(row.children).forEach(c => c.style.width = '');
+  });
+  addResizeHandles(table);
 }
 
 /**
@@ -241,6 +257,12 @@ function removeColumn() {
     const cellToRemove = r.children[cellIndex];
     if (cellToRemove) cellToRemove.remove();
   });
+
+  // Reset widths and refresh handles
+  getAllRows(table).forEach(r => {
+    Array.from(r.children).forEach(c => c.style.width = '');
+  });
+  addResizeHandles(table);
 
   const targetCell = row.children[cellIndex] || row.children[cellIndex - 1];
   if (targetCell) focusCell(targetCell);
@@ -334,6 +356,146 @@ function parseMarkdownTable(text) {
   html += '</table>';
   return html;
 }
+
+// ============ COLUMN RESIZING ============
+
+let resizeState = null;
+
+/**
+ * Add resize handles to all cells in the first row of a table.
+ * @param {object} table The table element.
+ */
+function addResizeHandles(table) {
+  // Remove existing handles
+  table.querySelectorAll('.wysi-col-resize').forEach(el => el.remove());
+
+  const firstRow = table.querySelector('tr');
+  if (!firstRow) return;
+
+  Array.from(firstRow.children).forEach(cell => {
+    const handle = createElement('span', { class: 'wysi-col-resize' });
+    handle.contentEditable = 'false';
+    cell.appendChild(handle);
+  });
+}
+
+/**
+ * Add resize handles to all tables in an editor.
+ * @param {object} editor The editor element.
+ */
+function addResizeHandlesToAll(editor) {
+  editor.querySelectorAll('table').forEach(addResizeHandles);
+}
+
+/**
+ * Apply percentage widths to all cells in the first row based on current sizes.
+ * @param {object} table The table element.
+ */
+function initColumnWidths(table) {
+  const firstRow = table.querySelector('tr');
+  if (!firstRow) return;
+
+  const cells = Array.from(firstRow.children);
+  // Only initialize if no widths are set yet
+  if (cells.some(c => c.style.width)) return;
+
+  const tableWidth = table.offsetWidth;
+  if (!tableWidth) return;
+
+  cells.forEach(cell => {
+    const pct = (cell.offsetWidth / tableWidth * 100).toFixed(2);
+    cell.style.width = pct + '%';
+  });
+}
+
+/**
+ * Set widths on all cells in a column.
+ * @param {object} table The table element.
+ * @param {number} colIndex The column index.
+ * @param {string} width The CSS width value.
+ */
+function setColumnWidth(table, colIndex, width) {
+  getAllRows(table).forEach(row => {
+    const cell = row.children[colIndex];
+    if (cell) cell.style.width = width;
+  });
+}
+
+// Mouse down on resize handle
+addListener(document, 'mousedown', '.wysi-col-resize', event => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const handle = event.target;
+  const cell = handle.parentNode;
+  const table = getCurrentTable(cell);
+  if (!table) return;
+
+  const colIndex = getCellIndex(cell);
+  const nextCell = cell.nextElementSibling;
+  if (!nextCell) return; // Don't resize last column directly
+
+  // Initialize widths if needed
+  initColumnWidths(table);
+
+  const tableWidth = table.offsetWidth;
+  const startX = event.clientX;
+  const startWidthPct = parseFloat(cell.style.width);
+  const nextWidthPct = parseFloat(nextCell.style.width);
+
+  resizeState = {
+    table,
+    colIndex,
+    tableWidth,
+    startX,
+    startWidthPct,
+    nextWidthPct
+  };
+
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+  handle.classList.add('wysi-col-resize-active');
+});
+
+addListener(document, 'mousemove', event => {
+  if (!resizeState) return;
+  event.preventDefault();
+
+  const { table, colIndex, tableWidth, startX, startWidthPct, nextWidthPct } = resizeState;
+  const dx = event.clientX - startX;
+  const dxPct = dx / tableWidth * 100;
+
+  const minPct = 3; // minimum column width %
+  let newPct = startWidthPct + dxPct;
+  let newNextPct = nextWidthPct - dxPct;
+
+  if (newPct < minPct) {
+    newPct = minPct;
+    newNextPct = startWidthPct + nextWidthPct - minPct;
+  }
+  if (newNextPct < minPct) {
+    newNextPct = minPct;
+    newPct = startWidthPct + nextWidthPct - minPct;
+  }
+
+  setColumnWidth(table, colIndex, newPct.toFixed(2) + '%');
+  setColumnWidth(table, colIndex + 1, newNextPct.toFixed(2) + '%');
+});
+
+addListener(document, 'mouseup', event => {
+  if (!resizeState) return;
+
+  const { table } = resizeState;
+
+  // Sync editor
+  const { editor } = findInstance(table);
+  syncEditor(editor);
+
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+  document.querySelectorAll('.wysi-col-resize-active').forEach(el => el.classList.remove('wysi-col-resize-active'));
+  resizeState = null;
+});
 
 // ============ TABLE MENU UI ============
 
@@ -691,4 +853,4 @@ addListener(document, 'keydown', event => {
   }
 });
 
-export { renderTableTool, isMarkdownTable, parseMarkdownTable };
+export { renderTableTool, isMarkdownTable, parseMarkdownTable, addResizeHandlesToAll };

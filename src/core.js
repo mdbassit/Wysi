@@ -3,7 +3,7 @@ import document from 'document';
 import settings from './settings.js';
 import { renderToolbar } from './toolbar.js';
 import { enableTags, prepareContent } from './filter.js';
-import { isMarkdownTable, parseMarkdownTable } from './table.js';
+import { isMarkdownTable, parseMarkdownTable, addResizeHandlesToAll } from './table.js';
 import {
   instances,
   placeholderClass,
@@ -97,6 +97,9 @@ function init(options) {
       wrapper.appendChild(editor);
       field.before(wrapper);
 
+      // Add column resize handles to existing tables
+      addResizeHandlesToAll(editor);
+
       // Apply configuration
       configure(wrapper, options);
 
@@ -153,6 +156,7 @@ function updateContent(textarea, editor, instanceId, rawContent, setEditorConten
 
   if (setEditorContent === true) {
     editor.innerHTML = content;
+    addResizeHandlesToAll(editor);
   }
 
   textarea.value = content;
@@ -238,6 +242,9 @@ function cleanPastedContent(event) {
       });
     }
 
+    // Add resize handles to pasted tables
+    addResizeHandlesToAll(editor);
+
     // Prevent the default paste action
     event.preventDefault();
 
@@ -249,6 +256,7 @@ function cleanPastedContent(event) {
       const tableHtml = parseMarkdownTable(plainText);
       const content = prepareContent(tableHtml, allowedTags);
       execCommand('insertHTML', content);
+      addResizeHandlesToAll(editor);
       event.preventDefault();
     }
   }

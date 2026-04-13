@@ -229,8 +229,9 @@ function cleanContent(node, allowedTags) {
       // Check if the element can be empty
       const tag = childNode.tagName.toLowerCase();
       const allowedTag = allowedTags[tag];
+      const isTableCell = tag === 'td' || tag === 'th';
 
-      if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
+      if (allowedTag && !allowedTag.isEmpty && !isTableCell && trimText(childNode.innerHTML) === '') {
         node.removeChild(childNode);
       }
     }

@@ -2,6 +2,7 @@ import document from 'document';
 import toolset from './toolset.js';
 import { renderPopover } from './popover.js';
 import { renderListBox, selectListBoxItem } from './listbox.js';
+import { renderTableTool } from './table.js';
 import { instances, selectedClass } from './common.js';
 import { execAction } from './commands.js';
 import {
@@ -40,6 +41,11 @@ function renderToolbar(tools) {
       // The format tool renders as a list box
       case 'format':
         toolbar.appendChild(renderFormatTool());
+        break;
+
+      // The table tool renders with its own menu
+      case 'table':
+        toolbar.appendChild(renderTableTool());
         break;
 
       // All the other tools render as buttons

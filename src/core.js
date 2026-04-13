@@ -3,6 +3,7 @@ import document from 'document';
 import settings from './settings.js';
 import { renderToolbar } from './toolbar.js';
 import { enableTags, prepareContent } from './filter.js';
+import { isMarkdownTable, parseMarkdownTable } from './table.js';
 import {
   instances,
   placeholderClass,
@@ -199,10 +200,13 @@ function cleanPastedContent(event) {
   const { editor, nodes } = findInstance(event.target);
   const clipboardData = event.clipboardData;
 
-  if (editor && clipboardData.types.includes('text/html')) {
+  if (!editor) return;
+
+  const instanceId = getInstanceId(editor);
+  const allowedTags = instances[instanceId].allowedTags;
+
+  if (clipboardData.types.includes('text/html')) {
     const pasted = clipboardData.getData('text/html');
-    const instanceId = getInstanceId(editor);
-    const allowedTags = instances[instanceId].allowedTags;
     let content = prepareContent(pasted, allowedTags);
 
     // Detect a heading tag in the current selection
@@ -236,6 +240,17 @@ function cleanPastedContent(event) {
 
     // Prevent the default paste action
     event.preventDefault();
+
+  // Handle plain text paste — detect markdown tables
+  } else if (allowedTags['table'] && clipboardData.types.includes('text/plain')) {
+    const plainText = clipboardData.getData('text/plain');
+
+    if (isMarkdownTable(plainText)) {
+      const tableHtml = parseMarkdownTable(plainText);
+      const content = prepareContent(tableHtml, allowedTags);
+      execCommand('insertHTML', content);
+      event.preventDefault();
+    }
   }
 }
 

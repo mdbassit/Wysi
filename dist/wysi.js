@@ -2339,6 +2339,7 @@
     const image = event.target;
     if (image.classList.contains(selectedClass) && isNearCorner(event, image)) {
       event.preventDefault();
+      document.getSelection().removeAllRanges();
       resizeState = {
         image,
         startW: image.offsetWidth,
@@ -2350,7 +2351,8 @@
     // Normal image selection
     const range = document.createRange();
     image.classList.add(selectedClass);
-    range.selectNode(image);
+    range.setStartAfter(image);
+    range.collapse(true);
     setSelection(range);
   });
   addListener(document, 'mousemove', event => {

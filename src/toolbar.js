@@ -263,6 +263,7 @@ addListener(document, 'mousedown', '.wysi-editor img', event => {
 
   if (image.classList.contains(selectedClass) && isNearCorner(event, image)) {
     event.preventDefault();
+    document.getSelection().removeAllRanges();
     resizeState = { image, startW: image.offsetWidth, startX: event.clientX };
     return;
   }
@@ -270,7 +271,8 @@ addListener(document, 'mousedown', '.wysi-editor img', event => {
   // Normal image selection
   const range = document.createRange();
   image.classList.add(selectedClass);
-  range.selectNode(image);
+  range.setStartAfter(image);
+  range.collapse(true);
   setSelection(range);
 });
 

@@ -482,7 +482,7 @@
       // Or if the textarea element has an id, and there is a label element
       // with an attribute "for" that points to that id
     } else if (id !== undefined) {
-      labelElement = document.querySelector(`label[for="${id}"]`);
+      labelElement = document.querySelector("label[for=\"" + id + "\"]");
     }
 
     // If a label element is found, return the first non empty child text node
@@ -591,15 +591,18 @@
       case 'quote':
         options[0] = 'blockquote';
       case 'format':
-        execCommand('formatBlock', `<${options[0]}>`);
+        execCommand('formatBlock', "<" + options[0] + ">");
         break;
 
       // Links
       case 'link':
-        const [linkUrl, linkTarget = '', linkText] = options;
+        const linkUrl = options[0],
+          _options$ = options[1],
+          linkTarget = _options$ === void 0 ? '' : _options$,
+          linkText = options[2];
         if (linkText) {
-          const targetAttr = linkTarget !== '' ? ` target="${linkTarget}"` : '';
-          const linkTag = `<a href="${linkUrl}"${targetAttr}>${linkText}</a>`;
+          const targetAttr = linkTarget !== '' ? " target=\"" + linkTarget + "\"" : '';
+          const linkTag = "<a href=\"" + linkUrl + "\"" + targetAttr + ">" + linkText + "</a>";
           execCommand('insertHTML', linkTag);
         }
         break;
@@ -607,19 +610,24 @@
       // Images
       case 'image':
         const styles = [];
-        const [imageUrl, altText = '', size, position, originalHtml] = options;
+        const imageUrl = options[0],
+          _options$2 = options[1],
+          altText = _options$2 === void 0 ? '' : _options$2,
+          size = options[2],
+          position = options[3],
+          originalHtml = options[4];
         if (size !== '') {
-          styles.push(`width: ${size};`);
+          styles.push("width: " + size + ";");
         }
         if (position !== '') {
           if (position === 'center') {
             styles.push('display: block; margin: auto;');
           } else {
-            styles.push(`float: ${position};`);
+            styles.push("float: " + position + ";");
           }
         }
-        const styleAttr = styles.length > 0 ? ` style="${styles.join(' ')}"` : '';
-        const image = `<img src="${imageUrl}" alt="${altText}" class="wysi-selected"${styleAttr}>`;
+        const styleAttr = styles.length > 0 ? " style=\"" + styles.join(' ') + "\"" : '';
+        const image = "<img src=\"" + imageUrl + "\" alt=\"" + altText + "\" class=\"wysi-selected\"" + styleAttr + ">";
         const imageTag = originalHtml ? originalHtml.replace(/<img[^>]+>/i, image) : image;
         execCommand('insertHTML', imageTag);
         break;
@@ -650,7 +658,7 @@
     const button = createElement('button', {
       type: 'button',
       title: label,
-      'aria-label': `${label} ${firstItem.label}`,
+      'aria-label': label + " " + firstItem.label,
       'aria-haspopup': 'listbox',
       'aria-expanded': false,
       _innerHTML: renderListBoxItem(firstItem)
@@ -690,7 +698,7 @@
    * @return {string} The list box item's content.
    */
   function renderListBoxItem(item) {
-    return item.icon ? `<svg><use href="#wysi-${item.icon}"></use></svg>` : item.label;
+    return item.icon ? "<svg><use href=\"#wysi-" + item.icon + "\"></use></svg>" : item.label;
   }
 
   /**
@@ -762,9 +770,8 @@
     const item = event.target;
     const action = item.dataset.action;
     const option = item.dataset.option;
-    const {
-      editor
-    } = findInstance(item);
+    const _findInstance = findInstance(item),
+      editor = _findInstance.editor;
     const selection = document.getSelection();
     if (selection && editor.contains(selection.anchorNode)) {
       execAction(action, editor, [option]);
@@ -869,7 +876,7 @@
         });
         const input = createElement('input', {
           type: 'text',
-          name: `wysi-${field.name}`,
+          name: "wysi-" + field.name,
           'data-attribute': field.name
         });
         label.appendChild(span);
@@ -899,7 +906,7 @@
         title: label,
         'aria-label': label,
         'data-action': extraTool,
-        _innerHTML: `<svg><use href="#wysi-delete"></use></svg>`
+        _innerHTML: "<svg><use href=\"#wysi-delete\"></use></svg>"
       }));
     }
 
@@ -954,14 +961,14 @@
     field.options.forEach(option => {
       const segmentId = uniqueFieldId++;
       segmented.appendChild(createElement('input', {
-        id: `wysi-seg-${segmentId}`,
-        name: `wysi-${field.toolName}-${field.name}-${fieldId}`,
+        id: "wysi-seg-" + segmentId,
+        name: "wysi-" + field.toolName + "-" + field.name + "-" + fieldId,
         type: 'radio',
         'data-attribute': field.name,
         value: option.value
       }));
       segmented.appendChild(createElement('label', {
-        for: `wysi-seg-${segmentId}`,
+        for: "wysi-seg-" + segmentId,
         _textContent: getTranslation(field.toolName, option.label)
       }));
     });
@@ -977,16 +984,15 @@
     const radioButtons = button.nextElementSibling.querySelectorAll('input[type="radio"]');
     const selection = document.getSelection();
     const anchorNode = selection.anchorNode;
-    const {
-      editor,
-      nodes
-    } = findInstance(anchorNode);
+    const _findInstance = findInstance(anchorNode),
+      editor = _findInstance.editor,
+      nodes = _findInstance.nodes;
     const values = {};
     if (editor) {
       // Try to find an existing target of the popover's action from the DOM selection
       const action = button.dataset.action;
       const tool = toolset[action];
-      let target = editor.querySelector(`.${selectedClass}`);
+      let target = editor.querySelector("." + selectedClass);
       let selectContents = false;
 
       // If that fails, look for an element with the selection CSS class
@@ -1069,9 +1075,8 @@
     const selection = getCurrentSelection();
     const inputs = button.parentNode.querySelectorAll('input[type="text"]');
     const radioButtons = button.parentNode.querySelectorAll('input[type="radio"]');
-    const {
-      editor
-    } = findInstance(button);
+    const _findInstance2 = findInstance(button),
+      editor = _findInstance2.editor;
     const options = [];
     inputs.forEach(input => {
       options.push(input.value);
@@ -1084,7 +1089,7 @@
 
     // Workaround for links being removed when updating images
     if (action === 'image') {
-      const selected = editor.querySelector(`.${selectedClass}`);
+      const selected = editor.querySelector("." + selectedClass);
       const parent = selected ? selected.parentNode : {};
       if (selected && parent.tagName === 'A') {
         options.push(parent.outerHTML);
@@ -1505,7 +1510,7 @@
       html += '<thead>';
       headerLines.forEach(line => {
         const cells = parseCells(line);
-        html += '<tr>' + cells.map(c => `<th>${c || '<br>'}</th>`).join('') + '</tr>';
+        html += '<tr>' + cells.map(c => "<th>" + (c || '<br>') + "</th>").join('') + '</tr>';
       });
       html += '</thead>';
     }
@@ -1513,7 +1518,7 @@
       html += '<tbody>';
       bodyLines.forEach(line => {
         const cells = parseCells(line);
-        html += '<tr>' + cells.map(c => `<td>${c || '<br>'}</td>`).join('') + '</tr>';
+        html += '<tr>' + cells.map(c => "<td>" + (c || '<br>') + "</td>").join('') + '</tr>';
       });
       html += '</tbody>';
     }
@@ -1615,14 +1620,13 @@
   addListener(document, 'mousemove', event => {
     if (!resizeState$1) return;
     event.preventDefault();
-    const {
-      table,
-      colIndex,
-      tableWidth,
-      startX,
-      startWidthPct,
-      nextWidthPct
-    } = resizeState$1;
+    const _resizeState = resizeState$1,
+      table = _resizeState.table,
+      colIndex = _resizeState.colIndex,
+      tableWidth = _resizeState.tableWidth,
+      startX = _resizeState.startX,
+      startWidthPct = _resizeState.startWidthPct,
+      nextWidthPct = _resizeState.nextWidthPct;
     const dx = event.clientX - startX;
     const dxPct = dx / tableWidth * 100;
     const minPct = 3; // minimum column width %
@@ -1641,14 +1645,12 @@
   });
   addListener(document, 'mouseup', event => {
     if (!resizeState$1) return;
-    const {
-      table
-    } = resizeState$1;
+    const _resizeState2 = resizeState$1,
+      table = _resizeState2.table;
 
     // Sync editor
-    const {
-      editor
-    } = findInstance(table);
+    const _findInstance = findInstance(table),
+      editor = _findInstance.editor;
     syncEditor(editor);
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
@@ -1904,9 +1906,8 @@
     if (selection.rangeCount) {
       tableMenuSelection = selection.getRangeAt(0).cloneRange();
     }
-    const {
-      editor
-    } = findInstance(cell);
+    const _findInstance2 = findInstance(cell),
+      editor = _findInstance2.editor;
     contextMenuEditor = editor;
 
     // Create menu
@@ -1968,9 +1969,8 @@
 
   // Execute action from menu
   addListener(document, 'click', '.wysi-table-menu > div button[data-action]', event => {
-    const {
-      editor
-    } = findInstance(event.target);
+    const _findInstance3 = findInstance(event.target),
+      editor = _findInstance3.editor;
     execTableAction(event.target.dataset.action, editor);
     closeTableMenu();
   });
@@ -2042,9 +2042,8 @@
     if (event.target.closest && event.target.closest('.wysi-table-menu')) return;
     const selection = document.getSelection();
     if (!selection.anchorNode) return;
-    const {
-      editor
-    } = findInstance(selection.anchorNode);
+    const _findInstance4 = findInstance(selection.anchorNode),
+      editor = _findInstance4.editor;
     if (!editor) return;
     const cell = getCurrentCell(selection.anchorNode);
     if (!cell) return;
@@ -2148,7 +2147,7 @@
       'aria-label': label,
       'aria-pressed': false,
       'data-action': name,
-      _innerHTML: `<svg><use href="#wysi-${name}"></use></svg>`
+      _innerHTML: "<svg><use href=\"#wysi-" + name + "\"></use></svg>"
     });
 
     // Tools that require parameters (e.g: image, link) need a popover
@@ -2199,7 +2198,7 @@
     const classes = 'wysi-format';
     const items = toolset.format.tags.map(tag => {
       const name = tag;
-      const label = tag === 'p' ? paragraphLabel : `${headingLabel} ${tag.substring(1)}`;
+      const label = tag === 'p' ? paragraphLabel : headingLabel + " " + tag.substring(1);
       const action = 'format';
       return {
         name,
@@ -2233,11 +2232,10 @@
     const selectedNode = range.intersectsNode(candidateNode) ? candidateNode : anchorNode;
 
     // Get editor instance
-    const {
-      toolbar,
-      editor,
-      nodes
-    } = findInstance(selectedNode);
+    const _findInstance = findInstance(selectedNode),
+      toolbar = _findInstance.toolbar,
+      editor = _findInstance.editor,
+      nodes = _findInstance.nodes;
     const tags = nodes.map(node => node.tagName.toLowerCase());
 
     // Abort if the selection is not within an editor instance
@@ -2246,7 +2244,7 @@
     }
 
     // Check for an element with the selection class (likely an image)
-    const selectedObject = editor.querySelector(`.${selectedClass}`);
+    const selectedObject = editor.querySelector("." + selectedClass);
 
     // If such element exists, add its tag to the list of active tags
     if (selectedObject) {
@@ -2272,7 +2270,7 @@
         case 'h3':
         case 'h4':
         case 'li':
-          const format = toolbar.querySelector(`[data-action="format"][data-option="${tag}"]`);
+          const format = toolbar.querySelector("[data-action=\"format\"][data-option=\"" + tag + "\"]");
           const textAlign = nodes[i].style.textAlign || nodes[i].getAttribute('align');
           if (format) {
             selectListBoxItem(format);
@@ -2281,7 +2279,7 @@
           // Check for text align
           if (textAlign) {
             const action = 'align' + textAlign.charAt(0).toUpperCase() + textAlign.slice(1);
-            const button = toolbar.querySelector(`[data-action="${action}"]`);
+            const button = toolbar.querySelector("[data-action=\"" + action + "\"]");
             if (button) {
               if (button.parentNode.getAttribute('role') === 'listbox') {
                 selectListBoxItem(button);
@@ -2295,7 +2293,7 @@
           const allowedTag = allowedTags[tag];
           const action = allowedTag ? allowedTag.toolName : undefined;
           if (action) {
-            const button = toolbar.querySelector(`[data-action="${action}"]`);
+            const button = toolbar.querySelector("[data-action=\"" + action + "\"]");
             button.setAttribute('aria-pressed', 'true');
           }
       }
@@ -2314,7 +2312,7 @@
 
   // Deselect selected element when clicking outside
   addListener(document, 'mousedown', '.wysi-editor, .wysi-editor *', event => {
-    const selected = document.querySelector(`.${selectedClass}`);
+    const selected = document.querySelector("." + selectedClass);
     if (selected && selected !== event.target) {
       selected.classList.remove(selectedClass);
     }
@@ -2358,22 +2356,20 @@
   addListener(document, 'mousemove', event => {
     if (!resizeState) return;
     event.preventDefault();
-    const {
-      image,
-      startW,
-      startX
-    } = resizeState;
+    const _resizeState = resizeState,
+      image = _resizeState.image,
+      startW = _resizeState.startW,
+      startX = _resizeState.startX;
     let newW = Math.max(20, startW + event.clientX - startX);
     const editor = image.closest('.wysi-editor');
     if (editor) newW = Math.min(newW, editor.clientWidth);
-    image.style.width = `${Math.round(newW)}px`;
+    image.style.width = Math.round(newW) + "px";
     image.style.height = 'auto';
   });
   addListener(document, 'mouseup', () => {
     if (!resizeState) return;
-    const {
-      image
-    } = resizeState;
+    const _resizeState2 = resizeState,
+      image = _resizeState2.image;
     resizeState = null;
     const editor = image.closest('.wysi-editor');
     if (editor) {
@@ -2387,9 +2383,8 @@
   addListener(document, 'click', '.wysi-toolbar > button', event => {
     const button = event.target;
     const action = button.dataset.action;
-    const {
-      editor
-    } = findInstance(button);
+    const _findInstance2 = findInstance(button),
+      editor = _findInstance2.editor;
     const selection = document.getSelection();
     if (selection && editor.contains(selection.anchorNode)) {
       execAction(action, editor);
@@ -2511,11 +2506,9 @@
 
       // Convert back to a style string
       .map(_ref => {
-        let {
-          name,
-          value
-        } = _ref;
-        return `${name}: ${value.trim()};`;
+        let name = _ref.name,
+          value = _ref.value;
+        return name + ": " + value.trim() + ";";
       }).join('');
       if (styles !== '') {
         node.setAttribute(STYLE_ATTRIBUTE, styles);
@@ -2769,14 +2762,14 @@
         case 'darkMode':
         case 'autoGrow':
         case 'autoHide':
-          instance.classList.toggle(`wysi-${key.toLowerCase()}`, !!options[key]);
+          instance.classList.toggle("wysi-" + key.toLowerCase(), !!options[key]);
           break;
         case 'height':
           const height = options.height;
           if (!isNaN(height)) {
             const editor = instance.lastChild;
-            editor.style.minHeight = `${height}px`;
-            editor.style.maxHeight = `${height}px`;
+            editor.style.minHeight = height + "px";
+            editor.style.maxHeight = height + "px";
           }
           break;
       }
@@ -2813,10 +2806,8 @@
   function destroy(selector) {
     const editorInstances = findEditorInstances(selector);
     for (const editorInstance of editorInstances) {
-      const {
-        instanceId,
-        wrapper
-      } = editorInstance;
+      const instanceId = editorInstance.instanceId,
+        wrapper = editorInstance.wrapper;
       delete instances[instanceId];
       wrapper.remove();
     }
@@ -2829,11 +2820,9 @@
   function setContent(selector, content) {
     const editorInstances = findEditorInstances(selector);
     for (const editorInstance of editorInstances) {
-      const {
-        textarea,
-        editor,
-        instanceId
-      } = editorInstance;
+      const textarea = editorInstance.textarea,
+        editor = editorInstance.editor,
+        instanceId = editorInstance.instanceId;
       updateContent(textarea, editor, instanceId, content, true);
     }
   }
@@ -2843,9 +2832,8 @@
    * @param {object} event The browser's paste event.
    */
   function handlePastedImage(event) {
-    const {
-      editor
-    } = findInstance(event.target);
+    const _findInstance = findInstance(event.target),
+      editor = _findInstance.editor;
     const clipboardData = event.clipboardData;
     if (!editor || !clipboardData) return false;
     const imageFile = Array.from(clipboardData.files).find(f => f.type.startsWith('image/'));
@@ -2854,16 +2842,15 @@
     const reader = new FileReader();
     reader.onload = () => {
       editor.focus();
-      execCommand('insertHTML', `<img src="${reader.result}" alt="">`);
+      execCommand('insertHTML', "<img src=\"" + reader.result + "\" alt=\"\">");
     };
     reader.readAsDataURL(imageFile);
     return true;
   }
   function cleanPastedContent(event) {
-    const {
-      editor,
-      nodes
-    } = findInstance(event.target);
+    const _findInstance2 = findInstance(event.target),
+      editor = _findInstance2.editor,
+      nodes = _findInstance2.nodes;
     const clipboardData = event.clipboardData;
     if (handlePastedImage(event)) return;
     if (!editor) return;
@@ -2879,7 +2866,7 @@
       // Force split the heading tag if any.
       // This fixes a bug in Webkit/Blink browsers where the whole content is converted to a heading
       if (splitHeadingTag && !isFirefox) {
-        const splitter = `<h1 class="${placeholderClass}"><br></h1><p class="${placeholderClass}"><br></p>`;
+        const splitter = "<h1 class=\"" + placeholderClass + "\"><br></h1><p class=\"" + placeholderClass + "\"><br></p>";
         content = splitter + content + splitter;
       }
 
@@ -2887,7 +2874,7 @@
       execCommand('insertHTML', content);
       if (splitHeadingTag && !isFirefox) {
         // Remove placeholder elements if any
-        editor.querySelectorAll(`.${placeholderClass}`).forEach(fragment => {
+        editor.querySelectorAll("." + placeholderClass).forEach(fragment => {
           fragment.remove();
         });
 

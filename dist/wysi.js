@@ -2501,8 +2501,8 @@
       // Remove text-align: left
       .filter(style => style.name !== 'text-align' || style.value.trim() !== 'left')
 
-      // Only allow percentage-based widths
-      .filter(style => style.name !== 'width' || style.value && style.value.trim().endsWith('%'))
+      // Only allow percentage- or pixel-based widths (keeps the size set in render mode / drag-resize)
+      .filter(style => style.name !== 'width' || style.value && /(%|px)$/.test(style.value.trim()))
 
       // Convert back to a style string
       .map(_ref => {

@@ -434,6 +434,10 @@
   background-color: #444;
 }
 
+.wysi-darkmode .wysi-popover input[type] {
+  color: #fff;
+}
+
 .wysi-darkmode .wysi-listbox div button:focus {
   background-color: #222;
 }

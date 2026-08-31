@@ -96,6 +96,28 @@ function init(options) {
       wrapper.appendChild(editor);
       field.before(wrapper);
 
+      // The content of the editable region when it received focus
+      let valueOnFocus;
+
+      // Store the current content when the instance receives focus
+      addListener(wrapper, 'focusin', event => {
+        if (!wrapper.contains(event.relatedTarget)) {
+          valueOnFocus = field.value;
+        }
+      });
+
+      // Dispatch a change event when the instance loses focus and its content has changed.
+      // Focus moves within the instance (e.g: toolbar buttons) are ignored
+      addListener(wrapper, 'focusout', event => {
+        if (!wrapper.contains(event.relatedTarget)) {
+          if (field.value !== valueOnFocus) {
+            dispatchEvent(field, 'change');
+          }
+
+          valueOnFocus = undefined;
+        }
+      });
+
       // Apply configuration
       configure(wrapper, options);
 
@@ -155,7 +177,7 @@ function updateContent(textarea, editor, instanceId, rawContent, setEditorConten
   }
 
   textarea.value = content;
-  dispatchEvent(textarea, 'change');
+  dispatchEvent(textarea, 'input');
 
   if (onChange) {
     onChange(content);

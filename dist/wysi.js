@@ -6,36 +6,6 @@
 (function (window, document) {
   'use strict';
 
-  function _arrayLikeToArray(r, a) {
-    (null == a || a > r.length) && (a = r.length);
-    for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
-    return n;
-  }
-  function _createForOfIteratorHelperLoose(r, e) {
-    var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
-    if (t) return (t = t.call(r)).next.bind(t);
-    if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) {
-      t && (r = t);
-      var o = 0;
-      return function () {
-        return o >= r.length ? {
-          done: !0
-        } : {
-          done: !1,
-          value: r[o++]
-        };
-      };
-    }
-    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-  function _unsupportedIterableToArray(r, a) {
-    if (r) {
-      if ("string" == typeof r) return _arrayLikeToArray(r, a);
-      var t = {}.toString.call(r).slice(8, -1);
-      return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
-    }
-  }
-
   // Default settings
   var settings = {
     // Default selector
@@ -239,44 +209,35 @@
   };
 
   // Instances storage
-  var instances = {};
+  const instances = {};
 
   // The CSS class to use for selected elements
-  var selectedClass = 'wysi-selected';
+  const selectedClass = 'wysi-selected';
 
   // Placeholder elements CSS class
-  var placeholderClass = 'wysi-fragment-placeholder';
+  const placeholderClass = 'wysi-fragment-placeholder';
 
   // Heading elements
-  var headingElements = ['H1', 'H2', 'H3', 'H4'];
+  const headingElements = ['H1', 'H2', 'H3', 'H4'];
 
   // Block type HTML elements
-  var blockElements = ['BLOCKQUOTE', 'HR', 'P', 'OL', 'UL'].concat(headingElements);
+  const blockElements = ['BLOCKQUOTE', 'HR', 'P', 'OL', 'UL'].concat(headingElements);
 
   // Detect Firefox browser
-  var isFirefox = navigator.userAgent.search(/Gecko\//) > -1;
+  const isFirefox = navigator.userAgent.search(/Gecko\//) > -1;
 
   // Shortcuts
-  var dispatchEvent = function dispatchEvent(element, event) {
-    return element.dispatchEvent(new Event(event, {
-      bubbles: true
-    }));
-  };
-  var execCommand = function execCommand(command, value) {
-    if (value === void 0) {
-      value = null;
-    }
-    return document.execCommand(command, false, value);
-  };
-  var hasClass = function hasClass(element, classes) {
-    return element.classList && element.classList.contains(classes);
-  };
+  const dispatchEvent = (element, event) => element.dispatchEvent(new Event(event, {
+    bubbles: true
+  }));
+  const execCommand = (command, value = null) => document.execCommand(command, false, value);
+  const hasClass = (element, classes) => element.classList && element.classList.contains(classes);
 
   // Used to store the current DOM selection for later use
-  var currentSelection;
+  let currentSelection;
 
   // For storing translated strings
-  var availableTranslations;
+  let availableTranslations;
 
   // Polyfill for Nodelist.forEach
   if (NodeList !== undefined && NodeList.prototype && !NodeList.prototype.forEach) {
@@ -293,8 +254,8 @@
   function addListener(context, type, selector, fn) {
     // Delegate event to the target of the selector
     if (typeof selector === 'string') {
-      context.addEventListener(type, function (event) {
-        var target = event.target;
+      context.addEventListener(type, event => {
+        const target = event.target;
         if (target.matches(selector)) {
           fn.call(target, event);
         }
@@ -314,7 +275,7 @@
    * @return {object} A document fragment.
    */
   function buildFragment(html) {
-    var template = createElement('template');
+    const template = createElement('template');
     template.innerHTML = html.trim();
     return template.content;
   }
@@ -335,9 +296,9 @@
    * @return {object} An HTML element.
    */
   function createElement(tag, attributes) {
-    var element = document.createElement(tag);
+    const element = document.createElement(tag);
     if (attributes) {
-      for (var attributeName in attributes) {
+      for (const attributeName in attributes) {
         // Attribute names starting with underscore are actually properties
         if (attributeName[0] === '_') {
           element[attributeName.substring(1)] = attributes[attributeName];
@@ -357,10 +318,10 @@
   function DOMReady(fn, args) {
     args = args !== undefined ? args : [];
     if (document.readyState !== 'loading') {
-      fn.apply(void 0, args);
+      fn(...args);
     } else {
-      addListener(document, 'DOMContentLoaded', function () {
-        fn.apply(void 0, args);
+      addListener(document, 'DOMContentLoaded', () => {
+        fn(...args);
       });
     }
   }
@@ -382,20 +343,20 @@
    * @param {string} selector One or more selectors pointing to textarea fields.
    */
   function findEditorInstances(selector) {
-    var editorInstances = [];
-    getTargetElements(selector).forEach(function (textarea) {
-      var wrapper = textarea.previousElementSibling;
+    const editorInstances = [];
+    getTargetElements(selector).forEach(textarea => {
+      const wrapper = textarea.previousElementSibling;
       if (wrapper && hasClass(wrapper, 'wysi-wrapper')) {
-        var children = wrapper.children;
-        var toolbar = children[0];
-        var editor = children[1];
-        var instanceId = getInstanceId(editor);
+        const children = wrapper.children;
+        const toolbar = children[0];
+        const editor = children[1];
+        const instanceId = getInstanceId(editor);
         editorInstances.push({
-          textarea: textarea,
-          wrapper: wrapper,
-          toolbar: toolbar,
-          editor: editor,
-          instanceId: instanceId
+          textarea,
+          wrapper,
+          toolbar,
+          editor,
+          instanceId
         });
       }
     });
@@ -408,12 +369,12 @@
    * @return {object} The instance's editable region and toolbar, and an array of nodes that lead to it.
    */
   function findInstance(currentNode) {
-    var nodes = [];
-    var ancestor, toolbar, editor;
+    const nodes = [];
+    let ancestor, toolbar, editor;
 
     // Find all HTML tags between the current node and the editable ancestor
     while (currentNode && currentNode !== document.body) {
-      var tag = currentNode.tagName;
+      const tag = currentNode.tagName;
       if (tag) {
         if (hasClass(currentNode, 'wysi-wrapper')) {
           // Editable ancestor found
@@ -426,14 +387,14 @@
       currentNode = currentNode.parentNode;
     }
     if (ancestor) {
-      var children = ancestor.children;
+      const children = ancestor.children;
       toolbar = children[0];
       editor = children[1];
     }
     return {
-      toolbar: toolbar,
-      editor: editor,
-      nodes: nodes
+      toolbar,
+      editor,
+      nodes
     };
   }
 
@@ -451,7 +412,7 @@
    * @return {string} The html content of the fragment.
    */
   function getFragmentContent(fragment) {
-    var wrapper = createElement('div');
+    const wrapper = createElement('div');
     wrapper.appendChild(fragment);
     return wrapper.innerHTML;
   }
@@ -488,9 +449,7 @@
 
     // If selector is an array, find any DOM elements it contains
     if (Array.isArray(selector)) {
-      return selector.filter(function (el) {
-        return el instanceof Node;
-      });
+      return selector.filter(el => el instanceof Node);
     }
     return [];
   }
@@ -501,9 +460,9 @@
    * @return {string} The textarea element's label or an empty string.
    */
   function getTextAreaLabel(textarea) {
-    var parent = textarea.parentNode;
-    var id = textarea.id;
-    var labelElement;
+    const parent = textarea.parentNode;
+    const id = textarea.id;
+    let labelElement;
 
     // If the textarea element is inside a label element
     if (parent.nodeName === 'LABEL') {
@@ -512,20 +471,14 @@
       // Or if the textarea element has an id, and there is a label element
       // with an attribute "for" that points to that id
     } else if (id !== undefined) {
-      labelElement = document.querySelector("label[for=\"" + id + "\"]");
+      labelElement = document.querySelector(`label[for="${id}"]`);
     }
 
     // If a label element is found, return the first non empty child text node
     if (labelElement) {
-      var textNodes = [].filter.call(labelElement.childNodes, function (n) {
-        return n.nodeType === 3;
-      });
-      var texts = textNodes.map(function (n) {
-        return n.textContent.replace(/\s+/g, ' ').trim();
-      });
-      var label = texts.filter(function (l) {
-        return l !== '';
-      })[0];
+      const textNodes = [].filter.call(labelElement.childNodes, n => n.nodeType === 3);
+      const texts = textNodes.map(n => n.textContent.replace(/\s+/g, ' ').trim());
+      const label = texts.filter(l => l !== '')[0];
       if (label) {
         return label;
       }
@@ -569,7 +522,7 @@
    * @param {object} range The range to select.
    */
   function setSelection(range) {
-    var selection = document.getSelection();
+    const selection = document.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
   }
@@ -597,13 +550,10 @@
    * @param {object} editor The editor instance.
    * @param {array} [options] Optional action parameters.
    */
-  function execAction(action, editor, options) {
-    if (options === void 0) {
-      options = [];
-    }
-    var tool = toolset[action];
+  function execAction(action, editor, options = []) {
+    const tool = toolset[action];
     if (tool) {
-      var command = tool.command || action;
+      const command = tool.command || action;
 
       // Restore selection if any
       restoreSelection();
@@ -627,44 +577,36 @@
       case 'quote':
         options[0] = 'blockquote';
       case 'format':
-        execCommand('formatBlock', "<" + options[0] + ">");
+        execCommand('formatBlock', `<${options[0]}>`);
         break;
 
       // Links
       case 'link':
-        var linkUrl = options[0],
-          _options$ = options[1],
-          linkTarget = _options$ === void 0 ? '' : _options$,
-          linkText = options[2];
+        const [linkUrl, linkTarget = '', linkText] = options;
         if (linkText) {
-          var targetAttr = linkTarget !== '' ? " target=\"" + linkTarget + "\"" : '';
-          var linkTag = "<a href=\"" + linkUrl + "\"" + targetAttr + ">" + linkText + "</a>";
+          const targetAttr = linkTarget !== '' ? ` target="${linkTarget}"` : '';
+          const linkTag = `<a href="${linkUrl}"${targetAttr}>${linkText}</a>`;
           execCommand('insertHTML', linkTag);
         }
         break;
 
       // Images
       case 'image':
-        var styles = [];
-        var imageUrl = options[0],
-          _options$2 = options[1],
-          altText = _options$2 === void 0 ? '' : _options$2,
-          size = options[2],
-          position = options[3],
-          originalHtml = options[4];
+        const styles = [];
+        const [imageUrl, altText = '', size, position, originalHtml] = options;
         if (size !== '') {
-          styles.push("width: " + size + ";");
+          styles.push(`width: ${size};`);
         }
         if (position !== '') {
           if (position === 'center') {
             styles.push('display: block; margin: auto;');
           } else {
-            styles.push("float: " + position + ";");
+            styles.push(`float: ${position};`);
           }
         }
-        var styleAttr = styles.length > 0 ? " style=\"" + styles.join(' ') + "\"" : '';
-        var image = "<img src=\"" + imageUrl + "\" alt=\"" + altText + "\" class=\"wysi-selected\"" + styleAttr + ">";
-        var imageTag = originalHtml ? originalHtml.replace(/<img[^>]+>/i, image) : image;
+        const styleAttr = styles.length > 0 ? ` style="${styles.join(' ')}"` : '';
+        const image = `<img src="${imageUrl}" alt="${altText}" class="wysi-selected"${styleAttr}>`;
+        const imageTag = originalHtml ? originalHtml.replace(/<img[^>]+>/i, image) : image;
         execCommand('insertHTML', imageTag);
         break;
 
@@ -680,36 +622,36 @@
    * @return {object} A DOM element containing the list box.
    */
   function renderListBox(details) {
-    var label = details.label;
-    var items = details.items;
-    var firstItem = items[0];
-    var classes = ['wysi-listbox'].concat(details.classes || []);
+    const label = details.label;
+    const items = details.items;
+    const firstItem = items[0];
+    const classes = ['wysi-listbox'].concat(details.classes || []);
 
     // List box wrapper
-    var listBox = createElement('div', {
+    const listBox = createElement('div', {
       class: classes.join(' ')
     });
 
     // List box button
-    var button = createElement('button', {
+    const button = createElement('button', {
       type: 'button',
       title: label,
-      'aria-label': label + " " + firstItem.label,
+      'aria-label': `${label} ${firstItem.label}`,
       'aria-haspopup': 'listbox',
       'aria-expanded': false,
       _innerHTML: renderListBoxItem(firstItem)
     });
 
     // List box menu
-    var menu = createElement('div', {
+    const menu = createElement('div', {
       role: 'listbox',
       tabindex: -1,
       'aria-label': label
     });
 
     // List box items
-    items.forEach(function (item) {
-      var option = createElement('button', {
+    items.forEach(item => {
+      const option = createElement('button', {
         type: 'button',
         role: 'option',
         tabindex: -1,
@@ -734,7 +676,7 @@
    * @return {string} The list box item's content.
    */
   function renderListBoxItem(item) {
-    return item.icon ? "<svg><use href=\"#wysi-" + item.icon + "\"></use></svg>" : item.label;
+    return item.icon ? `<svg><use href="#wysi-${item.icon}"></use></svg>` : item.label;
   }
 
   /**
@@ -742,9 +684,9 @@
    * @param {object} button The list box's button.
    */
   function openListBox(button) {
-    var isOpen = button.getAttribute('aria-expanded') === 'true';
-    var listBox = button.nextElementSibling;
-    var selectedItem = listBox.querySelector('[aria-selected="true"]');
+    const isOpen = button.getAttribute('aria-expanded') === 'true';
+    const listBox = button.nextElementSibling;
+    let selectedItem = listBox.querySelector('[aria-selected="true"]');
     if (!selectedItem) {
       selectedItem = listBox.firstElementChild;
     }
@@ -757,9 +699,9 @@
    * @param {object} item The list box item.
    */
   function selectListBoxItem(item) {
-    var listBox = item.parentNode;
-    var button = listBox.previousElementSibling;
-    var selectedItem = listBox.querySelector('[aria-selected="true"]');
+    const listBox = item.parentNode;
+    const button = listBox.previousElementSibling;
+    const selectedItem = listBox.querySelector('[aria-selected="true"]');
     if (selectedItem) {
       selectedItem.setAttribute('aria-selected', 'false');
     }
@@ -771,20 +713,20 @@
    * Close the currently open list box if any.
    */
   function closeListBox() {
-    var activeListBox = document.querySelector('.wysi-listbox [aria-expanded="true"]');
+    const activeListBox = document.querySelector('.wysi-listbox [aria-expanded="true"]');
     if (activeListBox) {
       toggleButton(activeListBox, false);
     }
   }
 
   // list box button click
-  addListener(document, 'click', '.wysi-listbox > button', function (event) {
+  addListener(document, 'click', '.wysi-listbox > button', event => {
     closeListBox();
     openListBox(event.target);
   });
 
   // On key press on the list box button
-  addListener(document, 'keydown', '.wysi-listbox > button', function (event) {
+  addListener(document, 'keydown', '.wysi-listbox > button', event => {
     switch (event.key) {
       case 'ArrowUp':
       case 'ArrowDown':
@@ -797,18 +739,19 @@
   });
 
   // When the mouse moves on a list box item, focus it
-  addListener(document.documentElement, 'mousemove', '.wysi-listbox > div > button', function (event) {
+  addListener(document.documentElement, 'mousemove', '.wysi-listbox > div > button', event => {
     event.target.focus();
   });
 
   // On click on an list box item
-  addListener(document, 'click', '.wysi-listbox > div > button', function (event) {
-    var item = event.target;
-    var action = item.dataset.action;
-    var option = item.dataset.option;
-    var _findInstance = findInstance(item),
-      editor = _findInstance.editor;
-    var selection = document.getSelection();
+  addListener(document, 'click', '.wysi-listbox > div > button', event => {
+    const item = event.target;
+    const action = item.dataset.action;
+    const option = item.dataset.option;
+    const {
+      editor
+    } = findInstance(item);
+    const selection = document.getSelection();
     if (selection && editor.contains(selection.anchorNode)) {
       execAction(action, editor, [option]);
     }
@@ -816,20 +759,20 @@
   });
 
   // On key press on an item
-  addListener(document, 'keydown', '.wysi-listbox > div > button', function (event) {
-    var item = event.target;
-    var listBox = item.parentNode;
-    var button = listBox.previousElementSibling;
-    var preventDefault = true;
+  addListener(document, 'keydown', '.wysi-listbox > div > button', event => {
+    const item = event.target;
+    const listBox = item.parentNode;
+    const button = listBox.previousElementSibling;
+    let preventDefault = true;
     switch (event.key) {
       case 'ArrowUp':
-        var prev = item.previousElementSibling;
+        const prev = item.previousElementSibling;
         if (prev) {
           prev.focus();
         }
         break;
       case 'ArrowDown':
-        var next = item.nextElementSibling;
+        const next = item.nextElementSibling;
         if (next) {
           next.focus();
         }
@@ -854,27 +797,23 @@
       event.stopImmediatePropagation();
     }
   });
-  var isOpeningInProgress = false;
+  let isOpeningInProgress = false;
 
   // Close open popups and dropdowns on click outside
-  addListener(document, 'click', function (event) {
+  addListener(document, 'click', event => {
     if (!isOpeningInProgress) {
       closeListBox();
     }
   });
 
   // This prevents closing a listbox immediately after opening it
-  addListener(document, 'mousedown', '.wysi-listbox > button', function (event) {
-    return isOpeningInProgress = true;
-  });
-  addListener(document, 'mouseup', function (event) {
-    return setTimeout(function () {
-      isOpeningInProgress = false;
-    });
-  });
+  addListener(document, 'mousedown', '.wysi-listbox > button', event => isOpeningInProgress = true);
+  addListener(document, 'mouseup', event => setTimeout(() => {
+    isOpeningInProgress = false;
+  }));
 
   // Used to give form fields unique ids
-  var uniqueFieldId = 0;
+  let uniqueFieldId = 0;
 
   /**
    * Render a popover form to set a tool's parameters.
@@ -883,9 +822,9 @@
    * @return {object} A DOM element containing the button and the popover.
    */
   function renderPopover(toolName, button) {
-    var tool = toolset[toolName];
-    var labels = tool.attributeLabels;
-    var fields = tool.attributes.map(function (attribute, i) {
+    const tool = toolset[toolName];
+    const labels = tool.attributeLabels;
+    const fields = tool.attributes.map((attribute, i) => {
       return {
         name: attribute,
         label: getTranslation(toolName, labels[i])
@@ -893,12 +832,12 @@
     });
 
     // Popover wrapper
-    var wrapper = createElement('div', {
+    const wrapper = createElement('div', {
       class: 'wysi-popover'
     });
 
     // Popover
-    var popover = createElement('div', {
+    const popover = createElement('div', {
       tabindex: -1
     });
 
@@ -907,16 +846,16 @@
     button.setAttribute('aria-expanded', false);
     wrapper.appendChild(button);
     wrapper.appendChild(popover);
-    fields.forEach(function (field) {
+    fields.forEach(field => {
       // Link target requires special handling later
       if (toolName !== 'link' || field.name !== 'target') {
-        var label = createElement('label');
-        var span = createElement('span', {
+        const label = createElement('label');
+        const span = createElement('span', {
           _textContent: field.label
         });
-        var input = createElement('input', {
+        const input = createElement('input', {
           type: 'text',
-          name: "wysi-" + field.name,
+          name: `wysi-${field.name}`,
           'data-attribute': field.name
         });
         label.appendChild(span);
@@ -928,9 +867,7 @@
     // Link popover
     if (toolName === 'link') {
       // Add the target attribute
-      var targetField = fields.find(function (f) {
-        return f.name === 'target';
-      });
+      const targetField = fields.find(f => f.name === 'target');
       if (targetField) {
         targetField.toolName = toolName;
         targetField.options = tool.formOptions ? tool.formOptions.target || [] : [];
@@ -941,26 +878,26 @@
       }
 
       // The link popover needs an extra "Remove link" button
-      var extraTool = 'unlink';
-      var label = getTranslation(toolName, toolset[extraTool].label);
+      const extraTool = 'unlink';
+      const label = getTranslation(toolName, toolset[extraTool].label);
       popover.appendChild(createElement('button', {
         type: 'button',
         title: label,
         'aria-label': label,
         'data-action': extraTool,
-        _innerHTML: "<svg><use href=\"#wysi-delete\"></use></svg>"
+        _innerHTML: `<svg><use href="#wysi-delete"></use></svg>`
       }));
     }
 
     // Image popover
     if (toolName === 'image') {
-      var imageSettings = tool.extraSettings.map(function (setting, i) {
+      const imageSettings = tool.extraSettings.map((setting, i) => {
         return {
           name: setting,
           label: getTranslation(toolName, tool.extraSettingLabels[i])
         };
       });
-      imageSettings.forEach(function (setting) {
+      imageSettings.forEach(setting => {
         setting.toolName = toolName;
         setting.options = tool.formOptions ? tool.formOptions[setting.name] || [] : [];
         popover.appendChild(createElement('span', {
@@ -969,11 +906,11 @@
         popover.appendChild(renderSegmentedField(setting));
       });
     }
-    var cancel = createElement('button', {
+    const cancel = createElement('button', {
       type: 'button',
       _textContent: getTranslation('popover', 'Cancel')
     });
-    var save = createElement('button', {
+    const save = createElement('button', {
       type: 'button',
       'data-action': toolName,
       _textContent: getTranslation('popover', 'Save')
@@ -989,8 +926,8 @@
    * @return {object} A DOM element representing the segmented field.
    */
   function renderSegmentedField(field) {
-    var fieldId = uniqueFieldId++;
-    var segmented = createElement('fieldset', {
+    const fieldId = uniqueFieldId++;
+    const segmented = createElement('fieldset', {
       class: 'wysi-segmented'
     });
 
@@ -1000,17 +937,17 @@
     }));
 
     // Add field options
-    field.options.forEach(function (option) {
-      var segmentId = uniqueFieldId++;
+    field.options.forEach(option => {
+      const segmentId = uniqueFieldId++;
       segmented.appendChild(createElement('input', {
-        id: "wysi-seg-" + segmentId,
-        name: "wysi-" + field.toolName + "-" + field.name + "-" + fieldId,
+        id: `wysi-seg-${segmentId}`,
+        name: `wysi-${field.toolName}-${field.name}-${fieldId}`,
         type: 'radio',
         'data-attribute': field.name,
         value: option.value
       }));
       segmented.appendChild(createElement('label', {
-        for: "wysi-seg-" + segmentId,
+        for: `wysi-seg-${segmentId}`,
         _textContent: getTranslation(field.toolName, option.label)
       }));
     });
@@ -1022,32 +959,31 @@
    * @param {object} button The popover's button.
    */
   function openPopover(button) {
-    var inputs = button.nextElementSibling.querySelectorAll('input[type="text"]');
-    var radioButtons = button.nextElementSibling.querySelectorAll('input[type="radio"]');
-    var selection = document.getSelection();
-    var anchorNode = selection.anchorNode;
-    var _findInstance = findInstance(anchorNode),
-      editor = _findInstance.editor,
-      nodes = _findInstance.nodes;
-    var values = {};
+    const inputs = button.nextElementSibling.querySelectorAll('input[type="text"]');
+    const radioButtons = button.nextElementSibling.querySelectorAll('input[type="radio"]');
+    const selection = document.getSelection();
+    const anchorNode = selection.anchorNode;
+    const {
+      editor,
+      nodes
+    } = findInstance(anchorNode);
+    const values = {};
     if (editor) {
       // Try to find an existing target of the popover's action from the DOM selection
-      var action = button.dataset.action;
-      var tool = toolset[action];
-      var target = editor.querySelector("." + selectedClass);
-      var selectContents = false;
+      const action = button.dataset.action;
+      const tool = toolset[action];
+      let target = editor.querySelector(`.${selectedClass}`);
+      let selectContents = false;
 
       // If that fails, look for an element with the selection CSS class
       if (!target) {
-        target = nodes.filter(function (node) {
-          return tool.tags.includes(node.tagName.toLowerCase());
-        })[0];
+        target = nodes.filter(node => tool.tags.includes(node.tagName.toLowerCase()))[0];
         selectContents = true;
       }
 
       // If an existing target is found, we will be in modification mode
       if (target) {
-        var range = document.createRange();
+        const range = document.createRange();
 
         // Add the target to a selection range
         // Depending on the type of the target, select the whole node or just its contents
@@ -1061,21 +997,20 @@
         setCurrentSelection(range);
 
         // Retrieve the current attribute values of the target for modification
-        tool.attributes.forEach(function (attribute) {
+        tool.attributes.forEach(attribute => {
           values[attribute] = target.getAttribute(attribute);
         });
 
         // Process extra popover settings
         if (tool.extraSettings) {
-          tool.extraSettings.forEach(function (setting) {
-            var settingOptions = tool.formOptions[setting];
-            for (var _iterator = _createForOfIteratorHelperLoose(settingOptions), _step; !(_step = _iterator()).done;) {
-              var option = _step.value;
+          tool.extraSettings.forEach(setting => {
+            const settingOptions = tool.formOptions[setting];
+            for (const option of settingOptions) {
               if (!option.criterion) {
                 continue;
               }
-              var key = Object.keys(option.criterion)[0];
-              var value = option.criterion[key];
+              const key = Object.keys(option.criterion)[0];
+              const value = option.criterion[key];
               if (target.style[key] && target.style[key] === value) {
                 values[setting] = option.value;
                 break;
@@ -1092,13 +1027,13 @@
     }
 
     // Populate the input fields with the existing values if any
-    inputs.forEach(function (input) {
+    inputs.forEach(input => {
       input.value = values[input.dataset.attribute] || '';
     });
 
     // Check the relevent radio fields if any
-    radioButtons.forEach(function (radio) {
-      var value = values[radio.dataset.attribute] || '';
+    radioButtons.forEach(radio => {
+      const value = values[radio.dataset.attribute] || '';
       if (radio.value === value) {
         radio.checked = true;
       }
@@ -1116,17 +1051,18 @@
    * @param {object} button The popover's action button.
    */
   function execPopoverAction(button) {
-    var action = button.dataset.action;
-    var selection = getCurrentSelection();
-    var inputs = button.parentNode.querySelectorAll('input[type="text"]');
-    var radioButtons = button.parentNode.querySelectorAll('input[type="radio"]');
-    var _findInstance2 = findInstance(button),
-      editor = _findInstance2.editor;
-    var options = [];
-    inputs.forEach(function (input) {
+    const action = button.dataset.action;
+    const selection = getCurrentSelection();
+    const inputs = button.parentNode.querySelectorAll('input[type="text"]');
+    const radioButtons = button.parentNode.querySelectorAll('input[type="radio"]');
+    const {
+      editor
+    } = findInstance(button);
+    const options = [];
+    inputs.forEach(input => {
       options.push(input.value);
     });
-    radioButtons.forEach(function (radio) {
+    radioButtons.forEach(radio => {
       if (radio.checked) {
         options.push(radio.value);
       }
@@ -1134,8 +1070,8 @@
 
     // Workaround for links being removed when updating images
     if (action === 'image') {
-      var selected = editor.querySelector("." + selectedClass);
-      var parent = selected ? selected.parentNode : {};
+      const selected = editor.querySelector(`.${selectedClass}`);
+      const parent = selected ? selected.parentNode : {};
       if (selected && parent.tagName === 'A') {
         options.push(parent.outerHTML);
       }
@@ -1152,7 +1088,7 @@
    * @param {boolean} ignoreSelection If true, do not restore the previous selection.
    */
   function closePopover(ignoreSelection) {
-    var popover = document.querySelector('.wysi-popover [aria-expanded="true"]');
+    const popover = document.querySelector('.wysi-popover [aria-expanded="true"]');
     if (popover) {
       toggleButton(popover, false);
     }
@@ -1162,13 +1098,13 @@
   }
 
   // Open a popover
-  addListener(document, 'click', '.wysi-popover > button', function (event) {
+  addListener(document, 'click', '.wysi-popover > button', event => {
     closePopover();
     openPopover(event.target);
   });
 
   // On key press on the popover button
-  addListener(document, 'keydown', '.wysi-popover > button', function (event) {
+  addListener(document, 'keydown', '.wysi-popover > button', event => {
     switch (event.key) {
       case 'ArrowUp':
       case 'ArrowDown':
@@ -1181,29 +1117,29 @@
   });
 
   // Execute the popover action
-  addListener(document, 'click', '.wysi-popover > div > button[data-action]', function (event) {
+  addListener(document, 'click', '.wysi-popover > div > button[data-action]', event => {
     execPopoverAction(event.target);
     closePopover(true);
   });
 
   // Cancel the popover
-  addListener(document, 'click', '.wysi-popover > div > button:not([data-action])', function (event) {
+  addListener(document, 'click', '.wysi-popover > div > button:not([data-action])', event => {
     closePopover();
   });
 
   // Prevent clicks on the popover content to propagate (keep popover open)
-  addListener(document, 'click', '.wysi-popover *:not(button)', function (event) {
+  addListener(document, 'click', '.wysi-popover *:not(button)', event => {
     event.stopImmediatePropagation();
   });
 
   // Trap focus inside a popover until it's closed
-  addListener(document, 'keydown', '.wysi-popover *', function (event) {
-    var target = event.target;
-    var parent = target.parentNode;
-    var form = parent.tagName === 'DIV' ? parent : parent.parentNode;
+  addListener(document, 'keydown', '.wysi-popover *', event => {
+    const target = event.target;
+    const parent = target.parentNode;
+    const form = parent.tagName === 'DIV' ? parent : parent.parentNode;
     switch (event.key) {
       case 'Tab':
-        var firstField = form.querySelector('input');
+        const firstField = form.querySelector('input');
         if (event.shiftKey) {
           if (target === firstField) {
             form.lastElementChild.focus();
@@ -1218,7 +1154,7 @@
         break;
       case 'Enter':
         if (target.tagName === 'INPUT') {
-          var actionButton = form.querySelector('[data-action]:last-of-type');
+          const actionButton = form.querySelector('[data-action]:last-of-type');
           actionButton.click();
           event.preventDefault();
         }
@@ -1229,10 +1165,10 @@
         break;
     }
   });
-  var isSelectionInProgress = false;
+  let isSelectionInProgress = false;
 
   // Close open popups and dropdowns on click outside
-  addListener(document, 'click', function (event) {
+  addListener(document, 'click', event => {
     if (!isSelectionInProgress) {
       closePopover();
     }
@@ -1240,13 +1176,13 @@
 
   // Text selection within a popover is in progress
   // This helps avoid closing a popover when the end of a text selection is outside it
-  addListener(document, 'mousedown', '.wysi-popover, .wysi-popover *', function (event) {
+  addListener(document, 'mousedown', '.wysi-popover, .wysi-popover *', event => {
     isSelectionInProgress = true;
   });
 
   // The text selection ended
-  addListener(document, 'mouseup', function (event) {
-    setTimeout(function () {
+  addListener(document, 'mouseup', event => {
+    setTimeout(() => {
       isSelectionInProgress = false;
     });
   });
@@ -1257,12 +1193,12 @@
    * @return {string} The toolbars HTML string.
    */
   function renderToolbar(tools) {
-    var toolbar = createElement('div', {
+    const toolbar = createElement('div', {
       class: 'wysi-toolbar'
     });
 
     // Generate toolbar buttons
-    tools.forEach(function (toolName) {
+    tools.forEach(toolName => {
       switch (toolName) {
         // Toolbar separator
         case '|':
@@ -1303,20 +1239,20 @@
    * @param {object} toolbar The toolbar to which the tool will be appended.
    */
   function renderTool(name, toolbar) {
-    var tool = toolset[name];
-    var label = getTranslation(name, tool.label);
-    var button = createElement('button', {
+    const tool = toolset[name];
+    const label = getTranslation(name, tool.label);
+    const button = createElement('button', {
       type: 'button',
       title: label,
       'aria-label': label,
       'aria-pressed': false,
       'data-action': name,
-      _innerHTML: "<svg><use href=\"#wysi-" + name + "\"></use></svg>"
+      _innerHTML: `<svg><use href="#wysi-${name}"></use></svg>`
     });
 
     // Tools that require parameters (e.g: image, link) need a popover
     if (tool.hasForm) {
-      var popover = renderPopover(name, button);
+      const popover = renderPopover(name, button);
       toolbar.appendChild(popover);
 
       // The other tools only display a button
@@ -1331,22 +1267,22 @@
    * @return {object} A DOM element containing the tool group.
    */
   function renderToolGroup(details) {
-    var label = details.label || getTranslation('toolbar', 'Select an item');
-    var options = details.items;
-    var items = options.map(function (option) {
-      var tool = toolset[option];
-      var label = getTranslation(option, tool.label);
-      var icon = option;
-      var action = option;
+    const label = details.label || getTranslation('toolbar', 'Select an item');
+    const options = details.items;
+    const items = options.map(option => {
+      const tool = toolset[option];
+      const label = getTranslation(option, tool.label);
+      const icon = option;
+      const action = option;
       return {
-        label: label,
-        icon: icon,
-        action: action
+        label,
+        icon,
+        action
       };
     });
     return renderListBox({
-      label: label,
-      items: items
+      label,
+      items
     });
   }
 
@@ -1355,25 +1291,25 @@
    * @return {object} A DOM element containing the format tool.
    */
   function renderFormatTool() {
-    var toolName = 'format';
-    var label = getTranslation(toolName, toolset.format.label);
-    var paragraphLabel = getTranslation(toolName, toolset.format.paragraph);
-    var headingLabel = getTranslation(toolName, toolset.format.heading);
-    var classes = 'wysi-format';
-    var items = toolset.format.tags.map(function (tag) {
-      var name = tag;
-      var label = tag === 'p' ? paragraphLabel : headingLabel + " " + tag.substring(1);
-      var action = 'format';
+    const toolName = 'format';
+    const label = getTranslation(toolName, toolset.format.label);
+    const paragraphLabel = getTranslation(toolName, toolset.format.paragraph);
+    const headingLabel = getTranslation(toolName, toolset.format.heading);
+    const classes = 'wysi-format';
+    const items = toolset.format.tags.map(tag => {
+      const name = tag;
+      const label = tag === 'p' ? paragraphLabel : `${headingLabel} ${tag.substring(1)}`;
+      const action = 'format';
       return {
-        name: name,
-        label: label,
-        action: action
+        name,
+        label,
+        action
       };
     });
     return renderListBox({
-      label: label,
-      items: items,
-      classes: classes
+      label,
+      items,
+      classes
     });
   }
 
@@ -1381,28 +1317,27 @@
    * Update toolbar buttons state.
    */
   function updateToolbarState() {
-    var selection = document.getSelection();
-    var anchorNode = selection.anchorNode;
+    const selection = document.getSelection();
+    const anchorNode = selection.anchorNode;
     if (!anchorNode) {
       return;
     }
-    var range = selection.getRangeAt(0);
+    const range = selection.getRangeAt(0);
 
     // This is to fix double click selection on Firefox not highlighting the relevant tool in some cases
     // We want to find the deepest child node to properly handle nested styles
-    var candidateNode = findDeepestChildNode(range.startContainer.nextElementSibling || range.startContainer);
+    const candidateNode = findDeepestChildNode(range.startContainer.nextElementSibling || range.startContainer);
 
     // Fallback to the original selection.anchorNode if a more suitable node is not found
-    var selectedNode = range.intersectsNode(candidateNode) ? candidateNode : anchorNode;
+    const selectedNode = range.intersectsNode(candidateNode) ? candidateNode : anchorNode;
 
     // Get editor instance
-    var _findInstance = findInstance(selectedNode),
-      toolbar = _findInstance.toolbar,
-      editor = _findInstance.editor,
-      nodes = _findInstance.nodes;
-    var tags = nodes.map(function (node) {
-      return node.tagName.toLowerCase();
-    });
+    const {
+      toolbar,
+      editor,
+      nodes
+    } = findInstance(selectedNode);
+    const tags = nodes.map(node => node.tagName.toLowerCase());
 
     // Abort if the selection is not within an editor instance
     if (!editor) {
@@ -1410,7 +1345,7 @@
     }
 
     // Check for an element with the selection class (likely an image)
-    var selectedObject = editor.querySelector("." + selectedClass);
+    const selectedObject = editor.querySelector(`.${selectedClass}`);
 
     // If such element exists, add its tag to the list of active tags
     if (selectedObject) {
@@ -1418,21 +1353,17 @@
     }
 
     // Get the list of allowed tags in the current editor instance
-    var instanceId = getInstanceId(editor);
-    var allowedTags = instances[instanceId].allowedTags;
+    const instanceId = getInstanceId(editor);
+    const allowedTags = instances[instanceId].allowedTags;
 
     // Reset the state of all buttons
-    toolbar.querySelectorAll('[aria-pressed="true"]').forEach(function (button) {
-      return button.setAttribute('aria-pressed', 'false');
-    });
+    toolbar.querySelectorAll('[aria-pressed="true"]').forEach(button => button.setAttribute('aria-pressed', 'false'));
 
     // Reset the state of all list boxes
-    toolbar.querySelectorAll('.wysi-listbox > div > button:first-of-type').forEach(function (button) {
-      return selectListBoxItem(button);
-    });
+    toolbar.querySelectorAll('.wysi-listbox > div > button:first-of-type').forEach(button => selectListBoxItem(button));
 
     // Update the buttons states
-    tags.forEach(function (tag, i) {
+    tags.forEach((tag, i) => {
       switch (tag) {
         case 'p':
         case 'h1':
@@ -1440,16 +1371,16 @@
         case 'h3':
         case 'h4':
         case 'li':
-          var format = toolbar.querySelector("[data-action=\"format\"][data-option=\"" + tag + "\"]");
-          var textAlign = nodes[i].style.textAlign || nodes[i].getAttribute('align');
+          const format = toolbar.querySelector(`[data-action="format"][data-option="${tag}"]`);
+          const textAlign = nodes[i].style.textAlign || nodes[i].getAttribute('align');
           if (format) {
             selectListBoxItem(format);
           }
 
           // Check for text align
           if (textAlign) {
-            var _action = 'align' + textAlign.charAt(0).toUpperCase() + textAlign.slice(1);
-            var button = toolbar.querySelector("[data-action=\"" + _action + "\"]");
+            const action = 'align' + textAlign.charAt(0).toUpperCase() + textAlign.slice(1);
+            const button = toolbar.querySelector(`[data-action="${action}"]`);
             if (button) {
               if (button.parentNode.getAttribute('role') === 'listbox') {
                 selectListBoxItem(button);
@@ -1460,11 +1391,11 @@
           }
           break;
         default:
-          var allowedTag = allowedTags[tag];
-          var action = allowedTag ? allowedTag.toolName : undefined;
+          const allowedTag = allowedTags[tag];
+          const action = allowedTag ? allowedTag.toolName : undefined;
           if (action) {
-            var _button = toolbar.querySelector("[data-action=\"" + action + "\"]");
-            _button.setAttribute('aria-pressed', 'true');
+            const button = toolbar.querySelector(`[data-action="${action}"]`);
+            button.setAttribute('aria-pressed', 'true');
           }
       }
     });
@@ -1475,35 +1406,36 @@
    */
   function embedSVGIcons() {
     // The icons will be included during the build process
-    var icons = '<svg id="wysi-svg-icons" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="wysi-bold" viewBox="0 0 24 24"><path d="M16.5,9.5A3.5,3.5,0,0,0,13,6H8.5a1,1,0,0,0-1,1V17a1,1,0,0,0,1,1H13a3.49,3.49,0,0,0,2.44-6A3.5,3.5,0,0,0,16.5,9.5ZM13,16H9.5V13H13a1.5,1.5,0,0,1,0,3Zm0-5H9.5V8H13a1.5,1.5,0,0,1,0,3Z"></path></symbol><symbol id="wysi-italic" viewBox="0 0 24 24"><path d="M17,6H11a1,1,0,0,0,0,2h1.52l-3.2,8H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2H11.48l3.2-8H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-underline" viewBox="0 0 24 24"><path d="M12,15.5a5,5,0,0,0,5-5v-5a1,1,0,0,0-2,0v5a3,3,0,0,1-6,0v-5a1,1,0,0,0-2,0v5A5,5,0,0,0,12,15.5Zm5,2H7a1,1,0,0,0,0,2H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-strike" viewBox="0 0 24 24"><path d="M12 6C9.33 6 7.5 7.34 7.5 9.5c0 .58.12 1.07.35 1.5H13c-1.49-.34-3.49-.48-3.5-1.5 0-1.03 1.08-1.75 2.5-1.75s2.5.83 2.5 1.75h2C16.5 7.4 14.67 6 12 6zm-5.5 6c-.67 0-.67 1 0 1h4.35c.5.17 1.04.34 1.65.5.58.15 1.75.23 1.75 1s-.66 1.75-2.25 1.75-2.5-1.01-2.5-1.75h-2c0 1.64 1.33 3.5 4.5 3.5s4.5-2.08 4.5-3.5c0-.58-.05-1.07-.2-1.5h1.2c.67 0 .67-1 0-1z"></path></symbol><symbol id="wysi-alignLeft" viewBox="0 0 24 24"><path d="m4 8h16c1.33 0 1.33-2 0-2h-16c-1.33 0-1.33 2 0 2zm0 5h12c1.33 0 1.33-2 0-2h-12c-1.33 0-1.33 2 0 2zm16 3h-16c-1.33 0-1.33 2 0 2h16c1.34 0 1.29-2 0-2z"></path></symbol><symbol id="wysi-alignCenter" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-4 5h-8c-1.33 0-1.33-2 0-2h8c1.33 0 1.33 2 0 2zm-12 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignRight" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-12c-1.33 0-1.33-2 0-2h12c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignJustify" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-ul" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7z"></path></symbol><symbol id="wysi-ol" viewBox="0 0 24 24"><path d="M4 5c-.25 0-.5.17-.5.5v3c0 .67 1 .67 1 0v-3c0-.33-.25-.5-.5-.5zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zm-6 5.5h.75c0-.43.34-.75.75-.75.4 0 .75.28.75.75L2.5 13.25V14h3v-.75H3.75L5.5 12v-.5c0-.9-.73-1.49-1.5-1.5-.77 0-1.5.59-1.5 1.5zm6-.5c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zM4 15c-.83 0-1.5.63-1.5 1.25h.75c0-.28.34-.5.75-.5s.75.22.75.5-.34.5-.75.5v.5c.41 0 .75.22.75.5s-.34.5-.75.5-.75-.22-.75-.5H2.5c0 .62.67 1.25 1.5 1.25s1.5-.5 1.5-1.12c0-.34-.2-.66-.56-.88.35-.2.56-.53.56-.87 0-.62-.67-1.12-1.5-1.12zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-indent" viewBox="0 0 24 24"><path d="m20 8h-15.9c-1.33 0-1.33-2 0-2h15.9c1.33 0 1.33 2 0 2zm2.86e-4 5h-9.08c-1.33 0-1.33-2 0-2h9.08c1.33 0 1.33 2 0 2zm-16.7-3.31c0.356-0.423 0.988-0.477 1.41-0.12l2 1.66c0.483 0.4 0.483 1.14 0 1.54l-2 1.66c-0.179 0.153-0.405 0.238-0.64 0.24-0.297 4.83e-4 -0.58-0.131-0.77-0.36-0.354-0.425-0.296-1.06 0.13-1.41l1.08-0.9-1.08-0.9c-0.426-0.353-0.484-0.985-0.13-1.41zm0.77 6.31h15.9c1.33 0 1.33 2 0 2h-15.9c-1.33 0-1.33-2 0-2z"></path></symbol><symbol id="wysi-outdent" viewBox="0 0 24 24"><path d="m4.1 6c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9zm1.96 3.33c-0.224 0.00238-0.448 0.0803-0.633 0.236l-2 1.66c-0.483 0.4-0.483 1.14 0 1.54l2 1.66c0.179 0.153 0.404 0.238 0.639 0.24 0.297 4.83e-4 0.581-0.131 0.771-0.359 0.354-0.425 0.295-1.06-0.131-1.41l-1.08-0.9 1.08-0.9c0.426-0.353 0.485-0.985 0.131-1.41-0.2-0.238-0.489-0.359-0.777-0.355zm4.88 1.67c-1.33 0-1.33 2 0 2h9.08c1.33 0 1.33-2 0-2h-9.08zm-6.87 5c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9z"></path></symbol><symbol id="wysi-link" viewBox="0 0 24 24"><path d="M8,12a1,1,0,0,0,1,1h6a1,1,0,0,0,0-2H9A1,1,0,0,0,8,12Zm2,3H7A3,3,0,0,1,7,9h3a1,1,0,0,0,0-2H7A5,5,0,0,0,7,17h3a1,1,0,0,0,0-2Zm7-8H14a1,1,0,0,0,0,2h3a3,3,0,0,1,0,6H14a1,1,0,0,0,0,2h3A5,5,0,0,0,17,7Z"></path></symbol><symbol id="wysi-image" viewBox="0 0 24 24"><path d="M6 5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6zm0 2h12a1 1 0 0 1 1 1v5.73l-.88-.88a3.06 3.06 0 0 0-4.24 0l-.88.88-2.88-2.88A3.06 3.06 0 0 0 8 10a3.06 3.06 0 0 0-2.12.85l-.88.88V8a1 1 0 0 1 1-1zm1.85 4.98a1 1 0 0 1 .85.27L13.45 17H6a1 1 0 0 1-.98-.92H5v-1.53l2.3-2.3a1 1 0 0 1 .55-.26zm8 2a1 1 0 0 1 .85.27l2.17 2.16c-.19.33-.55.59-.86.59h-1.72l-1.86-1.87.88-.88a1 1 0 0 1 .54-.28z"></path></symbol><symbol id="wysi-quote" viewBox="0 0 24 24"><path d="m9 6c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545zm8 0c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545z"></path></symbol><symbol id="wysi-hr" viewBox="0 0 24 24"><path d="m20 11h-16c-1.33 0-1.33 2 0 2 0 0 16-0.018 16 0 1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-removeFormat" viewBox="0 0 24 24"><path d="M7 6C5.67 6 5.67 8 7 8h3l-2 7c0 .02 2 0 2 0l2-7h3c1.33 0 1.33-2 0-2H7zm7.06 7c-.79-.04-1.49.98-.75 1.72l.78.78-.78.79c-.94.93.47 2.35 1.4 1.4l.79-.78.78.79c.94.93 2.35-.47 1.41-1.41l-.78-.79.78-.78c.94-.94-.47-2.35-1.4-1.41l-.8.79-.77-.79a.99.99 0 0 0-.66-.3zM7 16c-1.33 0-1.33 2 0 2 .02-.02 4 0 4 0 1.33 0 1.33-2 0-2H7z"></path></symbol><symbol id="wysi-delete" viewBox="0 0 24 24"><path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18ZM20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Zm-3-1a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"></path></symbol></defs></svg>';
-    var svgElement = buildFragment(icons);
+    const icons = '<svg id="wysi-svg-icons" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="wysi-bold" viewBox="0 0 24 24"><path d="M16.5,9.5A3.5,3.5,0,0,0,13,6H8.5a1,1,0,0,0-1,1V17a1,1,0,0,0,1,1H13a3.49,3.49,0,0,0,2.44-6A3.5,3.5,0,0,0,16.5,9.5ZM13,16H9.5V13H13a1.5,1.5,0,0,1,0,3Zm0-5H9.5V8H13a1.5,1.5,0,0,1,0,3Z"></path></symbol><symbol id="wysi-italic" viewBox="0 0 24 24"><path d="M17,6H11a1,1,0,0,0,0,2h1.52l-3.2,8H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2H11.48l3.2-8H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-underline" viewBox="0 0 24 24"><path d="M12,15.5a5,5,0,0,0,5-5v-5a1,1,0,0,0-2,0v5a3,3,0,0,1-6,0v-5a1,1,0,0,0-2,0v5A5,5,0,0,0,12,15.5Zm5,2H7a1,1,0,0,0,0,2H17a1,1,0,0,0,0-2Z"></path></symbol><symbol id="wysi-strike" viewBox="0 0 24 24"><path d="M12 6C9.33 6 7.5 7.34 7.5 9.5c0 .58.12 1.07.35 1.5H13c-1.49-.34-3.49-.48-3.5-1.5 0-1.03 1.08-1.75 2.5-1.75s2.5.83 2.5 1.75h2C16.5 7.4 14.67 6 12 6zm-5.5 6c-.67 0-.67 1 0 1h4.35c.5.17 1.04.34 1.65.5.58.15 1.75.23 1.75 1s-.66 1.75-2.25 1.75-2.5-1.01-2.5-1.75h-2c0 1.64 1.33 3.5 4.5 3.5s4.5-2.08 4.5-3.5c0-.58-.05-1.07-.2-1.5h1.2c.67 0 .67-1 0-1z"></path></symbol><symbol id="wysi-alignLeft" viewBox="0 0 24 24"><path d="m4 8h16c1.33 0 1.33-2 0-2h-16c-1.33 0-1.33 2 0 2zm0 5h12c1.33 0 1.33-2 0-2h-12c-1.33 0-1.33 2 0 2zm16 3h-16c-1.33 0-1.33 2 0 2h16c1.34 0 1.29-2 0-2z"></path></symbol><symbol id="wysi-alignCenter" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-4 5h-8c-1.33 0-1.33-2 0-2h8c1.33 0 1.33 2 0 2zm-12 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignRight" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-12c-1.33 0-1.33-2 0-2h12c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-alignJustify" viewBox="0 0 24 24"><path d="m20 8h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm0 5h-16c-1.33 0-1.33-2 0-2h16c1.33 0 1.33 2 0 2zm-16 3h16c1.33 0 1.33 2 0 2h-16c-1.34 0-1.29-2 0-2z"></path></symbol><symbol id="wysi-ul" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7zm-4 5a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1zm4 0a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2H7z"></path></symbol><symbol id="wysi-ol" viewBox="0 0 24 24"><path d="M4 5c-.25 0-.5.17-.5.5v3c0 .67 1 .67 1 0v-3c0-.33-.25-.5-.5-.5zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zm-6 5.5h.75c0-.43.34-.75.75-.75.4 0 .75.28.75.75L2.5 13.25V14h3v-.75H3.75L5.5 12v-.5c0-.9-.73-1.49-1.5-1.5-.77 0-1.5.59-1.5 1.5zm6-.5c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2zM4 15c-.83 0-1.5.63-1.5 1.25h.75c0-.28.34-.5.75-.5s.75.22.75.5-.34.5-.75.5v.5c.41 0 .75.22.75.5s-.34.5-.75.5-.75-.22-.75-.5H2.5c0 .62.67 1.25 1.5 1.25s1.5-.5 1.5-1.12c0-.34-.2-.66-.56-.88.35-.2.56-.53.56-.87 0-.62-.67-1.12-1.5-1.12zm4.5 1c-1.33 0-1.33 2 0 2h12c1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-indent" viewBox="0 0 24 24"><path d="m20 8h-15.9c-1.33 0-1.33-2 0-2h15.9c1.33 0 1.33 2 0 2zm2.86e-4 5h-9.08c-1.33 0-1.33-2 0-2h9.08c1.33 0 1.33 2 0 2zm-16.7-3.31c0.356-0.423 0.988-0.477 1.41-0.12l2 1.66c0.483 0.4 0.483 1.14 0 1.54l-2 1.66c-0.179 0.153-0.405 0.238-0.64 0.24-0.297 4.83e-4 -0.58-0.131-0.77-0.36-0.354-0.425-0.296-1.06 0.13-1.41l1.08-0.9-1.08-0.9c-0.426-0.353-0.484-0.985-0.13-1.41zm0.77 6.31h15.9c1.33 0 1.33 2 0 2h-15.9c-1.33 0-1.33-2 0-2z"></path></symbol><symbol id="wysi-outdent" viewBox="0 0 24 24"><path d="m4.1 6c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9zm1.96 3.33c-0.224 0.00238-0.448 0.0803-0.633 0.236l-2 1.66c-0.483 0.4-0.483 1.14 0 1.54l2 1.66c0.179 0.153 0.404 0.238 0.639 0.24 0.297 4.83e-4 0.581-0.131 0.771-0.359 0.354-0.425 0.295-1.06-0.131-1.41l-1.08-0.9 1.08-0.9c0.426-0.353 0.485-0.985 0.131-1.41-0.2-0.238-0.489-0.359-0.777-0.355zm4.88 1.67c-1.33 0-1.33 2 0 2h9.08c1.33 0 1.33-2 0-2h-9.08zm-6.87 5c-1.33 0-1.33 2 0 2h15.9c1.33 0 1.33-2 0-2h-15.9z"></path></symbol><symbol id="wysi-link" viewBox="0 0 24 24"><path d="M8,12a1,1,0,0,0,1,1h6a1,1,0,0,0,0-2H9A1,1,0,0,0,8,12Zm2,3H7A3,3,0,0,1,7,9h3a1,1,0,0,0,0-2H7A5,5,0,0,0,7,17h3a1,1,0,0,0,0-2Zm7-8H14a1,1,0,0,0,0,2h3a3,3,0,0,1,0,6H14a1,1,0,0,0,0,2h3A5,5,0,0,0,17,7Z"></path></symbol><symbol id="wysi-image" viewBox="0 0 24 24"><path d="M6 5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6zm0 2h12a1 1 0 0 1 1 1v5.73l-.88-.88a3.06 3.06 0 0 0-4.24 0l-.88.88-2.88-2.88A3.06 3.06 0 0 0 8 10a3.06 3.06 0 0 0-2.12.85l-.88.88V8a1 1 0 0 1 1-1zm1.85 4.98a1 1 0 0 1 .85.27L13.45 17H6a1 1 0 0 1-.98-.92H5v-1.53l2.3-2.3a1 1 0 0 1 .55-.26zm8 2a1 1 0 0 1 .85.27l2.17 2.16c-.19.33-.55.59-.86.59h-1.72l-1.86-1.87.88-.88a1 1 0 0 1 .54-.28z"></path></symbol><symbol id="wysi-quote" viewBox="0 0 24 24"><path d="m9 6c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545zm8 0c-2.2 0-4 1.96-4 4.36v6c0 0.903 0.672 1.64 1.5 1.64h3c0.828 0 1.5-0.733 1.5-1.64v-3.27c0-0.903-0.672-1.64-1.5-1.64h-1.75c-0.414 0-0.75-0.367-0.75-0.818v-0.273c0-1.2 0.899-2.18 2-2.18h0.5c0.274 0 0.5-0.246 0.5-0.545v-1.09c0-0.298-0.226-0.545-0.5-0.545z"></path></symbol><symbol id="wysi-hr" viewBox="0 0 24 24"><path d="m20 11h-16c-1.33 0-1.33 2 0 2 0 0 16-0.018 16 0 1.33 0 1.33-2 0-2z"></path></symbol><symbol id="wysi-removeFormat" viewBox="0 0 24 24"><path d="M7 6C5.67 6 5.67 8 7 8h3l-2 7c0 .02 2 0 2 0l2-7h3c1.33 0 1.33-2 0-2H7zm7.06 7c-.79-.04-1.49.98-.75 1.72l.78.78-.78.79c-.94.93.47 2.35 1.4 1.4l.79-.78.78.79c.94.93 2.35-.47 1.41-1.41l-.78-.79.78-.78c.94-.94-.47-2.35-1.4-1.41l-.8.79-.77-.79a.99.99 0 0 0-.66-.3zM7 16c-1.33 0-1.33 2 0 2 .02-.02 4 0 4 0 1.33 0 1.33-2 0-2H7z"></path></symbol><symbol id="wysi-delete" viewBox="0 0 24 24"><path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18ZM20,6H16V5a3,3,0,0,0-3-3H11A3,3,0,0,0,8,5V6H4A1,1,0,0,0,4,8H5V19a3,3,0,0,0,3,3h8a3,3,0,0,0,3-3V8h1a1,1,0,0,0,0-2ZM10,5a1,1,0,0,1,1-1h2a1,1,0,0,1,1,1V6H10Zm7,14a1,1,0,0,1-1,1H8a1,1,0,0,1-1-1V8H17Zm-3-1a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"></path></symbol></defs></svg>';
+    const svgElement = buildFragment(icons);
     document.body.appendChild(svgElement);
   }
 
   // Deselect selected element when clicking outside
-  addListener(document, 'mousedown', '.wysi-editor, .wysi-editor *', function (event) {
-    var selected = document.querySelector("." + selectedClass);
+  addListener(document, 'mousedown', '.wysi-editor, .wysi-editor *', event => {
+    const selected = document.querySelector(`.${selectedClass}`);
     if (selected && selected !== event.target) {
       selected.classList.remove(selectedClass);
     }
   });
 
   // Select an image when it's clicked
-  addListener(document, 'mousedown', '.wysi-editor img', function (event) {
-    var image = event.target;
-    var range = document.createRange();
+  addListener(document, 'mousedown', '.wysi-editor img', event => {
+    const image = event.target;
+    const range = document.createRange();
     image.classList.add(selectedClass);
     range.selectNode(image);
     setSelection(range);
   });
 
   // Toolbar button click
-  addListener(document, 'click', '.wysi-toolbar > button', function (event) {
-    var button = event.target;
-    var action = button.dataset.action;
-    var _findInstance2 = findInstance(button),
-      editor = _findInstance2.editor;
-    var selection = document.getSelection();
+  addListener(document, 'click', '.wysi-toolbar > button', event => {
+    const button = event.target;
+    const action = button.dataset.action;
+    const {
+      editor
+    } = findInstance(button);
+    const selection = document.getSelection();
     if (selection && editor.contains(selection.anchorNode)) {
       execAction(action, editor);
     }
@@ -1516,8 +1448,8 @@
   // include SVG icons
   DOMReady(embedSVGIcons);
 
-  var STYLE_ATTRIBUTE = 'style';
-  var ALIGN_ATTRIBUTE = 'align';
+  const STYLE_ATTRIBUTE = 'style';
+  const ALIGN_ATTRIBUTE = 'align';
 
   /**
    * Enable HTML tags belonging to a set of tools.
@@ -1525,25 +1457,25 @@
    * @return {object} The list of allowed tags.
    */
   function enableTags(tools) {
-    var allowedTags = cloneObject(settings.allowedTags);
-    tools.forEach(function (toolName) {
-      var tool = cloneObject(toolset[toolName]);
+    const allowedTags = cloneObject(settings.allowedTags);
+    tools.forEach(toolName => {
+      const tool = cloneObject(toolset[toolName]);
       if (!tool || !tool.tags) {
         return;
       }
-      var isEmpty = !!tool.isEmpty;
-      var extraTags = tool.extraTags || [];
-      var aliasList = tool.alias || [];
-      var alias = aliasList.length ? tool.tags[0] : undefined;
-      var tags = [].concat(tool.tags, extraTags, aliasList);
-      var attributes = tool.attributes || [];
-      var styles = tool.styles || [];
-      tags.forEach(function (tag) {
+      const isEmpty = !!tool.isEmpty;
+      const extraTags = tool.extraTags || [];
+      const aliasList = tool.alias || [];
+      const alias = aliasList.length ? tool.tags[0] : undefined;
+      const tags = [...tool.tags, ...extraTags, ...aliasList];
+      const attributes = tool.attributes || [];
+      const styles = tool.styles || [];
+      tags.forEach(tag => {
         allowedTags[tag] = {
-          attributes: attributes,
-          styles: styles,
-          alias: alias,
-          isEmpty: isEmpty
+          attributes,
+          styles,
+          alias,
+          isEmpty
         };
         if (!extraTags.includes(tag)) {
           allowedTags[tag].toolName = toolName;
@@ -1561,8 +1493,8 @@
    * @return {string} The filtered HTML content.
    */
   function prepareContent(content, allowedTags, filterOnly) {
-    var container = createElement('div');
-    var fragment = buildFragment(content);
+    const container = createElement('div');
+    const fragment = buildFragment(content);
     filterContent(fragment, allowedTags);
     if (!filterOnly) {
       wrapTextNodes(fragment);
@@ -1579,16 +1511,16 @@
    * @param {boolean} [copyAttributes] If true, also copy the original element's attributes.
    */
   function replaceNode(node, tag, copyAttributes) {
-    var newElement = createElement(tag);
-    var parentNode = node.parentNode;
-    var attributes = node.attributes;
+    const newElement = createElement(tag);
+    const parentNode = node.parentNode;
+    const attributes = node.attributes;
 
     // Copy the original element's content
     newElement.innerHTML = node.innerHTML || node.textContent || node.outerHTML;
 
     // Copy the original element's attributes
     if (copyAttributes && attributes) {
-      for (var i = 0; i < attributes.length; i++) {
+      for (let i = 0; i < attributes.length; i++) {
         newElement.setAttribute(attributes[i].name, attributes[i].value);
       }
     }
@@ -1603,32 +1535,27 @@
    * @param {array} allowedStyles An array of supported styles.
    */
   function filterStyles(node, allowedStyles) {
-    var styleAttribute = node.getAttribute(STYLE_ATTRIBUTE);
+    const styleAttribute = node.getAttribute(STYLE_ATTRIBUTE);
     if (styleAttribute) {
       // Parse the styles
-      var styles = styleAttribute.split(';').map(function (style) {
-        var prop = style.split(':');
+      const styles = styleAttribute.split(';').map(style => {
+        const prop = style.split(':');
         return {
           name: prop[0].trim(),
           value: prop[1]
         };
       })
       // Filter the styles
-      .filter(function (style) {
-        return allowedStyles.includes(style.name);
-      })
+      .filter(style => allowedStyles.includes(style.name))
 
       // Remove text-align: left
-      .filter(function (style) {
-        return style.name !== 'text-align' || style.value.trim() !== 'left';
-      })
+      .filter(style => style.name !== 'text-align' || style.value.trim() !== 'left')
 
       // Convert back to a style string
-      .map(function (_ref) {
-        var name = _ref.name,
-          value = _ref.value;
-        return name + ": " + value.trim() + ";";
-      }).join('');
+      .map(({
+        name,
+        value
+      }) => `${name}: ${value.trim()};`).join('');
       if (styles !== '') {
         node.setAttribute(STYLE_ATTRIBUTE, styles);
       } else {
@@ -1643,30 +1570,30 @@
    * @param {array} allowedTags The list of allowed tags.
    */
   function filterContent(node, allowedTags) {
-    var children = Array.from(node.childNodes);
+    const children = Array.from(node.childNodes);
     if (!children || !children.length) {
       return;
     }
-    children.forEach(function (childNode) {
+    children.forEach(childNode => {
       // Element nodes
       if (childNode.nodeType === 1) {
         // Filter recursively (deeper nodes first)
         filterContent(childNode, allowedTags);
 
         // Check if the current element is allowed
-        var tag = childNode.tagName.toLowerCase();
-        var allowedTag = allowedTags[tag];
-        var attributes = Array.from(childNode.attributes);
+        const tag = childNode.tagName.toLowerCase();
+        const allowedTag = allowedTags[tag];
+        const attributes = Array.from(childNode.attributes);
 
         // Check for the deprecated align attribute (mainly in Firefox)
-        var deprecatedAlignAttribute = childNode.getAttribute(ALIGN_ATTRIBUTE);
+        const deprecatedAlignAttribute = childNode.getAttribute(ALIGN_ATTRIBUTE);
         if (allowedTag) {
-          var allowedAttributes = allowedTag.attributes || [];
-          var allowedStyles = allowedTag.styles || [];
+          const allowedAttributes = allowedTag.attributes || [];
+          const allowedStyles = allowedTag.styles || [];
 
           // Remove attributes that are not allowed
-          for (var i = 0; i < attributes.length; i++) {
-            var attributeName = attributes[i].name;
+          for (let i = 0; i < attributes.length; i++) {
+            const attributeName = attributes[i].name;
             if (!allowedAttributes.includes(attributes[i].name)) {
               // Replace deprecated align attribute with text-align style
               if (attributeName === ALIGN_ATTRIBUTE) {
@@ -1699,13 +1626,12 @@
               if (childNode.parentNode && childNode.parentNode.tagName === 'LI') {
                 childNode.parentNode.style.textAlign = deprecatedAlignAttribute;
               } else {
-                for (var _iterator = _createForOfIteratorHelperLoose(childNode.childNodes), _step; !(_step = _iterator()).done;) {
-                  var divChild = _step.value;
+                for (const divChild of childNode.childNodes) {
                   divChild.style.textAlign = deprecatedAlignAttribute;
                 }
               }
             }
-            childNode.replaceWith.apply(childNode, childNode.childNodes);
+            childNode.replaceWith(...childNode.childNodes);
           }
         }
 
@@ -1722,19 +1648,19 @@
    * @param {array} allowedTags The list of allowed tags.
    */
   function cleanContent(node, allowedTags) {
-    var children = Array.from(node.childNodes);
+    const children = Array.from(node.childNodes);
     if (!children || !children.length) {
       return;
     }
-    children.forEach(function (childNode) {
+    children.forEach(childNode => {
       // Remove empty element nodes
       if (childNode.nodeType === 1) {
         // Filter recursively (deeper nodes first)
         cleanContent(childNode, allowedTags);
 
         // Check if the element can be empty
-        var tag = childNode.tagName.toLowerCase();
-        var allowedTag = allowedTags[tag];
+        const tag = childNode.tagName.toLowerCase();
+        const allowedTag = allowedTags[tag];
         if (allowedTag && !allowedTag.isEmpty && trimText(childNode.innerHTML) === '') {
           node.removeChild(childNode);
         }
@@ -1747,12 +1673,12 @@
    * @param {object} node The parent element of the text nodes.
    */
   function wrapTextNodes(node) {
-    var children = Array.from(node.childNodes);
+    const children = Array.from(node.childNodes);
     if (!children || !children.length) {
       return;
     }
-    var appendToPrev = false;
-    children.forEach(function (childNode) {
+    let appendToPrev = false;
+    children.forEach(childNode => {
       if (childNode.nodeType !== 3 && blockElements.includes(childNode.tagName)) {
         appendToPrev = false;
         return;
@@ -1764,7 +1690,7 @@
        // Wrap text node in a paragraph
       } else {*/
       if (appendToPrev) {
-        var prev = childNode.previousElementSibling;
+        const prev = childNode.previousElementSibling;
         if (prev) {
           prev.appendChild(childNode);
         }
@@ -1786,46 +1712,46 @@
   }
 
   // Next available instance id
-  var nextId = 0;
+  let nextId = 0;
 
   /**
    * Init WYSIWYG editor instances.
    * @param {object} options Configuration options.
    */
   function init(options) {
-    var globalTranslations = window.wysiGlobalTranslations || {};
-    var translations = Object.assign({}, globalTranslations, options.translations || {});
+    const globalTranslations = window.wysiGlobalTranslations || {};
+    const translations = Object.assign({}, globalTranslations, options.translations || {});
 
     // Store translated strings
     storeTranslations(translations);
-    var tools = options.tools || settings.tools;
-    var selector = options.el || settings.el;
-    var targetEls = getTargetElements(selector);
-    var toolbar = renderToolbar(tools);
-    var allowedTags = enableTags(tools);
-    var customTags = options.customTags || [];
+    const tools = options.tools || settings.tools;
+    const selector = options.el || settings.el;
+    const targetEls = getTargetElements(selector);
+    const toolbar = renderToolbar(tools);
+    const allowedTags = enableTags(tools);
+    const customTags = options.customTags || [];
 
     // Add custom tags if any to the allowed tags list
-    customTags.forEach(function (custom) {
+    customTags.forEach(custom => {
       if (custom.tags) {
-        var attributes = custom.attributes || [];
-        var styles = custom.styles || [];
-        var isEmpty = !!custom.isEmpty;
-        custom.tags.forEach(function (tag) {
+        const attributes = custom.attributes || [];
+        const styles = custom.styles || [];
+        const isEmpty = !!custom.isEmpty;
+        custom.tags.forEach(tag => {
           allowedTags[tag] = {
-            attributes: attributes,
-            styles: styles,
-            isEmpty: isEmpty
+            attributes,
+            styles,
+            isEmpty
           };
         });
       }
     });
 
     // Append an editor instance to target elements
-    targetEls.forEach(function (field) {
-      var sibling = field.previousElementSibling;
+    targetEls.forEach(field => {
+      const sibling = field.previousElementSibling;
       if (!sibling || !hasClass(sibling, 'wysi-wrapper')) {
-        var instanceId = nextId++;
+        const instanceId = nextId++;
 
         // Store the instance's options 
         instances[instanceId] = options;
@@ -1834,12 +1760,12 @@
         instances[instanceId].allowedTags = cloneObject(allowedTags);
 
         // Wrapper
-        var wrapper = createElement('div', {
+        const wrapper = createElement('div', {
           class: 'wysi-wrapper'
         });
 
         // Editable region
-        var editor = createElement('div', {
+        const editor = createElement('div', {
           class: 'wysi-editor',
           contenteditable: true,
           role: 'textbox',
@@ -1853,6 +1779,27 @@
         wrapper.appendChild(toolbar.cloneNode(true));
         wrapper.appendChild(editor);
         field.before(wrapper);
+
+        // The content of the editable region when it received focus
+        let valueOnFocus;
+
+        // Store the current content when the instance receives focus
+        addListener(wrapper, 'focusin', event => {
+          if (!wrapper.contains(event.relatedTarget)) {
+            valueOnFocus = field.value;
+          }
+        });
+
+        // Dispatch a change event when the instance loses focus and its content has changed.
+        // Focus moves within the instance (e.g: toolbar buttons) are ignored
+        addListener(wrapper, 'focusout', event => {
+          if (!wrapper.contains(event.relatedTarget)) {
+            if (field.value !== valueOnFocus) {
+              dispatchEvent(field, 'change');
+            }
+            valueOnFocus = undefined;
+          }
+        });
 
         // Apply configuration
         configure(wrapper, options);
@@ -1873,19 +1820,19 @@
     if (typeof options !== 'object') {
       return;
     }
-    for (var key in options) {
+    for (const key in options) {
       switch (key) {
         case 'darkMode':
         case 'autoGrow':
         case 'autoHide':
-          instance.classList.toggle("wysi-" + key.toLowerCase(), !!options[key]);
+          instance.classList.toggle(`wysi-${key.toLowerCase()}`, !!options[key]);
           break;
         case 'height':
-          var height = options.height;
+          const height = options.height;
           if (!isNaN(height)) {
-            var editor = instance.lastChild;
-            editor.style.minHeight = height + "px";
-            editor.style.maxHeight = height + "px";
+            const editor = instance.lastChild;
+            editor.style.minHeight = `${height}px`;
+            editor.style.maxHeight = `${height}px`;
           }
           break;
       }
@@ -1901,14 +1848,14 @@
    * @param {boolean} setEditorContent Whether to update the content of the editable region.
    */
   function updateContent(textarea, editor, instanceId, rawContent, setEditorContent) {
-    var instance = instances[instanceId];
-    var content = prepareContent(rawContent, instance.allowedTags);
-    var onChange = instance.onChange;
+    const instance = instances[instanceId];
+    const content = prepareContent(rawContent, instance.allowedTags);
+    const onChange = instance.onChange;
     if (setEditorContent === true) {
       editor.innerHTML = content;
     }
     textarea.value = content;
-    dispatchEvent(textarea, 'change');
+    dispatchEvent(textarea, 'input');
     if (onChange) {
       onChange(content);
     }
@@ -1919,11 +1866,12 @@
    * @param {string} selector One or more selectors pointing to textarea fields.
    */
   function destroy(selector) {
-    var editorInstances = findEditorInstances(selector);
-    for (var _iterator = _createForOfIteratorHelperLoose(editorInstances), _step; !(_step = _iterator()).done;) {
-      var editorInstance = _step.value;
-      var instanceId = editorInstance.instanceId,
-        wrapper = editorInstance.wrapper;
+    const editorInstances = findEditorInstances(selector);
+    for (const editorInstance of editorInstances) {
+      const {
+        instanceId,
+        wrapper
+      } = editorInstance;
       delete instances[instanceId];
       wrapper.remove();
     }
@@ -1934,12 +1882,13 @@
    * @param {string} selector One or more selectors pointing to textarea fields.
    */
   function setContent(selector, content) {
-    var editorInstances = findEditorInstances(selector);
-    for (var _iterator2 = _createForOfIteratorHelperLoose(editorInstances), _step2; !(_step2 = _iterator2()).done;) {
-      var editorInstance = _step2.value;
-      var textarea = editorInstance.textarea,
-        editor = editorInstance.editor,
-        instanceId = editorInstance.instanceId;
+    const editorInstances = findEditorInstances(selector);
+    for (const editorInstance of editorInstances) {
+      const {
+        textarea,
+        editor,
+        instanceId
+      } = editorInstance;
       updateContent(textarea, editor, instanceId, content, true);
     }
   }
@@ -1949,25 +1898,24 @@
    * @param {object} event The browser's paste event.
    */
   function cleanPastedContent(event) {
-    var _findInstance = findInstance(event.target),
-      editor = _findInstance.editor,
-      nodes = _findInstance.nodes;
-    var clipboardData = event.clipboardData;
+    const {
+      editor,
+      nodes
+    } = findInstance(event.target);
+    const clipboardData = event.clipboardData;
     if (editor && clipboardData.types.includes('text/html')) {
-      var pasted = clipboardData.getData('text/html');
-      var instanceId = getInstanceId(editor);
-      var allowedTags = instances[instanceId].allowedTags;
-      var content = prepareContent(pasted, allowedTags);
+      const pasted = clipboardData.getData('text/html');
+      const instanceId = getInstanceId(editor);
+      const allowedTags = instances[instanceId].allowedTags;
+      let content = prepareContent(pasted, allowedTags);
 
       // Detect a heading tag in the current selection
-      var splitHeadingTag = nodes.filter(function (n) {
-        return headingElements.includes(n.tagName);
-      }).length > 0;
+      const splitHeadingTag = nodes.filter(n => headingElements.includes(n.tagName)).length > 0;
 
       // Force split the heading tag if any.
       // This fixes a bug in Webkit/Blink browsers where the whole content is converted to a heading
       if (splitHeadingTag && !isFirefox) {
-        var splitter = "<h1 class=\"" + placeholderClass + "\"><br></h1><p class=\"" + placeholderClass + "\"><br></p>";
+        const splitter = `<h1 class="${placeholderClass}"><br></h1><p class="${placeholderClass}"><br></p>`;
         content = splitter + content + splitter;
       }
 
@@ -1975,15 +1923,15 @@
       execCommand('insertHTML', content);
       if (splitHeadingTag && !isFirefox) {
         // Remove placeholder elements if any
-        editor.querySelectorAll("." + placeholderClass).forEach(function (fragment) {
+        editor.querySelectorAll(`.${placeholderClass}`).forEach(fragment => {
           fragment.remove();
         });
 
         // Unwrap nested heading elements to fix a bug in Webkit/Blink browsers
-        editor.querySelectorAll(headingElements.join()).forEach(function (heading) {
-          var firstChild = heading.firstElementChild;
+        editor.querySelectorAll(headingElements.join()).forEach(heading => {
+          const firstChild = heading.firstElementChild;
           if (firstChild && blockElements.includes(firstChild.tagName)) {
-            heading.replaceWith.apply(heading, heading.childNodes);
+            heading.replaceWith(...heading.childNodes);
           }
         });
       }
@@ -2004,11 +1952,11 @@
     execCommand('defaultParagraphSeparator', 'p');
 
     // Update the textarea value when the editor's content changes
-    addListener(document, 'input', '.wysi-editor', function (event) {
-      var editor = event.target;
-      var textarea = editor.parentNode.nextElementSibling;
-      var instanceId = getInstanceId(editor);
-      var content = editor.innerHTML;
+    addListener(document, 'input', '.wysi-editor', event => {
+      const editor = event.target;
+      const textarea = editor.parentNode.nextElementSibling;
+      const instanceId = getInstanceId(editor);
+      const content = editor.innerHTML;
       updateContent(textarea, editor, instanceId, content);
     });
 
@@ -2017,29 +1965,23 @@
   }
 
   // Expose Wysi to the global scope
-  window.Wysi = function () {
-    var methods = {
-      destroy: destroy,
-      setContent: setContent
+  window.Wysi = (() => {
+    const methods = {
+      destroy,
+      setContent
     };
     function Wysi(options) {
-      DOMReady(function () {
+      DOMReady(() => {
         init(options || {});
       });
     }
-    var _loop = function _loop(key) {
-      Wysi[key] = function () {
-        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-          args[_key] = arguments[_key];
-        }
+    for (const key in methods) {
+      Wysi[key] = (...args) => {
         DOMReady(methods[key], args);
       };
-    };
-    for (var key in methods) {
-      _loop(key);
     }
     return Wysi;
-  }();
+  })();
 
   // Bootstrap Wysi when the DOM is ready
   DOMReady(bootstrap);

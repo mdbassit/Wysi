@@ -1450,7 +1450,7 @@
 
   const STYLE_ATTRIBUTE = 'style';
   const ALIGN_ATTRIBUTE = 'align';
-  const EMPTY_CONTENT = '<p><br></p>';
+  const DEFAULT_PARAGRAPH = '<p><br></p>';
 
   /**
    * Enable HTML tags belonging to a set of tools.
@@ -1713,12 +1713,12 @@
   }
 
   /**
-   * Fall back to an empty paragraph if content is empty.
+   * Fall back to the default paragraph if content is empty.
    * @param {string} content The prepared content.
-   * @return {string} The content, or an empty paragraph if it was empty.
+   * @return {string} The content, or the default paragraph if it was empty.
    */
-  function seedIfEmpty(content) {
-    return content === '' ? EMPTY_CONTENT : content;
+  function withDefaultParagraph(content) {
+    return content === '' ? DEFAULT_PARAGRAPH : content;
   }
 
   /**
@@ -1726,8 +1726,8 @@
    * @param {string} content The prepared content.
    * @return {boolean} Whether the content is empty.
    */
-  function isEmptyContent(content) {
-    return content === '' || content === EMPTY_CONTENT;
+  function isContentEmpty(content) {
+    return content === '' || content === DEFAULT_PARAGRAPH;
   }
 
   // Next available instance id
@@ -1791,7 +1791,7 @@
           'aria-multiline': true,
           'aria-label': getTextAreaLabel(field),
           'data-wid': instanceId,
-          _innerHTML: seedIfEmpty(prepareContent(field.value, allowedTags))
+          _innerHTML: withDefaultParagraph(prepareContent(field.value, allowedTags))
         });
 
         // Insert the editor instance in the document
@@ -1871,15 +1871,7 @@
     const content = prepareContent(rawContent, instance.allowedTags);
     const onChange = instance.onChange;
     if (setEditorContent === true) {
-      editor.innerHTML = seedIfEmpty(content);
-
-      // Re-seed the editor when its content was deleted down to empty
-    } else if (isEmptyContent(content)) {
-      editor.innerHTML = seedIfEmpty(content);
-      const range = document.createRange();
-      range.setStart(editor.firstChild, 0);
-      range.collapse(true);
-      setSelection(range);
+      editor.innerHTML = withDefaultParagraph(content);
     }
     textarea.value = content;
     dispatchEvent(textarea, 'input');
@@ -1985,6 +1977,19 @@
       const instanceId = getInstanceId(editor);
       const content = editor.innerHTML;
       updateContent(textarea, editor, instanceId, content);
+    });
+
+    // Block deleting the default empty paragraph away (nothing to delete)
+    addListener(document, 'keydown', '.wysi-editor', event => {
+      if (event.isComposing || event.key !== 'Backspace' && event.key !== 'Delete') {
+        return;
+      }
+      const editor = event.target;
+      const instanceId = getInstanceId(editor);
+      const content = prepareContent(editor.innerHTML, instances[instanceId].allowedTags);
+      if (isContentEmpty(content) && editor.innerHTML === withDefaultParagraph(content)) {
+        event.preventDefault();
+      }
     });
 
     // Clean up pasted content

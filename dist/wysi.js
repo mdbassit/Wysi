@@ -1450,6 +1450,7 @@
 
   const STYLE_ATTRIBUTE = 'style';
   const ALIGN_ATTRIBUTE = 'align';
+  const EMPTY_CONTENT = '<p><br></p>';
 
   /**
    * Enable HTML tags belonging to a set of tools.
@@ -1711,6 +1712,24 @@
     return text.replace(/^\s+|\s+$/g, '').trim();
   }
 
+  /**
+   * Fall back to an empty paragraph if content is empty.
+   * @param {string} content The prepared content.
+   * @return {string} The content, or an empty paragraph if it was empty.
+   */
+  function seedIfEmpty(content) {
+    return content === '' ? EMPTY_CONTENT : content;
+  }
+
+  /**
+   * Check whether prepared content amounts to an empty editable region.
+   * @param {string} content The prepared content.
+   * @return {boolean} Whether the content is empty.
+   */
+  function isEmptyContent(content) {
+    return content === '' || content === EMPTY_CONTENT;
+  }
+
   // Next available instance id
   let nextId = 0;
 
@@ -1772,7 +1791,7 @@
           'aria-multiline': true,
           'aria-label': getTextAreaLabel(field),
           'data-wid': instanceId,
-          _innerHTML: prepareContent(field.value, allowedTags)
+          _innerHTML: seedIfEmpty(prepareContent(field.value, allowedTags))
         });
 
         // Insert the editor instance in the document
@@ -1852,7 +1871,15 @@
     const content = prepareContent(rawContent, instance.allowedTags);
     const onChange = instance.onChange;
     if (setEditorContent === true) {
-      editor.innerHTML = content;
+      editor.innerHTML = seedIfEmpty(content);
+
+      // Re-seed the editor when its content was deleted down to empty
+    } else if (isEmptyContent(content)) {
+      editor.innerHTML = seedIfEmpty(content);
+      const range = document.createRange();
+      range.setStart(editor.firstChild, 0);
+      range.collapse(true);
+      setSelection(range);
     }
     textarea.value = content;
     dispatchEvent(textarea, 'input');

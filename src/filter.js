@@ -5,6 +5,7 @@ import { blockElements } from './common.js';
 
 const STYLE_ATTRIBUTE = 'style';
 const ALIGN_ATTRIBUTE = 'align';
+const EMPTY_CONTENT = '<p><br></p>';
 
 /**
  * Enable HTML tags belonging to a set of tools.
@@ -285,7 +286,27 @@ function trimText(text) {
   return text.replace(/^\s+|\s+$/g, '').trim();
 }
 
+/**
+ * Fall back to an empty paragraph if content is empty.
+ * @param {string} content The prepared content.
+ * @return {string} The content, or an empty paragraph if it was empty.
+ */
+function seedIfEmpty(content) {
+  return content === '' ? EMPTY_CONTENT : content;
+}
+
+/**
+ * Check whether prepared content amounts to an empty editable region.
+ * @param {string} content The prepared content.
+ * @return {boolean} Whether the content is empty.
+ */
+function isEmptyContent(content) {
+  return content === '' || content === EMPTY_CONTENT;
+}
+
 export {
   enableTags,
-  prepareContent
+  prepareContent,
+  seedIfEmpty,
+  isEmptyContent
 };

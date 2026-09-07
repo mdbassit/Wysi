@@ -2,7 +2,7 @@ import window from 'window';
 import document from 'document';
 import settings from './settings.js';
 import { renderToolbar } from './toolbar.js';
-import { enableTags, prepareContent } from './filter.js';
+import { enableTags, prepareContent, seedIfEmpty, isEmptyContent } from './filter.js';
 import {
   instances,
   placeholderClass,
@@ -10,7 +10,7 @@ import {
   blockElements,
   isFirefox
 } from './common.js';
-import { 
+import {
   addListener,
   cloneObject,
   createElement,
@@ -20,6 +20,7 @@ import {
   getInstanceId,
   getTargetElements,
   getTextAreaLabel,
+  setSelection,
   storeTranslations
 } from './utils.js';
 import {
@@ -88,7 +89,7 @@ function init(options) {
         'aria-multiline': true,
         'aria-label': getTextAreaLabel(field),
         'data-wid': instanceId,
-        _innerHTML: prepareContent(field.value, allowedTags)
+        _innerHTML: seedIfEmpty(prepareContent(field.value, allowedTags))
       });      
 
       // Insert the editor instance in the document
@@ -173,7 +174,17 @@ function updateContent(textarea, editor, instanceId, rawContent, setEditorConten
   const onChange = instance.onChange;
 
   if (setEditorContent === true) {
-    editor.innerHTML = content;
+    editor.innerHTML = seedIfEmpty(content);
+
+  // Re-seed the editor when its content was deleted down to empty
+  } else if (isEmptyContent(content)) {
+    editor.innerHTML = seedIfEmpty(content);
+
+    const range = document.createRange();
+
+    range.setStart(editor.firstChild, 0);
+    range.collapse(true);
+    setSelection(range);
   }
 
   textarea.value = content;

@@ -5,7 +5,7 @@ import { blockElements } from './common.js';
 
 const STYLE_ATTRIBUTE = 'style';
 const ALIGN_ATTRIBUTE = 'align';
-const EMPTY_CONTENT = '<p><br></p>';
+const DEFAULT_PARAGRAPH = '<p><br></p>';
 
 /**
  * Enable HTML tags belonging to a set of tools.
@@ -287,12 +287,12 @@ function trimText(text) {
 }
 
 /**
- * Fall back to an empty paragraph if content is empty.
+ * Fall back to the default paragraph if content is empty.
  * @param {string} content The prepared content.
- * @return {string} The content, or an empty paragraph if it was empty.
+ * @return {string} The content, or the default paragraph if it was empty.
  */
-function seedIfEmpty(content) {
-  return content === '' ? EMPTY_CONTENT : content;
+function withDefaultParagraph(content) {
+  return content === '' ? DEFAULT_PARAGRAPH : content;
 }
 
 /**
@@ -300,13 +300,13 @@ function seedIfEmpty(content) {
  * @param {string} content The prepared content.
  * @return {boolean} Whether the content is empty.
  */
-function isEmptyContent(content) {
-  return content === '' || content === EMPTY_CONTENT;
+function isContentEmpty(content) {
+  return content === '' || content === DEFAULT_PARAGRAPH;
 }
 
 export {
   enableTags,
   prepareContent,
-  seedIfEmpty,
-  isEmptyContent
+  withDefaultParagraph,
+  isContentEmpty
 };

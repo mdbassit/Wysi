@@ -88,6 +88,14 @@ function init(options) {
         'aria-multiline': true,
         'aria-label': getTextAreaLabel(field),
         'data-wid': instanceId,
+
+        // Prevent Grammarly and similar extensions from interfering
+        autocomplete: 'off',
+        'data-gramm': false,
+        'data-gramm_editor': false,
+        'data-enable-grammarly': false,
+        'data-lt-active': false,
+
         _innerHTML: withDefaultParagraph(prepareContent(field.value, allowedTags))
       });      
 

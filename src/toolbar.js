@@ -22,6 +22,11 @@ import {
  * @return {string} The toolbars HTML string.
  */
 function renderToolbar(tools) {
+  // AJAX navigation may remove the sprite from the body.
+  if (!document.getElementById('wysi-svg-icons')) {
+    embedSVGIcons();
+  }
+
   const toolbar = createElement('div', { class: 'wysi-toolbar' });
 
   // Generate toolbar buttons

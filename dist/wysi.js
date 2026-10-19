@@ -1193,6 +1193,10 @@
    * @return {string} The toolbars HTML string.
    */
   function renderToolbar(tools) {
+    // AJAX navigation may remove the sprite from the body.
+    if (!document.getElementById('wysi-svg-icons')) {
+      embedSVGIcons();
+    }
     const toolbar = createElement('div', {
       class: 'wysi-toolbar'
     });
@@ -1791,6 +1795,12 @@
           'aria-multiline': true,
           'aria-label': getTextAreaLabel(field),
           'data-wid': instanceId,
+          // Prevent Grammarly and similar extensions from interfering
+          autocomplete: 'off',
+          'data-gramm': false,
+          'data-gramm_editor': false,
+          'data-enable-grammarly': false,
+          'data-lt-active': false,
           _innerHTML: withDefaultParagraph(prepareContent(field.value, allowedTags))
         });
 

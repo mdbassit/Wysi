@@ -16,11 +16,13 @@
     "gulp": "^5.0.0",
     "gulp-clean-css": "^4.3.0",
     "gulp-rename": "^2.0.0",
+    "jsdom": "^26.1.0",
     "rollup": "^3.29.5"
   },
   "scripts": {
     "build": "gulp build",
-    "watch": "gulp"
+    "watch": "gulp",
+    "test": "node --test"
   },
   "browserslist": "> 0.25%, not dead",
   "babel": {

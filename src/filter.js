@@ -1,7 +1,7 @@
 import settings from './settings.js';
 import toolset from './toolset.js';
 import { buildFragment, cloneObject, createElement } from './utils.js';
-import { blockElements } from './common.js';
+import { blockElements, headingElements } from './common.js';
 
 const STYLE_ATTRIBUTE = 'style';
 const ALIGN_ATTRIBUTE = 'align';
@@ -189,11 +189,24 @@ function filterContent(node, allowedTags) {
         } else {
           // Fix bad alignment handling on Firefox
           if (deprecatedAlignAttribute !== null) {
-            if (childNode.parentNode && childNode.parentNode.tagName === 'LI') {
-              childNode.parentNode.style.textAlign = deprecatedAlignAttribute;
+            const parent = childNode.parentNode;
+            if (parent && ['LI', 'P', ...headingElements].includes(parent.tagName)) {
+              parent.style.textAlign = deprecatedAlignAttribute;
             } else {
-              for (const divChild of childNode.childNodes) {
-                divChild.style.textAlign = deprecatedAlignAttribute;
+              let paragraph;
+              for (const divChild of Array.from(childNode.childNodes)) {
+                if (blockElements.includes(divChild.tagName)) {
+                  paragraph = null;
+                  divChild.style.textAlign = deprecatedAlignAttribute;
+                } else {
+                  // Alignment belongs on a block, not on a text or inline node.
+                  if (!paragraph) {
+                    paragraph = createElement('p');
+                    paragraph.style.textAlign = deprecatedAlignAttribute;
+                    childNode.insertBefore(paragraph, divChild);
+                  }
+                  paragraph.appendChild(divChild);
+                }
               }
             }
           }
